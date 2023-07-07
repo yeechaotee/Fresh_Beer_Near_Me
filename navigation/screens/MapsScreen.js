@@ -1,7 +1,7 @@
 import * as React from "react";
 import { StyleSheet, View, Text } from "react-native";
 
-export default function MapsScreen({ navigation }) {
+export default function MapsScreen() {
   return (
     <View style={styles.viewStyle}>
       <Text style={styles.textStyle}>Maps Screen</Text>

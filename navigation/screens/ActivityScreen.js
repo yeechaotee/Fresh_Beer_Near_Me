@@ -1,7 +1,7 @@
 import * as React from "react";
 import { StyleSheet, View, Text } from "react-native";
 
-export default function ActivityScreen({ navigation }) {
+export default function ActivityScreen() {
   return (
     <View style={styles.viewStyle}>
       <Text style={styles.textStyle}>Activity Screen</Text>

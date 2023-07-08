@@ -1,7 +1,7 @@
 import * as React from "react";
 import { StyleSheet, View, Text } from "react-native";
 
-export default function DiscoverScreen({ navigation }) {
+export default function DiscoverScreen() {
   return (
     <View style={styles.viewStyle}>
       <Text style={styles.textStyle}>Discover Screen</Text>

@@ -1,36 +1,44 @@
 import React, { useEffect, useState } from "react";
-import {
-  PermissionsAndroid,
-  StyleSheet,
-  View,
-  Text,
-  Dimensions,
-} from "react-native";
+import { StyleSheet, View, Dimensions } from "react-native";
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 import * as Location from "expo-location";
 
 const { width, height } = Dimensions.get("window");
 
-const ASPECT_RATIO = width / height;
-const LATITUDE_DELTA = 0.02;
-const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
-const INITIAL_POSITION = {
-  latitude: 1.290475,
-  longitude: 103.852036,
-  latitudeDelta: LATITUDE_DELTA,
-  longitudeDelta: LONGITUDE_DELTA,
-};
-
 export default function MapsScreen() {
-  const [currentPosition, setCurrentPosition] = useState(INITIAL_POSITION);
+  const [location, setLocation] = useState();
+
+  useEffect(() => {
+    console.log("use effect run");
+    const getPermissions = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      console.log("status: " + status);
+      if (status !== "granted") {
+        console.log("Please grant location permission");
+        return;
+      }
+      console.log("permissions checked");
+
+      try {
+        console.log("trying get location");
+        let coords = await Location.getCurrentPositionAsync();
+        setLocation(coords);
+        console.log("location");
+        console.log(coords);
+        console.log("coordinates recorded");
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    getPermissions();
+  }, []);
 
   return (
     <View style={styles.viewStyle}>
-      <Text style={styles.textStyle}>Maps Screen</Text>
       <MapView
         style={styles.map}
         provider={PROVIDER_GOOGLE}
-        region={currentPosition}
+        initialRegion={location}
       />
     </View>
   );
@@ -51,7 +59,6 @@ const styles = StyleSheet.create({
   },
   map: {
     width: width,
-    height: "90%",
-    paddingBottom: 0,
+    height: height,
   },
 });

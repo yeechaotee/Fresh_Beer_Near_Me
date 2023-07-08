@@ -1,12 +1,61 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Dimensions } from "react-native";
-import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import * as Location from "expo-location";
+import darkModeStyle from "./darkMode.json";
 
 const { width, height } = Dimensions.get("window");
 
+mapStyle = [{}];
+
+// location markers
+// let locationsOfInterest = [
+//   {
+//     title: "first",
+//     location: {
+//       latitude: 1.369778,
+//       longitude: 103.849437,
+//     },
+//     description: "my first marker",
+//   },
+//   {
+//     title: "second",
+//     location: {
+//       latitude: 1.316721,
+//       longitude: 103.882049,
+//     },
+//     description: "my second marker",
+//   },
+// ];
+
 export default function MapsScreen() {
-  const [location, setLocation] = useState();
+  // states
+  const [location, setLocation] = useState({
+    latitude: 1.3525271913212642,
+    latitudeDelta: 0.38941821562666146,
+    longitude: 103.85964151471853,
+    longitudeDelta: 0.1941436529159546,
+  });
+
+  const [userLocation, setUserLocation] = useState(null);
+
+  const onRegionChange = (region) => {
+    console.log(region);
+    setUserLocation(region);
+  };
+
+  const showLocationsOfInterest = () => {
+    return locationsOfInterest.map((item, index) => {
+      return (
+        <Marker
+          key={index}
+          coordinate={item.location}
+          title={item.title}
+          description={item.description}
+        />
+      );
+    });
+  };
 
   useEffect(() => {
     console.log("use effect run");
@@ -39,7 +88,20 @@ export default function MapsScreen() {
         style={styles.map}
         provider={PROVIDER_GOOGLE}
         initialRegion={location}
-      />
+        onRegionChange={onRegionChange}
+        customMapStyle={darkModeStyle}
+      >
+        {userLocation && (
+          <Marker
+            coordinate={userLocation}
+            title="Your Location"
+            description="You are here"
+          />
+        )}
+        {
+          //showLocationsOfInterest()
+        }
+      </MapView>
     </View>
   );
 }

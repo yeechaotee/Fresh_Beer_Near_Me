@@ -4,7 +4,7 @@ import { StyleSheet, View, Text } from "react-native";
 export default function NotificationsScreen({ navigation }) {
   return (
     <View style={styles.viewStyle}>
-      <Text style={styles.textStyle}>Notifications Screen</Text>
+      <Text style={styles.textStyle}>Notifications Screen Test</Text>
     </View>
   );
 }

@@ -3,6 +3,8 @@ import { StyleSheet, View, Dimensions } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import darkModeStyle from "./darkMode.json";
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import { GOOGLE_API_KEY } from "../../environments";
 
 const { width, height } = Dimensions.get("window");
 
@@ -102,6 +104,20 @@ export default function MapsScreen() {
           //showLocationsOfInterest()
         }
       </MapView>
+      <View style={styles.userLocation}>
+        <GooglePlacesAutocomplete
+          styles={{ textInput: styles.input }}
+          placeholder="Search"
+          onPress={(data, details = null) => {
+            // 'details' is provided when fetchDetails = true
+            console.log(data, details);
+          }}
+          query={{
+            key: GOOGLE_API_KEY,
+            language: "en",
+          }}
+        />
+      </View>
     </View>
   );
 }
@@ -122,5 +138,23 @@ const styles = StyleSheet.create({
   map: {
     width: width,
     height: height,
+  },
+  userLocation: {
+    position: "absolute",
+    width: "90%",
+    backgroundColor: "#ffa31a",
+    shadowColor: "black",
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 4,
+    padding: 8,
+    borderRadius: 8,
+    color: "#ffffff",
+  },
+  input: {
+    borderColor: "#888",
+    borderWidth: 1,
+    borderRadius: 8,
   },
 });

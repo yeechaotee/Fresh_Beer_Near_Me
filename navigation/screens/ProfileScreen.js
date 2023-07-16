@@ -11,9 +11,9 @@ import {
 import { TailwindProvider } from 'tailwindcss-react-native';
 import { DiscoveryImage } from '../../assets';
 import * as Animatable from "react-native-animatable";
-import HeaderTabs from '../../components/HeaderTabs';
-import SearchBar from '../../components/SearchBar';
-import Categories from '../../components/Categories';
+import HeaderTabs from '../../components/home/HeaderTabs';
+import SearchBar from '../../components/home/SearchBar';
+import Categories from '../../components/home/Categories';
 
 export default function ProfileScreen({ navigation }) {
 

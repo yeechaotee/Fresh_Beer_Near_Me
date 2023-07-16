@@ -1,19 +1,16 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import ScreenB from './navigation/screens/ScreenB';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Social from './navigation/screens/Social';
 import ProfileScreen from './navigation/screens/ProfileScreen';
 import MapsScreen from './navigation/screens/MapsScreen';
-import DiscoverScreen from './navigation/screens/DiscoverScreen';
+import { View } from 'react-native-animatable';
+import RootNavigation from './navigation';
 
 
-// const Tab = createBottomTabNavigator();
 const Tab = createMaterialBottomTabNavigator();
-//const Tab = createMaterialTopTabNavigator();
 
 function App() {
   return (
@@ -63,11 +60,11 @@ function App() {
           showLabel: false,
           labelStyle: { fontSize: 12 },
           showIcon: true,
-          
+
         }}
         activeColor='#000000'
         inactiveColor='#3e2465'
-        barStyle={{ backgroundColor: '#694fad', height: 80 }}
+        barStyle={{ backgroundColor: '#ffa31a', height: 80 }}
       >
         <Tab.Screen
           name="Map"
@@ -81,7 +78,7 @@ function App() {
         />
         <Tab.Screen
           name="Discovery"
-          component={DiscoverScreen}
+          component={RootNavigation}
         />
         <Tab.Screen
           name="Notification"

@@ -139,7 +139,7 @@ export default function MapsScreen() {
         style={styles.map}
         provider={PROVIDER_GOOGLE}
         initialRegion={userLocation}
-        customMapStyle={darkModeStyle}
+        //customMapStyle={darkModeStyle}
       >
         {userLocation && (
           <Marker
@@ -196,21 +196,20 @@ export default function MapsScreen() {
           onPress={chekInPress}
           style={{
             flexDirection: "row",
-            backgroundColor: "#ffa31a",
-            borderRadius: 30,
-            alignContent: "center",
             alignItems: "center",
-            width: 10,
+            alignContent: "center",
+            top: 5,
           }}
         >
           <Image
-            source={require("../../assets/navIcons/goal.png")}
+            source={require("../../assets/navIcons/beermap.png")}
             style={{
               width: 40,
               height: 40,
+              tintColor: "#292929",
             }}
           />
-          <Text style={{ color: "white" }}>Check In</Text>
+          <Text style={{ color: "#292929" }}>Check In</Text>
         </Pressable>
       </View>
     </View>
@@ -241,11 +240,19 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     color: "#ffffff",
     top: Constants.statusBarHeight,
+    opacity: 0.85,
   },
   checkIn: {
     position: "absolute",
     alignItems: "center",
-    bottom: 100,
+    alignContent: "center",
+    bottom: 10,
+    right: 10,
+    height: 50,
+    width: 120,
+    backgroundColor: "#ffa31a",
+    borderRadius: 30,
+    opacity: 0.85,
   },
 });
 

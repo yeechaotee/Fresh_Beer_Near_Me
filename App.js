@@ -9,6 +9,7 @@ import Social from './navigation/screens/Social';
 import ProfileScreen from './navigation/screens/ProfileScreen';
 import MapsScreen from './navigation/screens/MapsScreen';
 import DiscoverScreen from './navigation/screens/DiscoverScreen';
+import NotificationsScreen from './navigation/screens/NotificationsScreen';
 
 
 // const Tab = createBottomTabNavigator();
@@ -85,7 +86,7 @@ function App() {
         />
         <Tab.Screen
           name="Notification"
-          component={ScreenB}
+          component={NotificationsScreen}
           options={{ tabBarBadge: 8 }}
         />
         <Tab.Screen

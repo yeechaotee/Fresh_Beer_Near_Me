@@ -37,10 +37,28 @@ npm i react-native-animatable
 npm i react-native-elements
 npm install react-native-google-places-autocomplete --save
 
-- Firebase Database
- - npm install --save firebase
- - expo install firebase
+```
 
+
+## 📝 Firebase Database:
+```sh
+npm install --save firebase
+expo install firebase
+npm install @react-native-firebase/app --save
+npm install @react-native-firebase/auth --save
+npm i @expo/metro-config
+npx expo customize metro.config.js
+- For initial setup:
+    - Need to enable Authentication using email/pass on firebase console page
+```
+
+
+## 📝 Profile module:
+```sh
+Login and Sign up features: https://www.positronx.io/react-native-firebase-login-and-user-registration-tutorial/
+npm install email-validator
+npm install formik
+npm install yup
 
 ```
 ## 📝 Notes

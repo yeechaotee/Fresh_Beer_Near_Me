@@ -13,12 +13,12 @@ import {
 } from 'react-native';
 
 import { TailwindProvider } from 'tailwindcss-react-native';
-import { DiscoveryImage } from '../../assets';
-import * as Animatable from "react-native-animatable";
+// import { DiscoveryImage } from '../../assets';
+// import * as Animatable from "react-native-animatable";
 import TabNotif from '../../components/TabNotif';
 //import TabNotif from '../../components/TabNotif';
-import SearchBar from '../../components/SearchBar';
-import Categories from '../../components/Categories';
+// import SearchBar from '../../components/SearchBar';
+// import Categories from '../../components/Categories';
 
 
 ///////////////////////////////////////////////

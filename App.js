@@ -13,6 +13,7 @@ import Login from './navigation/screens/Login';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH } from './firebase';
 import Signup from './navigation/screens/Signup';
+import NotificationsScreen from './navigation/screens/NotificationsScreen';
 
 
 const Tab = createMaterialBottomTabNavigator();
@@ -90,7 +91,7 @@ function LogonLayout() {
       />
       <Tab.Screen
         name="Notification"
-        component={ScreenB}
+        component={NotificationsScreen}
         options={{ tabBarBadge: 8 }}
       />
       <Tab.Screen

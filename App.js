@@ -103,38 +103,112 @@ function LogonLayout() {
   )
 }
 
+
+function GuessLogon() {
+  return (
+    <Tab.Navigator initialRouteName='Discovery'
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, size, color }) => {
+          let iconName;
+          if (route.name === 'Map') {
+            iconName = 'map';
+            size = focused ? 25 : 20;
+            // color = focused ? '#f0f' : '#555';
+          } else if (route.name === 'Discovery') {
+            iconName = 'beer';
+            size = focused ? 25 : 20;
+            // color = focused ? '#f0f' : '#555';
+          }
+          else if (route.name === 'Profile') {
+            iconName = 'user-circle';
+            size = focused ? 25 : 20;
+            // color = focused ? '#f0f' : '#555';
+          }
+          return (
+            <FontAwesome5
+              name={iconName}
+              size={size}
+              color={color}
+            />
+          )
+        },
+      })}
+      tabBarOptions={{
+        activeTintColor: '#f0f',
+        inactiveTintColor: '#555',
+        activeBackgroundColor: '#fff',
+        inactiveBackgroundColor: '#999',
+        showLabel: false,
+        labelStyle: { fontSize: 12 },
+        showIcon: true,
+
+      }}
+      activeColor='#000000'
+      inactiveColor='#3e2465'
+      barStyle={{ backgroundColor: '#ffa31a', height: 80 }}
+    >
+      <Tab.Screen
+        name="Map"
+        component={MapsScreen}
+
+      />
+      <Tab.Screen
+        name="Discovery"
+        component={RootNavigation}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={Signup}
+      />
+
+
+    </Tab.Navigator>
+  )
+}
+
 function App() {
 
+  const [loadingInitial, setLoadingInitial] = useState(true);
   const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    onAuthStateChanged(FIREBASE_AUTH, (user) => {
-      // console.log('User info ---> ', user);
-      setUser(user);
-      console.log('User info ---> ', user);
-    });
-  }, []);
+
+  useEffect(
+    () =>
+      onAuthStateChanged(FIREBASE_AUTH, (user) => {
+        // console.log('User info ---> ', user);
+        if (user) {
+          setUser(user);
+        }
+        else {
+          setUser(null);
+        }
+        setLoadingInitial(false);
+
+        console.log('User info ---> ', user);
+      })
+    , []);
 
   const SignedInStack = () => (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Discovery">
-        <Stack.Screen name={"Logon as " + user.email} component={LogonLayout} options={{ headerShown: false }} />
+        <Stack.Screen name="LoggedOn" component={LogonLayout} options={{ title: "Logon as " + user.email }} />
       </Stack.Navigator>
     </NavigationContainer>
   )
 
   const SignedOutStack = () => (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="GuessLogon">
+        <Stack.Screen name="GuessLogon" component={GuessLogon} options={{ headerShown: false }} />
         <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
-        <Stack.Screen name="Signup" component={Signup} options={{ title: 'Sign up' }} />
+        <Stack.Screen name="Signup" component={Signup} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   )
 
   return (
-    <>
-      {user ? SignedInStack() : SignedOutStack()}
+    <> 
+      {user ?  !loadingInitial && SignedInStack() : !loadingInitial && SignedOutStack()}
     </>
     // <NavigationContainer>
     //   <Stack.Navigator initialRouteName="Login">

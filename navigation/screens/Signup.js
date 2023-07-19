@@ -30,12 +30,12 @@ export default function Signup({ navigation }) {
             const authUser = await createUserWithEmailAndPassword(auth, email, password);
             console.log(authUser);
             const doc = await addDoc(collection(FIRESTORE_DB, 'users'),
-            {
-                owner_uid: authUser.user.uid,
-                username: username,
-                email: authUser.user.email,
-                profile_picture: await getRandomProfilePicture(),
-            })
+                {
+                    owner_uid: authUser.user.uid,
+                    username: username,
+                    email: authUser.user.email,
+                    profile_picture: await getRandomProfilePicture(),
+                })
         }
         catch (error) {
             console.log(error);
@@ -95,7 +95,6 @@ export default function Signup({ navigation }) {
                                 }]} >
                                     <TextInput
                                         placeholder='Username'
-                                        secureTextEntry={true}
                                         autoCapitalize='none'
                                         value={values.username}
                                         onChangeText={handleChange('username')}
@@ -131,8 +130,8 @@ export default function Signup({ navigation }) {
                                             <Text style={styles.buttonText} >Sign Up</Text>
                                         </Pressable>
                                         <View style={styles.signupContainer}>
-                                            <Text>Don't have an account? </Text>
-                                            <TouchableOpacity onPress={() => navigation.goBack()}>
+                                            <Text>Already have an account? </Text>
+                                            <TouchableOpacity onPress={() => navigation.push('Login')}>
                                                 <Text style={{ color: '#6BB0F5' }}>Log In</Text>
                                             </TouchableOpacity>
                                         </View>
@@ -175,6 +174,7 @@ const styles = StyleSheet.create({
     },
     logoContainer: {
         alignItems: 'center',
+        marginBottom: 10,
     },
     button: (isValid) => ({
         backgroundColor: isValid ? '#0096F6' : '#9ACAF7',

@@ -15,13 +15,74 @@ import HeaderTabs from '../../components/home/HeaderTabs';
 import SearchBar from '../../components/home/SearchBar';
 import Categories from '../../components/home/Categories';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
-import { addDoc, collection, collectionGroup, onSnapshot } from 'firebase/firestore';
+import { addDoc, collection, collectionGroup, onSnapshot, setDoc, doc } from 'firebase/firestore';
 import { TextInput } from 'react-native-paper';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
 export default function ProfileScreen({ navigation }) {
 
     const [user, setUser] = useState(User);
+
+    const [currentLoggedInUser, setCurrentLoggedInUser] = useState(null);
+
+    const currUser = FIREBASE_AUTH.currentUser;
+
+    if (currUser) {
+        console.log('User email: ', currUser.email);
+    }
+
+
+
+    // const docRef = doc(FIRESTORE_DB, "users");
+    // const docSnap = getDoc(docRef);
+
+    // if (docSnap.exists()) {
+    //     console.log("Document data:", docSnap.data());
+    // } else {
+    //     // docSnap.data() will be undefined in this case
+    //     console.log("No such document!");
+    // }
+
+    // const getUsername = () => {
+    //     const myuser = FIREBASE_AUTH.currentUser
+    //     const unsubscribe = FIRESTORE_DB.collection('users')
+    //         .where('owner_uid', '==', myuser.uid).limit(1).onSnapshot(
+    //             snapshot => snapshot.docs.map(doc => {
+    //                 setCurrentLoggedInUser({
+    //                     username: doc.data().username,
+    //                     profilePicture: doc.data().profile_picture,
+    //                 })
+    //             })
+    //         )
+    //     return unsubscribe;
+    // }
+
+    // useEffect(() => {
+    //     getUsername() //get username of current loggon user
+    // }, [])
+
+
+    // useEffect(() => {
+    //     const myuser = FIREBASE_AUTH.currentUser;
+    //     const profileRef = collection(FIRESTORE_DB, 'users')
+    //         .where('owner_uid', '==', myuser.uid).limit(1);  // get from DB profiles
+
+    //     const unsubscribe = onSnapshot(profileRef, {
+    //         next: (snapshot) => {
+    //             console.log('UPDATED on Firebase users[] ');
+    //             const profiles = [];
+    //             snapshot.docs.forEach(doc => {
+    //                 setCurrentLoggedInUser({
+    //                     username: doc.data().username,
+    //                     profilePicture: doc.data().profile_picture,
+    //                 })
+    //             });
+    //             setProfiles(profiles);
+    //         }
+    //     });
+
+    //     return () => unsubscribe();
+    // }, []);
 
     useEffect(() => {
         onAuthStateChanged(FIREBASE_AUTH, (user) => {
@@ -32,6 +93,7 @@ export default function ProfileScreen({ navigation }) {
     const [profiles, setProfiles] = useState([]);
     const [profile, setProfile] = useState('');
 
+    // -------Get current user username------
     // useEffect(() => {
     //     const profileRef = collection(FIRESTORE_DB, 'users');  // get from DB profiles
 
@@ -57,7 +119,7 @@ export default function ProfileScreen({ navigation }) {
     // This is how to get all items under 'users' FIREBASE collection
     useEffect(() => {
         const profileRef = collectionGroup(FIRESTORE_DB, 'users');  // get from DB profiles
-
+        const counter = 1;
         const subscriber = onSnapshot(profileRef, {
             next: (snapshot) => {
                 console.log('UPDATED on Firebase users[] ');
@@ -79,7 +141,7 @@ export default function ProfileScreen({ navigation }) {
     const addToFirebase = async () => {
         console.log('ADD TO Firebase');
 
-        const doc = await addDoc(collection(FIRESTORE_DB, 'users'),
+        const doc = await addDoc(collection(FIRESTORE_DB, 'profiles'),
             {
                 title: profile,
                 role: 'Admin',
@@ -90,8 +152,10 @@ export default function ProfileScreen({ navigation }) {
         setProfile('');
     }
 
+    counter = 0;
     const renderProfile = ({ item }) => {
-        return <Text>User Email: {item.email}, username: {item.username}, profile_picture: {item.profile_picture}</Text>;
+        counter++;
+        return <Text>{counter}. User Email: {item.email}, username: {item.username}, profile_picture: {item.profile_picture}</Text>;
     };
 
     return (
@@ -103,12 +167,12 @@ export default function ProfileScreen({ navigation }) {
             </View>
             <View style={{ width: 100, alignSelf: 'center', marginLeft: 20 }} >
                 <Button onPress={() => FIREBASE_AUTH.signOut().then(
-                    () => { navigation.navigate('Login') }
+                    () => { navigation.navigate('GuessLogon') }
                 ).catch(error => setUser({ errorMessage: error.message }))} title="Log Out" />
             </View>
             {profiles.length > 0 && (
                 <View>
-                    <FlatList
+                    <FlatList nestedScrollEnabled
                         data={profiles}
                         renderItem={renderProfile}
                         keyExtractor={(profile) => profile.id} />

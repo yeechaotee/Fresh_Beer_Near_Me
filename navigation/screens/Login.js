@@ -62,36 +62,36 @@ export default function Login({ navigation }) {
         }
     }
 
-    const signIn = async () => {
-        setLoading(true);
-        try {
-            const response = await signInWithEmailAndPassword(auth, email, password);
-            console.log(response);
-        }
-        catch (error) {
-            console.log(error);
-            alert('Sign in failed: ' + error);
-        }
-        finally {
-            setLoading(false);
-        }
-    }
+    // const signIn = async () => {
+    //     setLoading(true);
+    //     try {
+    //         const response = await signInWithEmailAndPassword(auth, email, password);
+    //         console.log(response);
+    //     }
+    //     catch (error) {
+    //         console.log(error);
+    //         alert('Sign in failed: ' + error);
+    //     }
+    //     finally {
+    //         setLoading(false);
+    //     }
+    // }
 
-    const signUp = async () => {
-        setLoading(true);
-        try {
-            const response = await createUserWithEmailAndPassword(auth, email, password);
-            console.log(response);
-            alert('Sign Up successfully! Please check your email.');
-        }
-        catch (error) {
-            console.log(error);
-            alert('Sign Up failed: ' + error);
-        }
-        finally {
-            setLoading(false);
-        }
-    }
+    // const signUp = async () => {
+    //     setLoading(true);
+    //     try {
+    //         const response = await createUserWithEmailAndPassword(auth, email, password);
+    //         console.log(response);
+    //         alert('Sign Up successfully! Please check your email.');
+    //     }
+    //     catch (error) {
+    //         console.log(error);
+    //         alert('Sign Up failed: ' + error);
+    //     }
+    //     finally {
+    //         setLoading(false);
+    //     }
+    // }
 
     return (
         <View style={styles.container}>
@@ -199,6 +199,7 @@ const styles = StyleSheet.create({
     },
     logoContainer: {
         alignItems: 'center',
+        marginBottom: 10,
     },
     button: (isValid) => ({
         backgroundColor: isValid ? '#0096F6' : '#9ACAF7',

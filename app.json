@@ -4,10 +4,10 @@
     "slug": "FreshBeer",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/beer-loading.png",
+    "icon": "./assets/loadingbeer.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/beer-loading.png",
+      "image": "./assets/loadingbeer.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },

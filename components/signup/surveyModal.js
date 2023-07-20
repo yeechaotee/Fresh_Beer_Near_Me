@@ -5,7 +5,12 @@ import DropDownPicker from "react-native-dropdown-picker";
 
 const userName = "put username here dynamically"; // make dynamic later on.
 
-const surveyModal = ({ modalVisible, setModalVisible, setSurveyIsDone }) => {
+const surveyModal = ({
+  modalVisible,
+  setModalVisible,
+  setSurveyIsDone,
+  handleSubmit,
+}) => {
   //submit button needs
   const handleModalSubmit = (beerProfileValue, favBeerValue, regionValue) => {
     console.log("submit button pressed");
@@ -14,6 +19,7 @@ const surveyModal = ({ modalVisible, setModalVisible, setSurveyIsDone }) => {
     console.log("region: ", regionValue);
     setModalVisible(false);
     setSurveyIsDone(true);
+    handleSubmit();
     //clear all the values
     setBeerProfileIsOpen(false);
     setBeerProfileValue([]);
@@ -28,6 +34,7 @@ const surveyModal = ({ modalVisible, setModalVisible, setSurveyIsDone }) => {
     setModalVisible(false);
     setSurveyIsDone(true);
     console.log("skip button pressed");
+    handleSubmit();
     //clear all the values
     setBeerProfileIsOpen(false);
     setBeerProfileValue([]);

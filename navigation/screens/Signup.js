@@ -87,11 +87,6 @@ export default function Signup({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <SurveyModal
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
-        setSurveyIsDone={setSurveyIsDone}
-      />
       <View style={styles.logoContainer}>
         <Image source={{ uri: BEER_LOGO, height: 200, width: 200 }} />
       </View>
@@ -188,6 +183,12 @@ export default function Signup({ navigation }) {
                     >
                       <Text style={styles.buttonText}>Sign Up</Text>
                     </Pressable>
+                    <SurveyModal
+                      modalVisible={modalVisible}
+                      setModalVisible={setModalVisible}
+                      setSurveyIsDone={setSurveyIsDone}
+                      handleSubmit={handleSubmit}
+                    />
                     <View style={styles.signupContainer}>
                       <Text>Already have an account? </Text>
                       <TouchableOpacity

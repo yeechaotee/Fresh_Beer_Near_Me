@@ -12,9 +12,9 @@ import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import darkModeStyle from "./darkMode.json";
 import Constants from "expo-constants";
-import InputAutoComplete from "../../components/InputAutoComplete";
+import InputAutoComplete from "./InputAutoComplete";
 import { endAsyncEvent } from "react-native/Libraries/Performance/Systrace";
-import GetRideModal from "../../components/GetRide";
+import GetRideModal from "./GetRide";
 
 const { width, height } = Dimensions.get("window");
 

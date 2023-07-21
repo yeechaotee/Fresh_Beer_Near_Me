@@ -14,6 +14,7 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH } from './firebase';
 import Signup from './navigation/screens/Signup';
 import NotificationsScreen from './navigation/screens/NotificationsScreen';
+import EditProfileScreen from './navigation/screens/EditProfileScreen';
 
 
 const Tab = createMaterialBottomTabNavigator();
@@ -21,6 +22,32 @@ const Tab = createMaterialBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 const LogonStack = createNativeStackNavigator();
+
+const ProfileStack = ({ navigation }) => (
+  <Stack.Navigator>
+    <Stack.Screen
+      name="Profile"
+      component={ProfileScreen}
+      options={{
+        headerShown: false,
+      }}
+    />
+    <Stack.Screen
+      name="EditProfile"
+      component={EditProfileScreen}
+      options={{
+        headerTitle: 'Edit Profile',
+        headerBackTitleVisible: false,
+        headerTitleAlign: 'center',
+        headerStyle: {
+          backgroundColor: '#fff',
+          shadowColor: '#fff',
+          elevation: 0,
+        },
+      }}
+    />
+  </Stack.Navigator>
+);
 
 function LogonLayout() {
   return (
@@ -96,7 +123,7 @@ function LogonLayout() {
       />
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={ProfileStack}
       />
 
 
@@ -208,8 +235,8 @@ function App() {
   )
 
   return (
-    <> 
-      {user ?  !loadingInitial && SignedInStack() : !loadingInitial && SignedOutStack()}
+    <>
+      {user ? !loadingInitial && SignedInStack() : !loadingInitial && SignedOutStack()}
     </>
     // <NavigationContainer>
     //   <Stack.Navigator initialRouteName="Login">

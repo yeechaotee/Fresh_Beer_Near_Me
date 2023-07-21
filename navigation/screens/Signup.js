@@ -31,10 +31,13 @@ export default function Signup({ navigation }) {
             console.log(authUser);
             const doc = await addDoc(collection(FIRESTORE_DB, 'users'),
                 {
+                    fname: '',
+                    lname: '',
                     owner_uid: authUser.user.uid,
                     username: username,
                     email: authUser.user.email,
                     profile_picture: await getRandomProfilePicture(),
+                    createdAt: firestore.Timestamp.fromDate(new Date()),
                 })
         }
         catch (error) {

@@ -59,7 +59,11 @@ Login and Sign up features: https://www.positronx.io/react-native-firebase-login
 npm install email-validator
 npm install formik
 npm install yup
-
+npm install react-native-reanimated
+npm install reanimated-bottom-sheet
+npm install @react-native-community/cli
+npm i --save @react-native-community/google-signin
+npm install react-native-image-crop-picker
 ```
 ## 📝 Notes
 
@@ -74,3 +78,10 @@ npm install yup
     - YELP API Key: https://www.yelp.com/developers/v3/manage_app
     - Created Google Console Cloud: https://console.cloud.google.com/getting-started?pli=1
     - Places API from Google: https://console.cloud.google.com/apis/library/places-backend.googleapis.com?authuser=2&organizationId=0&project=freshbeernearme-392607
+
+- Some dependencies fixing hacks:
+    - In most cases, this can be fixed by cleaning the application's cache. Depending on your workflow or favorite package manager that could be done by:
+        - yarn start --reset-cache
+        - npm start --reset-cache
+        - expo start -c
+        or other.

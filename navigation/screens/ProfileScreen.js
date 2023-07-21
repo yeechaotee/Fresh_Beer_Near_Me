@@ -1,88 +1,93 @@
-import React, { useEffect, useState } from 'react';
-import { Button, FlatList, SafeAreaView } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
 import {
-    StyleSheet,
     View,
     Text,
-    Pressable,
-    TouchableOpacity
+    Image,
+    TouchableOpacity,
+    StyleSheet,
+    ScrollView,
+    SafeAreaView,
 } from 'react-native';
+// import FormButton from '../components/FormButton';
+import { AuthContext } from '../AuthProvider/AuthProvider';
 
-import { TailwindProvider } from 'tailwindcss-react-native';
-import { DiscoveryImage } from '../../assets';
-import * as Animatable from "react-native-animatable";
-import HeaderTabs from '../../components/home/HeaderTabs';
-import SearchBar from '../../components/home/SearchBar';
-import Categories from '../../components/home/Categories';
-import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
-import { addDoc, collection, collectionGroup, onSnapshot, setDoc, doc } from 'firebase/firestore';
-import { TextInput } from 'react-native-paper';
 import { onAuthStateChanged, User } from 'firebase/auth';
+import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
+import firestore from 'firebase/firestore';
+// import PostCard from '../components/PostCard';
 
-export default function ProfileScreen({ navigation }) {
-
+const ProfileScreen = ({ navigation }) => {
+    // const { user, logout } = useContext(AuthContext);
     const [user, setUser] = useState(User);
+    console.log("profile page user is :"+user)
+    const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [deleted, setDeleted] = useState(false);
+    const [userData, setUserData] = useState(null);
 
-    const [currentLoggedInUser, setCurrentLoggedInUser] = useState(null);
+    console.log("profile page userDATA is :"+userData)
 
-    const currUser = FIREBASE_AUTH.currentUser;
+    const fetchPosts = async () => {
+        try {
+            const list = [];
 
-    if (currUser) {
-        console.log('User email: ', currUser.email);
+            await firestore()
+                .collection('posts')
+                .where('userId', '==', user.uid) //filter out only current loggon user
+                .orderBy('postTime', 'desc')
+                .get()
+                .then((querySnapshot) => {
+                    // console.log('Total Posts: ', querySnapshot.size);
+
+                    querySnapshot.forEach((doc) => {
+                        const {
+                            userId,
+                            post,
+                            postImg,
+                            postTime,
+                            likes,
+                            comments,
+                        } = doc.data();
+                        list.push({
+                            id: doc.id,
+                            userId,
+                            userName: 'Test Name',
+                            userImg:
+                                'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg',
+                            postTime: postTime,
+                            post,
+                            postImg,
+                            liked: false,
+                            likes,
+                            comments,
+                        });
+                    });
+                });
+
+            setPosts(list);
+
+            if (loading) {
+                setLoading(false);
+            }
+
+            console.log('Posts: ', posts);
+        } catch (e) {
+            console.log(e);
+        }
+    };
+
+    const getUser = async () => {
+        await firestore()
+            .collection('users')
+            .doc(user.uid)
+            .get()
+            .then((documentSnapshot) => {
+                if (documentSnapshot.exists) {
+                    console.log('User Data', documentSnapshot.data());
+                    setUserData(documentSnapshot.data());
+                }
+            })
     }
-
-
-
-    // const docRef = doc(FIRESTORE_DB, "users");
-    // const docSnap = getDoc(docRef);
-
-    // if (docSnap.exists()) {
-    //     console.log("Document data:", docSnap.data());
-    // } else {
-    //     // docSnap.data() will be undefined in this case
-    //     console.log("No such document!");
-    // }
-
-    // const getUsername = () => {
-    //     const myuser = FIREBASE_AUTH.currentUser
-    //     const unsubscribe = FIRESTORE_DB.collection('users')
-    //         .where('owner_uid', '==', myuser.uid).limit(1).onSnapshot(
-    //             snapshot => snapshot.docs.map(doc => {
-    //                 setCurrentLoggedInUser({
-    //                     username: doc.data().username,
-    //                     profilePicture: doc.data().profile_picture,
-    //                 })
-    //             })
-    //         )
-    //     return unsubscribe;
-    // }
-
-    // useEffect(() => {
-    //     getUsername() //get username of current loggon user
-    // }, [])
-
-
-    // useEffect(() => {
-    //     const myuser = FIREBASE_AUTH.currentUser;
-    //     const profileRef = collection(FIRESTORE_DB, 'users')
-    //         .where('owner_uid', '==', myuser.uid).limit(1);  // get from DB profiles
-
-    //     const unsubscribe = onSnapshot(profileRef, {
-    //         next: (snapshot) => {
-    //             console.log('UPDATED on Firebase users[] ');
-    //             const profiles = [];
-    //             snapshot.docs.forEach(doc => {
-    //                 setCurrentLoggedInUser({
-    //                     username: doc.data().username,
-    //                     profilePicture: doc.data().profile_picture,
-    //                 })
-    //             });
-    //             setProfiles(profiles);
-    //         }
-    //     });
-
-    //     return () => unsubscribe();
-    // }, []);
 
     useEffect(() => {
         onAuthStateChanged(FIREBASE_AUTH, (user) => {
@@ -90,199 +95,131 @@ export default function ProfileScreen({ navigation }) {
         });
     }, []);
 
-    const [profiles, setProfiles] = useState([]);
-    const [profile, setProfile] = useState('');
-
-    // -------Get current user username------
-    // useEffect(() => {
-    //     const profileRef = collection(FIRESTORE_DB, 'users');  // get from DB profiles
-
-    //     const subscriber = onSnapshot(profileRef, {
-    //         next: (snapshot) => {
-    //             console.log('UPDATED on Firebase users[] ');
-    //             const profiles = [];
-    //             snapshot.docs.forEach(doc => {
-    //                 console.log(doc.data());
-    //                 profiles.push({
-    //                     id: doc.id,
-    //                     ...doc.data()
-    //                 })
-    //             });
-    //             setProfiles(profiles);
-    //         }
-    //     });
-
-    //     return () => subscriber();
-    // }, []);
-
-
-    // This is how to get all items under 'users' FIREBASE collection
     useEffect(() => {
-        const profileRef = collectionGroup(FIRESTORE_DB, 'users');  // get from DB profiles
-        const counter = 1;
-        const subscriber = onSnapshot(profileRef, {
-            next: (snapshot) => {
-                console.log('UPDATED on Firebase users[] ');
-                const profiles = [];
-                snapshot.docs.forEach(doc => {
-                    console.log(doc.data());
-                    profiles.push({
-                        id: doc.id,
-                        ...doc.data()
-                    })
-                });
-                setProfiles(profiles);
-            }
-        });
+        getUser();
+        // fetchPosts();
+        navigation.addListener("focus", () => setLoading(!loading));
+    }, [navigation, loading]);
 
-        return () => subscriber();
-    }, []);
-
-    const addToFirebase = async () => {
-        console.log('ADD TO Firebase');
-
-        const doc = await addDoc(collection(FIRESTORE_DB, 'profiles'),
-            {
-                title: profile,
-                role: 'Admin',
-            })
-
-        // console.log('ProfileScreen.js -- ADD TO Firebase, doc: ', doc);
-        // reset state
-        setProfile('');
-    }
-
-    counter = 0;
-    const renderProfile = ({ item }) => {
-        counter++;
-        return <Text>{counter}. User Email: {item.email}, username: {item.username}, profile_picture: {item.profile_picture}</Text>;
-    };
+    const handleDelete = () => { };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.form}>
-                <TextInput style={styles.input} placeholder='Add to Firebase' onChangeText={(text) => setProfile(text)} value={profile} />
-                <Button onPress={addToFirebase} title="Add to FIREBASE" />
-
-            </View>
-            <View style={{ width: 100, alignSelf: 'center', marginLeft: 20 }} >
-                <Button onPress={() => FIREBASE_AUTH.signOut().then(
-                    () => { navigation.navigate('GuessLogon') }
-                ).catch(error => setUser({ errorMessage: error.message }))} title="Log Out" />
-            </View>
-            {profiles.length > 0 && (
-                <View>
-                    <FlatList nestedScrollEnabled
-                        data={profiles}
-                        renderItem={renderProfile}
-                        keyExtractor={(profile) => profile.id} />
-                </View>
-            )}
-            {/* <View>
-                { profiles.map(profile => (
-                    <Text key={profile.id}>{profile.title}</Text>
-                ))}
-            </View> */}
-
-
-            <View style={{
-                alignSelf: 'flex-start',
-                flexDirection: 'row',
-                top: 400
-            }}>
-                <Text>
-                    {/* Current Logon user: {user.displayName} */}
-                    {console.log("User is: " + user)}
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+            <ScrollView
+                style={styles.container}
+                contentContainerStyle={{ justifyContent: 'center', alignItems: 'center' }}
+                showsVerticalScrollIndicator={false}>
+                <Image
+                    style={styles.userImg}
+                    source={{ uri: userData ? userData.userImg || 'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg' : 'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg' }}
+                />
+                <Text style={styles.userName}>{userData ? userData.fname || 'Test' : 'Test'} {userData ? userData.lname || 'User' : 'User'}</Text>
+                <Text style={styles.aboutUser}>
+                    {userData ? userData.about || 'No details added.' : ''}
                 </Text>
+                <View style={styles.userBtnWrapper}>
+                    {(
+                        <>
+                            <TouchableOpacity
+                                style={styles.userBtn}
+                                onPress={() => {
+                                    navigation.navigate('EditProfile', {userId: user.uid});
+                                }}>
+                                <Text style={styles.userBtnTxt}>Edit</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.userBtn} onPress={() => FIREBASE_AUTH.signOut().then(
+                                () => { navigation.navigate('GuessLogon') }
+                            ).catch(error => setUser({ errorMessage: error.message }))}>
+                                <Text style={styles.userBtnTxt}>Logout</Text>
+                            </TouchableOpacity>
+                        </>
+                    )}
+                </View>
 
-            </View>
+                <View style={styles.userInfoWrapper}>
+                    <View style={styles.userInfoItem}>
+                        <Text style={styles.userInfoTitle}>{posts.length}</Text>
+                        <Text style={styles.userInfoSubTitle}>Posts</Text>
+                    </View>
+                    <View style={styles.userInfoItem}>
+                        <Text style={styles.userInfoTitle}>10,000</Text>
+                        <Text style={styles.userInfoSubTitle}>Followers</Text>
+                    </View>
+                    <View style={styles.userInfoItem}>
+                        <Text style={styles.userInfoTitle}>100</Text>
+                        <Text style={styles.userInfoSubTitle}>Following</Text>
+                    </View>
+                </View>
 
-        </View>
+                {/* {posts.map((item) => (
+          <PostCard key={item.id} item={item} onDelete={handleDelete} />
+        ))} */}
+            </ScrollView>
+        </SafeAreaView>
+    );
+};
 
-
-
-        // <TailwindProvider>
-        //     <SafeAreaView className="bg-white flex-1 relative">
-        //         {/* First Section */}
-        //         {/* <View style={{ backgroundColor: 'white', padding: 10 }}>
-        //             <HeaderTabs />
-        //             <SearchBar />
-        //             <Categories />
-        //         </View> */}
-
-
-
-        //         <View className="flex-row px-6 mt-8 items-center space-x-2">
-        //             <View className="w-16 h-16 bg-black rounded-full items-center justify-center">
-        //                 <Text className="text-[#00BCC9] text-3xl font-semibold">Go</Text>
-        //             </View>
-
-        //             <Text className="text-[#2A2B4B] text-3xl font-semibold">Beer Discovery</Text>
-        //         </View>
-
-        //         {/* Second Section */}
-        //         <View className="px-6 mt-8 space-y-3">
-        //             <Text className="text-[#3C6072] text-[42px]">We are</Text>
-        //             <Text className="text-[#00BCC9] text-[38px] font-bold">
-        //                 Fresh Beer Near Me
-        //             </Text>
-
-        //             {/* <Text className="text-[#3C6072] text-base">
-        //                 Fresh Beer Near Me
-        //             </Text> */}
-        //         </View>
-
-
-
-        //         {/* Circle Section */}
-        //         <View className="w-[200px] h-[150px] bg-[#00BCC9] rounded-full absolute bottom-36 -right-36"></View>
-        //         <View className="w-[200px] h-[200px] bg-[#E99265] rounded-full absolute -bottom-28 -left-36"></View>
-
-        //         {/* Image container */}
-        //         <View className="flex-1 relative items-center justify-center">
-        //             <Animatable.Image
-        //                 animation="fadeIn"
-        //                 easing="ease-in-out"
-        //                 source={DiscoveryImage}
-        //                 className="w-full h-full object-cover mt-20"
-        //             />
-
-        //             <TouchableOpacity
-        //                 onPress={() => FIREBASE_AUTH.signOut()}
-        //                 className="absolute bottom-10 w-44 h-44 border-l-2 border-r-2 border-t-4 border-[#00BCC9] rounded-full items-center justify-center"
-        //             >
-        //                 <Animatable.View
-        //                     animation={"pulse"}
-        //                     easing="ease-in-out"
-        //                     iterationCount={"infinite"}
-        //                     className="w-40 h-40 items-center justify-center rounded-full bg-[#00BCC9]"
-        //                 >
-        //                     <Text className="text-gray-30 text-[20px] font-semibold">Log Out</Text>
-        //                 </Animatable.View>
-        //             </TouchableOpacity>
-        //         </View>
-        //     </SafeAreaView>
-        // </TailwindProvider>
-    )
-}
-
+export default ProfileScreen;
 
 const styles = StyleSheet.create({
     container: {
-        marginHorizontal: 20,
-        marginTop: 50,
-    },
-    form: {
-        marginVertical: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    input: {
         flex: 1,
-        height: 40,
-        borderWidth: 1,
-        borderRadius: 4,
-        padding: 10,
         backgroundColor: '#fff',
-    }
-})
+        padding: 20,
+    },
+    userImg: {
+        height: 150,
+        width: 150,
+        borderRadius: 75,
+    },
+    userName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginTop: 10,
+        marginBottom: 10,
+    },
+    aboutUser: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 10,
+    },
+    userBtnWrapper: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        width: '100%',
+        marginBottom: 10,
+    },
+    userBtn: {
+        borderColor: '#2e64e5',
+        borderWidth: 2,
+        borderRadius: 3,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        marginHorizontal: 5,
+    },
+    userBtnTxt: {
+        color: '#2e64e5',
+    },
+    userInfoWrapper: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        width: '100%',
+        marginVertical: 20,
+    },
+    userInfoItem: {
+        justifyContent: 'center',
+    },
+    userInfoTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 5,
+        textAlign: 'center',
+    },
+    userInfoSubTitle: {
+        fontSize: 12,
+        color: '#666',
+        textAlign: 'center',
+    },
+});

@@ -23,10 +23,10 @@ const Stack = createNativeStackNavigator();
 
 const LogonStack = createNativeStackNavigator();
 
-const ProfileStack = ({ navigation }) => (
+const ProfileStack = ({ navigation, route }) => (
   <Stack.Navigator>
     <Stack.Screen
-      name="Profile"
+      name="ProfileScreen"
       component={ProfileScreen}
       options={{
         headerShown: false,

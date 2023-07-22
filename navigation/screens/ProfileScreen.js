@@ -16,7 +16,7 @@ import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
 import firestore from 'firebase/firestore';
 // import PostCard from '../components/PostCard';
 
-const ProfileScreen = ({ navigation }) => {
+const ProfileScreen = ({ navigation ,route }) => {
     // const { user, logout } = useContext(AuthContext);
     const [user, setUser] = useState(User);
     console.log("profile page user is :"+user)
@@ -51,7 +51,7 @@ const ProfileScreen = ({ navigation }) => {
                         list.push({
                             id: doc.id,
                             userId,
-                            userName: 'Test Name',
+                            userName: 'Default Name',
                             userImg:
                                 'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg',
                             postTime: postTime,
@@ -111,12 +111,13 @@ const ProfileScreen = ({ navigation }) => {
                 showsVerticalScrollIndicator={false}>
                 <Image
                     style={styles.userImg}
-                    source={{ uri: userData ? userData.userImg || 'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg' : 'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg' }}
+                    source={{ uri: userData ? userData.userImg || 'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg' : 'https://static.thenounproject.com/png/5034901-200.png' }}
                 />
                 <Text style={styles.userName}>{userData ? userData.fname || 'Test' : 'Test'} {userData ? userData.lname || 'User' : 'User'}</Text>
                 <Text style={styles.aboutUser}>
                     {userData ? userData.about || 'No details added.' : ''}
                 </Text>
+                
                 <View style={styles.userBtnWrapper}>
                     {(
                         <>
@@ -141,14 +142,14 @@ const ProfileScreen = ({ navigation }) => {
                         <Text style={styles.userInfoTitle}>{posts.length}</Text>
                         <Text style={styles.userInfoSubTitle}>Posts</Text>
                     </View>
-                    <View style={styles.userInfoItem}>
+                    {/* <View style={styles.userInfoItem}>
                         <Text style={styles.userInfoTitle}>10,000</Text>
                         <Text style={styles.userInfoSubTitle}>Followers</Text>
                     </View>
                     <View style={styles.userInfoItem}>
                         <Text style={styles.userInfoTitle}>100</Text>
                         <Text style={styles.userInfoSubTitle}>Following</Text>
-                    </View>
+                    </View> */}
                 </View>
 
                 {/* {posts.map((item) => (

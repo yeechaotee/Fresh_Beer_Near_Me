@@ -8,6 +8,7 @@ import ScreenA from './ScreenA';
 import ScreenB from './ScreenB';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
+
 // const Tab = createBottomTabNavigator();
 // const Tab = createMaterialBottomTabNavigator();
 const Tab = createMaterialTopTabNavigator();

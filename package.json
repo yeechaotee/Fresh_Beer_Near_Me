@@ -57,6 +57,7 @@
     "tailwindcss-react-native": "^1.7.10",
     "tslib": "^2.6.0",
     "typescript": "^4.9.4",
+    "valid-url": "^1.0.9",
     "yup": "^1.2.0"
   },
   "devDependencies": {

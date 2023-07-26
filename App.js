@@ -15,6 +15,7 @@ import { FIREBASE_AUTH } from './firebase';
 import Signup from './navigation/screens/Signup';
 import NotificationsScreen from './navigation/screens/NotificationsScreen';
 import EditProfileScreen from './navigation/screens/EditProfileScreen';
+import NewPostScreen from './navigation/screens/NewPostScreen';
 
 
 const Tab = createMaterialBottomTabNavigator();
@@ -220,6 +221,7 @@ function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Discovery">
         <Stack.Screen name="LoggedOn" component={LogonLayout} options={{ title: "Logon as " + user.email }} />
+        <Stack.Screen name="NewPostScreen" component={NewPostScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   )

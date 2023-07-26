@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, Image, SafeAreaView } from 'react-native';
+import { SafeAreaView } from 'react-native';
 import {
     StyleSheet,
     View,
@@ -17,8 +17,6 @@ import Categories from '../../components/home/Categories';
 import { ScrollView } from 'react-native';
 import VenueItems, { localRestaurants } from '../../components/home/VenueItems';
 import { Divider } from 'react-native-elements/dist/divider/Divider';
-import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
-import { addDoc, collection, onSnapshot, setDoc, doc, firestore, collectionGroup } from 'firebase/firestore';
 
 const YELP_API_KEY = "S_sQQHygX7Ui-K8lufhHmS0SZ_eH9ICa3CFPWTf1a0PcucfjqtH97x-sPBtpF3m65FB2Hp1UAQyMSw3XLlTHm3WALMQ3l5q3YcCmWnVxK8Cyaah2kiYfivsO0U2uZHYx"
 
@@ -27,29 +25,10 @@ const YELP_API_KEY = "S_sQQHygX7Ui-K8lufhHmS0SZ_eH9ICa3CFPWTf1a0PcucfjqtH97x-sPB
 // Destructure way
 export default function DiscoverScreen({ navigation }) {
 
-    // useEffect(() => {
-    //     FIRESTORE_DB.collectionGroup('posts').onSnapshot(snapshot => {
-    //         console.log(snapshot.docs.map(doc => doc.data()))
-    //     })
-    // })
     // passing data from VenueItems localRestaurant into venueData
     const [venueData, setVenueData] = useState(localRestaurants);
     const [city, setCity] = useState("Singapore");
     const [activeTab, setActiveTab] = useState("Delivery");
-    const [posts, setPosts] = useState([]);
-
-    useEffect(() => {
-        const unsubcribe = onSnapshot(collection(FIRESTORE_DB, "posts"), (snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                if (change.type === "added") {
-                    console.log("New Post", change.doc.data());
-                    setPosts((prevVenues) => [...prevVenues, change.doc.data()])
-                }
-            })
-        })
-
-        return () => unsubcribe();
-    }, [])
 
     // can just change the location city to what we wanna render
     const getVenueFromYelp = () => {
@@ -91,48 +70,15 @@ export default function DiscoverScreen({ navigation }) {
         <SafeAreaView style={{ backgroundColor: "#eee", flex: 1 }}>
             <View style={{ backgroundColor: 'white', padding: 10 }}>
                 {/* <HeaderTabs activeTab={activeTab} setActiveTab={setActiveTab} /> */}
-                <SearchBar cityHandler={setCity} /> 
-                <TouchableOpacity onPress={() => navigation.push('NewPostScreen')}>
-                    <Image
-                        source={require('../../assets/postadd.png')}
-                        style={styles.icon}
-                    />
-                </TouchableOpacity>
-                {/* <FlatList
-                    data={posts}
-                    keyExtractor={(item, index) => index}
-                    renderItem={({ item }) => {
-                        if (item.fileType === "image") {
-                            return (
-                                <Image
-                                    source={{ uri: item.url }}
-                                    style={{ width: "34%", height: 100 }}
-                                />
-                            );
-                        }
-
-
-                    }} /> */}
+                <SearchBar cityHandler={setCity} />
             </View>
-
             <ScrollView showsVerticalScrollIndicator={false}>
                 <Categories />
-
                 {/* will pass Yelp API data into venueData */}
-                <VenueItems venueData={posts} navigation={navigation} />
+                <VenueItems venueData={venueData} navigation={navigation} />
             </ScrollView>
             <Divider width={1} />
 
         </SafeAreaView>
     )
 }
-
-const styles = StyleSheet.create({
-    icon: {
-        width: 30,
-        height: 30,
-        marginLeft: 10,
-        alignSelf: 'flex-end',
-        // resizeMode: 'contain',
-    }
-})

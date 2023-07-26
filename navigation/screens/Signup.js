@@ -3,10 +3,10 @@ import React, { useState } from 'react'
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
 import { ActivityIndicator } from 'react-native-paper';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { addDoc, collection, onSnapshot, setDoc, doc } from 'firebase/firestore';
 import { validate, validator } from 'email-validator';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
+import { addDoc, collection, onSnapshot, setDoc, doc, collectionGroup, firestore } from 'firebase/firestore';
 
 const BEER_LOGO = "https://static.vecteezy.com/system/resources/thumbnails/007/306/850/small/beer-glasses-hand-drawn-illustration-cheers-lettering-phrase-cartoon-style-design-for-logo-banner-poster-greeting-cards-web-invitation-to-party-vector.jpg";
 
@@ -29,16 +29,19 @@ export default function Signup({ navigation }) {
         try {
             const authUser = await createUserWithEmailAndPassword(auth, email, password);
             console.log(authUser);
+
+            // add to 'users' database firebase
             const doc = await addDoc(collection(FIRESTORE_DB, 'users'),
                 {
-                    fname: '',
-                    lname: '',
+                    fname: 'testfname',
+                    lname: 'testfname',
                     owner_uid: authUser.user.uid,
                     username: username,
                     email: authUser.user.email,
                     profile_picture: await getRandomProfilePicture(),
-                    createdAt: firestore.Timestamp.fromDate(new Date()),
-                })
+                    createdAt: new Date().toISOString(),
+                });
+            console.log("document saved correctly", doc.id);
         }
         catch (error) {
             console.log(error);

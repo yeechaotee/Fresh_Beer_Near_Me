@@ -36,7 +36,7 @@ npm install @react-navigation/native-stack
 npm i react-native-animatable
 npm i react-native-elements
 npm install react-native-google-places-autocomplete --save
-
+npm install valid-url
 ```
 
 

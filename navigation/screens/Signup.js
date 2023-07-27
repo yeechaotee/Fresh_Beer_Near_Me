@@ -7,6 +7,7 @@ import { validate, validator } from 'email-validator';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import { addDoc, collection, onSnapshot, setDoc, doc, collectionGroup, firestore } from 'firebase/firestore';
+import { Picker } from '@react-native-picker/picker'
 
 const BEER_LOGO = "https://static.vecteezy.com/system/resources/thumbnails/007/306/850/small/beer-glasses-hand-drawn-illustration-cheers-lettering-phrase-cartoon-style-design-for-logo-banner-poster-greeting-cards-web-invitation-to-party-vector.jpg";
 
@@ -23,8 +24,12 @@ export default function Signup({ navigation }) {
     const [loading, setLoading] = useState(false);
     const auth = FIREBASE_AUTH;
 
+    // const [selectedValue, setSelectedValue] = useState("user");
+    const [selectedRole, setSelectedRole] = useState("user");
+
+
     //  this will also add to FIREBASE DB collection 'users' with profile pic
-    const onSignup = async (email, password, username) => {
+    const onSignup = async (email, password, username, selectedRole) => {
         setLoading(true);
         try {
             const authUser = await createUserWithEmailAndPassword(auth, email, password);
@@ -37,10 +42,12 @@ export default function Signup({ navigation }) {
                     lname: 'testfname',
                     owner_uid: authUser.user.uid,
                     username: username,
+                    role: selectedRole,
                     email: authUser.user.email,
                     profile_picture: await getRandomProfilePicture(),
                     createdAt: new Date().toISOString(),
                 });
+
             console.log("document saved correctly", doc.id);
         }
         catch (error) {
@@ -68,7 +75,7 @@ export default function Signup({ navigation }) {
                 <Formik
                     initialValues={{ email: '', password: '', username: '' }}
                     onSubmit={values => {
-                        onSignup(values.email, values.password, values.username)
+                        onSignup(values.email, values.password, values.username, selectedRole)
                     }}
                     validationSchema={SignupFormSchema}
                     validateOnMount={true}
@@ -93,6 +100,24 @@ export default function Signup({ navigation }) {
                                         onBlur={handleBlur('email')}
                                     // onChangeText={(text) => setEmail(text)}
                                     ></TextInput>
+                                </View>
+                                <View style={{
+                                    height: 50,
+                                    padding: 6,
+                                    alignItems: 'flex-start',
+                                    backgroundColor: '#FAFAFA',
+                                    marginBottom: 10,
+                                }}>
+                                    <Picker
+                                        placeholder="select a role"
+                                        style={{ width: '100%', marginTop: -5, marginLeft: -10 }}
+                                        selectedValue={selectedRole}
+                                        onValueChange={(itemValue, itemIndex) =>
+                                            setSelectedRole(itemValue)}
+                                    >
+                                        <Picker.Item label="General User" value="user" />
+                                        <Picker.Item label="Business User" value="businessUser" />
+                                    </Picker>
                                 </View>
                                 <View style={[styles.inputField, {
                                     borderColor:

@@ -10,7 +10,7 @@ export default function AddNewPost({ navigation }) {
                     style={{ width: 20, height: 20 }}
                 />
             </TouchableOpacity>
-            <Text style={styles.headerText}>New Post</Text>
+            <Text style={styles.headerText}>Register New Venue post</Text>
             
         </View>
     )
@@ -26,6 +26,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         marginTop: 30,
+        marginRight: 70,
     },
 
     headerText: {

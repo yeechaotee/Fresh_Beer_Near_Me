@@ -37,6 +37,7 @@ npm i react-native-animatable
 npm i react-native-elements
 npm install react-native-google-places-autocomplete --save
 npm install valid-url
+npm install lottie-react-native
 ```
 
 
@@ -48,6 +49,7 @@ npm install @react-native-firebase/app --save
 npm install @react-native-firebase/auth --save
 npm i @expo/metro-config
 npx expo customize metro.config.js
+npm i firebase-admin
 - For initial setup:
     - Need to enable Authentication using email/pass on firebase console page
 ```
@@ -64,6 +66,7 @@ npm install reanimated-bottom-sheet
 npm install @react-native-community/cli
 npm i --save @react-native-community/google-signin
 npm install react-native-image-crop-picker
+npm i @react-native-picker/picker
 ```
 ## 📝 Notes
 

@@ -13,95 +13,71 @@ import { AuthContext } from '../AuthProvider/AuthProvider';
 
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
-import firestore from 'firebase/firestore';
+import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where } from 'firebase/firestore';
 // import PostCard from '../components/PostCard';
 
-const ProfileScreen = ({ navigation ,route }) => {
+const ProfileScreen = ({ navigation, route }) => {
     // const { user, logout } = useContext(AuthContext);
-    const [user, setUser] = useState(User);
-    console.log("profile page user is :"+user)
-    const [posts, setPosts] = useState([]);
+    // const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [deleted, setDeleted] = useState(false);
-    const [userData, setUserData] = useState(null);
+    // const [userData, setUserData] = useState(null);
 
-    console.log("profile page userDATA is :"+userData)
 
-    const fetchPosts = async () => {
-        try {
-            const list = [];
+    const [user, setUser] = useState(null);
+    const [userProfile, setUserProfile] = useState(null);
 
-            await firestore()
-                .collection('posts')
-                .where('userId', '==', user.uid) //filter out only current loggon user
-                .orderBy('postTime', 'desc')
-                .get()
-                .then((querySnapshot) => {
-                    // console.log('Total Posts: ', querySnapshot.size);
-
-                    querySnapshot.forEach((doc) => {
-                        const {
-                            userId,
-                            post,
-                            postImg,
-                            postTime,
-                            likes,
-                            comments,
-                        } = doc.data();
-                        list.push({
-                            id: doc.id,
-                            userId,
-                            userName: 'Default Name',
-                            userImg:
-                                'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg',
-                            postTime: postTime,
-                            post,
-                            postImg,
-                            liked: false,
-                            likes,
-                            comments,
-                        });
-                    });
+    // get current user and user role from firebase
+    useEffect(() =>
+        onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+            // console.log('User info ---> ', user);
+            if (user) {
+                setUser(user);
+                const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
+                // console.log("user id is:: " + user.uid);
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach((doc) => {
+                    // doc.data() is never undefined for query doc snapshots
+                    setUserProfile(doc.data());
+                    // console.log(doc.id, " => ", doc.data());
+                    console.log(doc.id, " => User Role: ", doc.data().role);
                 });
-
-            setPosts(list);
-
-            if (loading) {
-                setLoading(false);
+                navigation.addListener("focus", () => setLoading(!loading));
             }
+            else {
+                setUser(null);
+            }
+        })
+        , [navigation, loading]);
 
-            console.log('Posts: ', posts);
-        } catch (e) {
-            console.log(e);
-        }
-    };
 
-    const getUser = async () => {
-        await firestore()
-            .collection('users')
-            .doc(user.uid)
-            .get()
-            .then((documentSnapshot) => {
-                if (documentSnapshot.exists) {
-                    console.log('User Data', documentSnapshot.data());
-                    setUserData(documentSnapshot.data());
-                }
-            })
-    }
+    // console.log("profile page userDATA is :"+userData)
 
-    useEffect(() => {
-        onAuthStateChanged(FIREBASE_AUTH, (user) => {
-            setUser(user);
-        });
-    }, []);
+    // const getUser = async () => {
+    //     await firestore()
+    //         .collection('users')
+    //         .doc(user.uid)
+    //         .get()
+    //         .then((documentSnapshot) => {
+    //             if (documentSnapshot.exists) {
+    //                 console.log('User Data', documentSnapshot.data());
+    //                 setUserData(documentSnapshot.data());
+    //             }
+    //         })
+    // }
 
-    useEffect(() => {
-        getUser();
-        // fetchPosts();
-        navigation.addListener("focus", () => setLoading(!loading));
-    }, [navigation, loading]);
+    // useEffect(() => {
+    //     onAuthStateChanged(FIREBASE_AUTH, (user) => {
+    //         setUser(user);
+    //     });
+    // }, []);
 
-    const handleDelete = () => { };
+    // useEffect(() => {
+    //     getUser();
+    //     // fetchPosts();
+    //     navigation.addListener("focus", () => setLoading(!loading));
+    // }, [navigation, loading]);
+
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -111,20 +87,22 @@ const ProfileScreen = ({ navigation ,route }) => {
                 showsVerticalScrollIndicator={false}>
                 <Image
                     style={styles.userImg}
-                    source={{ uri: userData ? userData.userImg || 'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg' : 'https://static.thenounproject.com/png/5034901-200.png' }}
+                    source={{ uri: userProfile ? userProfile.profile_picture || 'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg' : 'https://static.thenounproject.com/png/5034901-200.png' }}
                 />
-                <Text style={styles.userName}>{userData ? userData.fname || 'Test' : 'Test'} {userData ? userData.lname || 'User' : 'User'}</Text>
-                <Text style={styles.aboutUser}>
+                {/* <Text style={styles.userName}>{userData ? userData.fname || 'Test' : 'Test'} {userData ? userData.lname || 'User' : 'User'}</Text> */}
+                <Text style={styles.userName}>{userProfile ? userProfile.username || 'Undefine' : 'Undefine'}</Text>
+                <Text style={styles.aboutUser}>{userProfile ? userProfile.email || 'Undefine' : 'Undefine'}</Text>
+                {/* <Text style={styles.aboutUser}>
                     {userData ? userData.about || 'No details added.' : ''}
-                </Text>
-                
+                </Text> */}
+
                 <View style={styles.userBtnWrapper}>
                     {(
                         <>
                             <TouchableOpacity
                                 style={styles.userBtn}
                                 onPress={() => {
-                                    navigation.navigate('EditProfile', {userId: user.uid});
+                                    navigation.navigate('EditProfile', { userId: user.uid });
                                 }}>
                                 <Text style={styles.userBtnTxt}>Edit</Text>
                             </TouchableOpacity>
@@ -139,8 +117,8 @@ const ProfileScreen = ({ navigation ,route }) => {
 
                 <View style={styles.userInfoWrapper}>
                     <View style={styles.userInfoItem}>
-                        <Text style={styles.userInfoTitle}>{posts.length}</Text>
-                        <Text style={styles.userInfoSubTitle}>Posts</Text>
+                        {/* <Text style={styles.userInfoTitle}>{posts.length}</Text>
+                        <Text style={styles.userInfoSubTitle}>Posts</Text> */}
                     </View>
                     {/* <View style={styles.userInfoItem}>
                         <Text style={styles.userInfoTitle}>10,000</Text>

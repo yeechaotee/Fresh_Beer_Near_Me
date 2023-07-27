@@ -18,7 +18,8 @@ import { ScrollView } from 'react-native';
 import VenueItems, { localRestaurants } from '../../components/home/VenueItems';
 import { Divider } from 'react-native-elements/dist/divider/Divider';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
-import { addDoc, collection, onSnapshot, setDoc, doc, firestore, collectionGroup } from 'firebase/firestore';
+import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const YELP_API_KEY = "S_sQQHygX7Ui-K8lufhHmS0SZ_eH9ICa3CFPWTf1a0PcucfjqtH97x-sPBtpF3m65FB2Hp1UAQyMSw3XLlTHm3WALMQ3l5q3YcCmWnVxK8Cyaah2kiYfivsO0U2uZHYx"
 
@@ -27,22 +28,44 @@ const YELP_API_KEY = "S_sQQHygX7Ui-K8lufhHmS0SZ_eH9ICa3CFPWTf1a0PcucfjqtH97x-sPB
 // Destructure way
 export default function DiscoverScreen({ navigation }) {
 
-    // useEffect(() => {
-    //     FIRESTORE_DB.collectionGroup('posts').onSnapshot(snapshot => {
-    //         console.log(snapshot.docs.map(doc => doc.data()))
-    //     })
-    // })
     // passing data from VenueItems localRestaurant into venueData
     const [venueData, setVenueData] = useState(localRestaurants);
     const [city, setCity] = useState("Singapore");
-    const [activeTab, setActiveTab] = useState("Delivery");
+    // const [activeTab, setActiveTab] = useState("Delivery");
     const [posts, setPosts] = useState([]);
 
+    const [user, setUser] = useState(null);
+    const [queryRole, setQueryRole] = useState(null);
+
+    // get current user and user role from firebase
+    useEffect(() =>
+        onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+            // console.log('User info ---> ', user);
+            if (user) {
+                setUser(user);
+                const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
+                // console.log("user id is:: " + user.uid);
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach((doc) => {
+                    // doc.data() is never undefined for query doc snapshots
+                    setQueryRole(doc.data().role);
+                    // console.log(doc.id, " => ", doc.data());
+                    console.log(doc.id, " => User Role: ", doc.data().role);
+                });
+            }
+            else {
+                setUser(null);
+            }
+        })
+        , []);
+
+
+    // render all venues data and setPosts
     useEffect(() => {
-        const unsubcribe = onSnapshot(collection(FIRESTORE_DB, "posts"), (snapshot) => {
+        const unsubcribe = onSnapshot(collection(FIRESTORE_DB, 'venues'), (snapshot) => {
             snapshot.docChanges().forEach((change) => {
                 if (change.type === "added") {
-                    console.log("New Post", change.doc.data());
+                    console.log("New Venue", change.doc.data());
                     setPosts((prevVenues) => [...prevVenues, change.doc.data()])
                 }
             })
@@ -67,14 +90,6 @@ export default function DiscoverScreen({ navigation }) {
             .then((res) => res.json())
             .then((json) => setVenueData(json.businesses))
             .catch(error => console.error('Error:', error));
-        // return fetch(yelpUrl, apiOptions)
-        //     .then((res) => res.json())
-        //     .then((json) => setVenueData(
-        //             json.businesses.filter((business) =>
-        //                 business.transactions.includes(activeTab.toLowerCase())
-        //             )
-        //         )
-        //     );
     };
 
     // useEffect hook looking for city dependencies,
@@ -82,22 +97,24 @@ export default function DiscoverScreen({ navigation }) {
     useEffect(() => {
         getVenueFromYelp();
     }, [city]);
-    // useEffect(() => {
-    //     getVenueFromYelp();
-    // }, [city, activeTab]);
 
 
     return (
         <SafeAreaView style={{ backgroundColor: "#eee", flex: 1 }}>
             <View style={{ backgroundColor: 'white', padding: 10 }}>
                 {/* <HeaderTabs activeTab={activeTab} setActiveTab={setActiveTab} /> */}
-                <SearchBar cityHandler={setCity} /> 
-                <TouchableOpacity onPress={() => navigation.push('NewPostScreen')}>
-                    <Image
-                        source={require('../../assets/postadd.png')}
-                        style={styles.icon}
-                    />
-                </TouchableOpacity>
+
+                {user && queryRole == "businessUser" ?
+                    <><TouchableOpacity onPress={() => navigation.push('NewPostScreen')}>
+                        <Image
+                            source={require('../../assets/postadd.png')}
+                            style={styles.icon}
+                        />
+                    </TouchableOpacity>
+                    </> :
+                    <></>}
+
+                <SearchBar cityHandler={setCity} />
                 {/* <FlatList
                     data={posts}
                     keyExtractor={(item, index) => index}
@@ -131,8 +148,8 @@ const styles = StyleSheet.create({
     icon: {
         width: 30,
         height: 30,
-        marginLeft: 10,
         alignSelf: 'flex-end',
+        marginTop: 10,
         // resizeMode: 'contain',
     }
 })

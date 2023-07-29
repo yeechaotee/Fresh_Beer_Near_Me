@@ -68,6 +68,13 @@ npm i --save @react-native-community/google-signin
 npm install react-native-image-crop-picker
 npm i @react-native-picker/picker
 ```
+
+## 📝 Social module:
+```sh
+npm i react-native-pell-rich-editor
+npm i @react-navigation/drawer
+```
+
 ## 📝 Notes
 
 - VSCode IDE Extension tools:

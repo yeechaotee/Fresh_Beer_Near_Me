@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useRef } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import ScreenB from './navigation/screens/ScreenB';
@@ -6,7 +6,7 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Social from './navigation/screens/Social';
 import ProfileScreen from './navigation/screens/ProfileScreen';
 import MapsScreen from './navigation/screens/MapsScreen';
-import { View } from 'react-native-animatable';
+//import { View } from 'react-native-animatable';
 import RootNavigation from './navigation';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './navigation/screens/Login';
@@ -14,15 +14,44 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH } from './firebase';
 import Signup from './navigation/screens/Signup';
 import NotificationsScreen from './navigation/screens/NotificationsScreen';
-
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import Constants from "expo-constants";
+import { Text, View, Button, Platform } from 'react-native';
+import { dismissAllNotificationsAsync, getPresentedNotificationsAsync } from 'expo-notifications';
 
 const Tab = createMaterialBottomTabNavigator();
-
 const Stack = createNativeStackNavigator();
-
 const LogonStack = createNativeStackNavigator();
 
 function LogonLayout() {
+
+  
+  const [presentedNotificationCount, setPresentedNotificationCount] = useState(0);
+
+  const getPresentedNotifications = async () => {
+    try {
+      const presentedNotifications = await getPresentedNotificationsAsync();
+      const notificationCount = presentedNotifications.length;
+      setPresentedNotificationCount(notificationCount);
+    } catch (error) {
+      console.log('Error getting presented notifications:', error);
+    }
+  };
+
+  useEffect(() => {
+    // Call the function to get the initial count
+    getPresentedNotifications();
+
+    // Subscribe to notification events and update the count when a new notification is presented
+    const subscription = Notifications.addNotificationResponseReceivedListener(() => {
+      getPresentedNotifications();
+    });
+
+    // Clean up the subscription when the component unmounts
+    return () => subscription.remove();
+  }, []);
+
   return (
     <Tab.Navigator initialRouteName='Discovery'
       screenOptions={({ route }) => ({
@@ -83,7 +112,7 @@ function LogonLayout() {
       <Tab.Screen
         name="Social"
         component={Social}
-        options={{ tabBarBadge: 45 }}
+        //options={{ tabBarBadge: 45 }}
       />
       <Tab.Screen
         name="Discovery"
@@ -92,8 +121,11 @@ function LogonLayout() {
       <Tab.Screen
         name="Notification"
         component={NotificationsScreen}
-        options={{ tabBarBadge: 8 }}
-      />
+        options={{  tabBarBadge: presentedNotificationCount > 0 ? presentedNotificationCount : null,
+         }}>
+
+           
+         </Tab.Screen>
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
@@ -103,7 +135,6 @@ function LogonLayout() {
     </Tab.Navigator>
   )
 }
-
 
 function GuessLogon() {
   return (
@@ -167,11 +198,19 @@ function GuessLogon() {
   )
 }
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    allowAnnouncements: true,
+  }),
+});
+
 function App() {
 
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [user, setUser] = useState(null);
-
 
   useEffect(
     () =>
@@ -220,7 +259,7 @@ function App() {
 
     //   </Stack.Navigator>
     // </NavigationContainer>
-  )
+  );
 }
 
 export default App;

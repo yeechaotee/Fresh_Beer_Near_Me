@@ -57,7 +57,7 @@ const TabNotif = () => {
 
   const SampleDataActivity = [
     { id: '1', name: 'Franco', message: 'testmessage', time: generateRandomTime() },
-    { id: '1', name: 'Matilda', message: 'testmessage', time: generateRandomTime() },
+    { id: '2', name: 'Matilda', message: 'testmessage', time: generateRandomTime() },
     // Other data for Activity
   ];
 

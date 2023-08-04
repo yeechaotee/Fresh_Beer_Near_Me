@@ -68,12 +68,12 @@ npm i --save @react-native-community/google-signin
 npm install react-native-image-crop-picker
 npm i @react-native-picker/picker
 ```
-
 ## 📝 Social module:
 ```sh
 npm i react-native-pell-rich-editor
 npm i @react-navigation/drawer
 ```
+
 
 ## 📝 Notes
 
@@ -87,7 +87,7 @@ npm i @react-navigation/drawer
 - For Discovery Module's backend: using YELP API + Google Places API:
     - YELP API Key: https://www.yelp.com/developers/v3/manage_app
     - Created Google Console Cloud: https://console.cloud.google.com/getting-started?pli=1
-    - Places API from Google: https://console.cloud.google.com/apis/library/places-backend.googleapis.com?authuser=2&organizationId=0&project=freshbeernearme-392607
+
 
 - Some dependencies fixing hacks:
     - In most cases, this can be fixed by cleaning the application's cache. Depending on your workflow or favorite package manager that could be done by:
@@ -95,3 +95,4 @@ npm i @react-navigation/drawer
         - npm start --reset-cache
         - expo start -c
         or other.
+

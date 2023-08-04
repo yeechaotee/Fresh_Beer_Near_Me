@@ -1,4 +1,6 @@
+
 import React, { useState, useEffect, useContext } from 'react';
+
 import {
     View,
     Text,
@@ -11,10 +13,12 @@ import {
 // import FormButton from '../components/FormButton';
 import { AuthContext } from '../AuthProvider/AuthProvider';
 
+
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
 import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where } from 'firebase/firestore';
 // import PostCard from '../components/PostCard';
+
 
 const ProfileScreen = ({ navigation, route }) => {
     // const { user, logout } = useContext(AuthContext);
@@ -22,6 +26,7 @@ const ProfileScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(true);
     const [deleted, setDeleted] = useState(false);
     // const [userData, setUserData] = useState(null);
+
 
 
     const [user, setUser] = useState(null);
@@ -202,3 +207,4 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
 });
+

@@ -33,8 +33,6 @@ export const localRestaurants = [
     },
 ];
 
-
-
 export default function VenueItems({ navigation, ...props }) {
     if (props.venueData == null) {
         return (
@@ -43,7 +41,7 @@ export default function VenueItems({ navigation, ...props }) {
             </View>
         );
     }
-    
+
     return (
         <>
             {props.venueData.map((venue, index) => (
@@ -55,24 +53,27 @@ export default function VenueItems({ navigation, ...props }) {
                         name: venue.name,
                         image: venue.image_url,
                         price: venue.price,
+
                         reviews: venue.reviews,
                         rating: venue.rating,
                         categories: venue.categories,
                         caption: venue.caption,
+
                     })
                     }>
                     <View style={{ marginTop: 10, padding: 15, backgroundColor: "white", }}>
                         {/* Venue Image */}
                         <VenueImage image={venue.image_url} />
                         {/* Venue Info */}
+
                         <VenueInfo name={venue.name} categories={venue.categories} price={venue.price} reviews={venue.reviews} caption={venue.caption} rating={venue.rating} />
+
                     </View>
                 </TouchableOpacity>
             ))}
         </>
     );
 }
-
 
 
 const VenueImage = (props) => (
@@ -99,8 +100,10 @@ const VenueInfo = (props) => (
         {/* by default View is column base */}
         <View>
             <Text style={{ fontSize: 15, fontWeight: "bold" }}>{props.name}</Text>
+
             <Text style={{ fontSize: 13, color: "gray" }}>{`${props.categories.map((cat) => cat).join(" • ")} ${props.price ? ' • ' + props.price : ''} •💲• ${props.rating} ⭐ (${props.reviews}+)`}</Text>
             {/* <Text style={{ fontSize: 13, color: "gray" }}>{props.caption}</Text> */}
+
         </View>
         <View
             style={{

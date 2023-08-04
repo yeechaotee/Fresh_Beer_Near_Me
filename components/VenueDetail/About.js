@@ -20,9 +20,11 @@ const yelpVenueInfo = {
 
 export default function About(props) {
     //props.route.params is the object contains all these info from route
+
     const { name, image, price, reviews, rating, categories, caption } = props.route.params;
 
     const formattedCategories = categories.map((cat) => cat).join(" • ")
+
 
     const description = `${formattedCategories} ${price ? ' • ' + price : ''} •💲• ${rating} ⭐ (${reviews}+)`
 
@@ -46,8 +48,10 @@ export default function About(props) {
             </TouchableOpacity>
             <VenueImage image={image} />
             <VenueName name={name} />
+
             <VenueCaption caption={caption} />
             {/* <VenueDescription description={description} /> */}
+
         </View>
     );
 }
@@ -67,12 +71,14 @@ const VenueName = (props) => (
 )
 
 const VenueCaption = (props) => (
+
     <Text
         style={{
             fontSize: 15.5,
             fontWeight: "400",
             marginTop: 10,
             marginHorizontal: 15,
+
         }}>{[props.caption]}</Text>
 )
 
@@ -85,3 +91,4 @@ const VenueCaption = (props) => (
 //             marginHorizontal: 15,
 //         }}>{[props.description]}</Text>
 // )
+

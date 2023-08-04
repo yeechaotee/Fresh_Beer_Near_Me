@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Image } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import ScreenB from './navigation/screens/ScreenB';
@@ -11,9 +12,12 @@ import RootNavigation from './navigation';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './navigation/screens/Login';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { FIREBASE_AUTH } from './firebase';
+import { FIREBASE_AUTH, FIRESTORE_DB } from './firebase';
 import Signup from './navigation/screens/Signup';
 import NotificationsScreen from './navigation/screens/NotificationsScreen';
+import EditProfileScreen from './navigation/screens/EditProfileScreen';
+import NewPostScreen from './navigation/screens/NewPostScreen';
+import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where } from 'firebase/firestore';
 
 
 const Tab = createMaterialBottomTabNavigator();
@@ -22,7 +26,54 @@ const Stack = createNativeStackNavigator();
 
 const LogonStack = createNativeStackNavigator();
 
+const ProfileStack = ({ navigation, route }) => (
+  <Stack.Navigator>
+    <Stack.Screen
+      name="ProfileScreen"
+      component={ProfileScreen}
+      options={{
+        headerShown: false,
+      }}
+    />
+    <Stack.Screen
+      name="EditProfile"
+      component={EditProfileScreen}
+      options={{
+        headerTitle: 'Edit Profile',
+        headerBackTitleVisible: false,
+        headerTitleAlign: 'center',
+        headerStyle: {
+          backgroundColor: '#fff',
+          shadowColor: '#fff',
+          elevation: 0,
+        },
+      }}
+    />
+  </Stack.Navigator>
+);
+
 function LogonLayout() {
+
+  const [userProfile, setUserProfile] = useState(null);
+
+  // get current user and user role from firebase
+  useEffect(() =>
+    onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+      // console.log('User info ---> ', user);
+      if (user) {
+        const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
+        // console.log("user id is:: " + user.uid);
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          // doc.data() is never undefined for query doc snapshots
+          setUserProfile(doc.data());
+          // console.log(doc.id, " => ", doc.data());
+          // console.log(doc.id, " => User Role: ", doc.data().role);
+        });
+      }
+    })
+    , []);
+
   return (
     <Tab.Navigator initialRouteName='Discovery'
       screenOptions={({ route }) => ({
@@ -94,10 +145,46 @@ function LogonLayout() {
         component={NotificationsScreen}
         options={{ tabBarBadge: 8 }}
       />
-      <Tab.Screen
+      {userProfile && userProfile.profile_picture != null ?
+        <Tab.Screen
+          name="Profile"
+          component={ProfileStack}
+          options={{
+            title: 'My Profile',
+            tabBarIcon: ({ size, focused, color }) => {
+              return (
+                <Image
+                  style={{ width: 30, height: 30, borderRadius: 15, marginTop: -3 }}
+                  source={{ uri: userProfile.profile_picture }}
+                />
+              );
+            },
+          }}
+        /> :
+        <Tab.Screen
+          name="Profile"
+          component={ProfileStack}
+        />
+      }
+      {/* <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
-      />
+        component={ProfileStack}
+        options={{
+          title: 'My Profile',
+          tabBarIcon: ({ size, focused, color }) => {
+            return (
+              <Image
+                style={{ width: 30, height: 30, borderRadius: 15, marginTop: -3 }}
+                source={{ uri: userProfile.profile_picture }}
+              />
+            );
+          },
+        }}
+      /> */}
+      {/* <Tab.Screen
+        name="Profile"
+        component={ProfileStack}
+      /> */}
 
 
     </Tab.Navigator>
@@ -159,7 +246,7 @@ function GuessLogon() {
       />
       <Tab.Screen
         name="Profile"
-        component={Signup}
+        component={Login}
       />
 
 
@@ -192,7 +279,10 @@ function App() {
   const SignedInStack = () => (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Discovery">
-        <Stack.Screen name="LoggedOn" component={LogonLayout} options={{ title: "Logon as " + user.email }} />
+
+        <Stack.Screen name="LoggedOn" component={LogonLayout} options={{ headerShown: false /*title: "Logon as " + user.email*/ }} />
+        <Stack.Screen name="NewPostScreen" component={NewPostScreen} options={{ headerShown: false }} />
+
       </Stack.Navigator>
     </NavigationContainer>
   )
@@ -208,8 +298,9 @@ function App() {
   )
 
   return (
-    <> 
-      {user ?  !loadingInitial && SignedInStack() : !loadingInitial && SignedOutStack()}
+    <>
+      {user ? !loadingInitial && SignedInStack() : !loadingInitial && SignedOutStack()}
+
     </>
     // <NavigationContainer>
     //   <Stack.Navigator initialRouteName="Login">

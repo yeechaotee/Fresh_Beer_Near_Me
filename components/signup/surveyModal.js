@@ -10,6 +10,9 @@ const surveyModal = ({
   setModalVisible,
   setSurveyIsDone,
   handleSubmit,
+  setBeerProfile,
+  setFavBeer,
+  setRegion,
 }) => {
   //submit button needs
   const handleModalSubmit = (beerProfileValue, favBeerValue, regionValue) => {
@@ -18,6 +21,12 @@ const surveyModal = ({
     console.log("beer profile: ", beerProfileValue);
     console.log("fav beer: ", favBeerValue);
     console.log("region: ", regionValue);
+
+    //set the values
+    setBeerProfile(beerProfileValue);
+    setFavBeer(favBeerValue);
+    setRegion(regionValue);
+
     setModalVisible(false);
     setSurveyIsDone(true);
     handleSubmit();

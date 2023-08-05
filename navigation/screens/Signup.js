@@ -72,6 +72,10 @@ export default function Signup({ navigation }) {
         email: authUser.user.email,
         profile_picture: await getRandomProfilePicture(),
         createdAt: new Date().toISOString(),
+        // adding beer profile preferences
+        beerProfile: beerProfile,
+        favBeer: favBeer,
+        region: region,
       });
 
       console.log("document saved correctly", doc.id);
@@ -98,6 +102,11 @@ export default function Signup({ navigation }) {
 
   //modal survey state
   const [surveyIsDone, setSurveyIsDone] = useState(false);
+
+  //modal return contents
+  const [beerProfile, setBeerProfile] = useState([]);
+  const [favBeer, setFavBeer] = useState([]);
+  const [region, setRegion] = useState([]);
 
   return (
     <View style={styles.container}>
@@ -228,6 +237,9 @@ export default function Signup({ navigation }) {
                       setModalVisible={setModalVisible}
                       setSurveyIsDone={setSurveyIsDone}
                       handleSubmit={handleSubmit}
+                      setBeerProfile={setBeerProfile}
+                      setFavBeer={setFavBeer}
+                      setRegion={setRegion}
                     />
                     <View style={styles.signupContainer}>
                       <Text>Already have an account? </Text>

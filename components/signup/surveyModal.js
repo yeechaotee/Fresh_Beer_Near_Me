@@ -14,6 +14,7 @@ const surveyModal = ({
   //submit button needs
   const handleModalSubmit = (beerProfileValue, favBeerValue, regionValue) => {
     console.log("submit button pressed");
+    // record the values below
     console.log("beer profile: ", beerProfileValue);
     console.log("fav beer: ", favBeerValue);
     console.log("region: ", regionValue);

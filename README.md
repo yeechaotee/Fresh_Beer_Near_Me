@@ -78,6 +78,12 @@ npm i react-native-pell-rich-editor
 npm i @react-navigation/drawer
 ```
 
+## 📝 Modal component:
+
+```sh
+npm install react-native-dropdown-picker
+```
+
 ## in case bad things happen:
 
 ```sh

@@ -20,7 +20,7 @@ const yelpVenueInfo = {
 
 export default function About(props) {
     //props.route.params is the object contains all these info from route
-    const { name, image, price, reviews, rating, categories, caption } = props.route.params;
+    const { name, image, price, reviews, rating, categories, caption, manageable } = props.route.params;
 
     const formattedCategories = categories.map((cat) => cat).join(" • ")
 
@@ -44,6 +44,22 @@ export default function About(props) {
                 {/* <Text style={{ fontSize: 17, color: '#fff' }}>◀Back</Text> */}
                 <FontAwesome5 name={'arrow-alt-circle-left'} color={'#fff'} size={30} />
             </TouchableOpacity>
+            {manageable &&
+                <TouchableOpacity
+                    style={{
+                        marginLeft: 20,
+                        top: 30,
+                        right: 5,
+                        zIndex: 1,
+                        position: 'absolute',
+                        paddingVerticle: 9,
+                        borderRadius: 20,
+                        backgroundColor: 'black',
+                    }}>
+                    {/* <Text style={{ fontSize: 17, color: '#fff' }}>◀Back</Text> */}
+                    <FontAwesome5 name={'arrow-alt-circle-left'} color={'#fff'} size={30} />
+                </TouchableOpacity>
+            }
             <VenueImage image={image} />
             <VenueName name={name} />
             <VenueCaption caption={caption} />

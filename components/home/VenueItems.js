@@ -50,7 +50,7 @@ export default function VenueItems({ navigation, ...props }) {
                 <TouchableOpacity
                     key={index}
                     activeOpacity={1}
-                    style={{ marginBottom: 30 }}
+                    style={{ marginBottom: 0 }}
                     onPress={() => navigation.navigate("VenueDetail", {
                         name: venue.name,
                         image: venue.image_url,
@@ -59,6 +59,7 @@ export default function VenueItems({ navigation, ...props }) {
                         rating: venue.rating,
                         categories: venue.categories,
                         caption: venue.caption,
+                        manageable: props.manageable,
                     })
                     }>
                     <View style={{ marginTop: 10, padding: 15, backgroundColor: "white", }}>

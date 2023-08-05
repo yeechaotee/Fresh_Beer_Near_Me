@@ -38,6 +38,7 @@ npm i react-native-elements
 npm install react-native-google-places-autocomplete --save
 npm install valid-url
 npm install lottie-react-native
+npm i react-native-heroicons
 ```
 
 
@@ -73,6 +74,12 @@ npm i @react-native-picker/picker
 ```sh
 npm i react-native-pell-rich-editor
 npm i @react-navigation/drawer
+```
+
+
+## in case bad things happen:
+```sh
+git reset HEAD^ --hard and git push --force
 ```
 
 ## 📝 Notes

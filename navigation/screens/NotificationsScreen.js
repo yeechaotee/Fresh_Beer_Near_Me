@@ -1,13 +1,37 @@
 //import * as React from "react";
-import React, { useEffect, useState,useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+//import { StyleSheet, View, Text } from "react-native";
+
+////////////////////////////////
+
 import { SafeAreaView } from 'react-native';
-import { StyleSheet, View, Text, Pressable, TouchableOpacity, Button, Platform} from 'react-native';
+import {
+    StyleSheet,
+    View,
+    Text,
+    Pressable,
+    TouchableOpacity,
+    Button, Platform
+} from 'react-native';
+
 import { TailwindProvider } from 'tailwindcss-react-native';
+// import { DiscoveryImage } from '../../assets';
+// import * as Animatable from "react-native-animatable";
 import TabNotif from '../../components/TabNotif';
+//import TabNotif from '../../components/TabNotif';
+// import SearchBar from '../../components/SearchBar';
+// import Categories from '../../components/Categories';
+
+
+///////////////////////////////////////////////
+
+
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+//import ScreenA from './ScreenA';
+import ScreenB from './ScreenB';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
@@ -16,20 +40,23 @@ import Constants from "expo-constants";
 import { addDoc, collection, collectionGroup, onSnapshot, setDoc, doc, getDoc,updateDoc, query, where, getDocs } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
-import { dismissAllNotificationsAsync, getPresentedNotificationsAsync } from 'expo-notifications';
+import { dismissAllNotificationsAsync, getPresentedNotificationsAsync, cancelScheduledNotificationAsync  } from 'expo-notifications';
 import { updateUsertoken } from 'firebase/firestore';// Import your function for updating the Firestore document
+//import { v4 as uuidv4 } from 'uuid';
+/////////////////////////////////////////////////////////
 
 export default function NotificationsScreen(navigation) {
 
   const onPressHandler = () => {
-        // navigation.navigate('Screen_A');
-        navigation.goBack();
-    }
+      // navigation.navigate('Screen_A');
+      navigation.goBack();
+  }
 
   const [user, setUser] = useState(User);
   const [currentLoggedInUser, setCurrentLoggedInUser] = useState(null);
   const currUser = FIREBASE_AUTH.currentUser;
 
+  const projectId = 'e8e6d84c-21a0-433c-acfc-4c1e40ae9d2c';
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
@@ -115,7 +142,7 @@ const updateUsertoken = async (docId, expoPushToken) => {
 
  // Get user's permission to send device notification
 useEffect(() => {
-  registerForPushNotificationsAsync()
+  registerForPushNotificationsAsync(projectId)
     .then(async (token) => {
       setExpoPushToken(token);
       console.log('expoPushToken token is', token);
@@ -150,66 +177,69 @@ useEffect(() => {
     Notifications.removeNotificationSubscription(responseListener.current);
   };
 }, []);
+
+
+
       return (
 
-        
         <TailwindProvider>
-                <SafeAreaView className="bg-white flex-1 relative">
-                    {/* First Section */}
-                    {/* <View style={{ backgroundColor: 'white', padding: 10 }}>
-                        <TabNotif />
-                        <SearchBar />
-                        <Categories />
-                    </View> */}
-                    <View className="flex-row px-6 mt-8 items-center space-x-2">
-                        <Text className="text-[#2A2B4B] text-3xl font-semibold">Notification</Text>
-                    </View>
-                    {/* Test send Section */}
-                    <View
-                        style={{ backgroundColor: 'white', padding: 10 }}>
-                        <Text>Your expo push token: {expoPushToken}</Text>
-                        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                          <Text>Title: {notification && notification.request.content.title} </Text>
-                          <Text>Body: {notification && notification.request.content.body}</Text>
-                          <Text>Data: {notification && JSON.stringify(notification.request.content.data)}</Text>
-                        </View>
-                        <Button
-                          title="Press to schedule a notification 2"
-                          onPress={async () => {
-                            await schedulePushNotification();
-                            
-                          }}
-                        />
-
-                        <Button
-                          title="Press to schedule a notification 1"
-                          onPress={async () => {
-                            await sendPushNotification();
-                          }}
-                        />
-                      </View>
-
-                      <Button title="Dismiss All Notifications" onPress={dismissAllNotifications} />
-                      <Button title="Get Presented Notifications" onPress={getPresentedNotifications} />
-                          
+            <SafeAreaView className="bg-white flex-1 relative">
+                {/* First Section */}
+                {/* <View style={{ backgroundColor: 'white', padding: 10 }}>
+                    <TabNotif />
+                    <SearchBar />
+                    <Categories />
+                </View> */}
+                <View className="flex-row px-6 mt-8 items-center space-x-2">
+                    <Text className="text-[#2A2B4B] text-3xl font-semibold">Notification</Text>
+                </View>
+                {/* Test send Section */}
+                <View
+                    style={{ backgroundColor: 'white', padding: 10 }}>
+                    <Text>Your expo push token: {expoPushToken}</Text>
                     <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                          <Text>Notification Count: {presentedNotificationCount}</Text>
+                      <Text>Title: {notification && notification.request.content.title} </Text>
+                      <Text>Body: {notification && notification.request.content.body}</Text>
+                      <Text>Data: {notification && JSON.stringify(notification.request.content.data)}</Text>
                     </View>
+                    <Button
+                      title="Press to schedule a notification 2"
+                      onPress={async () => {
+                        await schedulePushNotification();
+                        
+                      }}
+                    />
 
-                    {/* Second Section */}
-                    <View style={{ backgroundColor: 'white', padding: 10 }}>
-                        <TabNotif />
-                    </View>
+                    <Button
+                      title="Press to schedule a notification 1"
+                      onPress={async () => {
+                        await sendPushNotification();
+                      }}
+                    />
+                  </View>
 
-                    
+                  <Button title="Dismiss All Notifications" onPress={dismissAllNotifications} />
+                  <Button title="Get Presented Notifications" onPress={getPresentedNotifications} />
+                      
+                <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                      <Text>Notification Count: {presentedNotificationCount}</Text>
+                </View>
 
-                </SafeAreaView>
-            </TailwindProvider>
+                {/* Second Section */}
+                <View style={{ backgroundColor: 'white', padding: 10 }}>
+                    <TabNotif />
+                </View>
 
+                
+
+            </SafeAreaView>
+        </TailwindProvider>
 
       );
   };
   
+
+
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -224,31 +254,47 @@ const styles = StyleSheet.create({
   },
 });
 
-
 // Can use this function below or use Expo's Push Notification Tool from: https://expo.dev/notifications
 async function sendPushNotification() {
+  // Cancel all previously scheduled notifications
+  //await Notifications.cancelAllScheduledNotificationsAsync();
+
+  // Schedule a new notification
   await Notifications.scheduleNotificationAsync({
+    //identifier: uuidv4(),
     content: {
-      title: "Test 1 Fresh Beer Near Me! 🍻 ",
+      title: "Test 1 Fresh Beer Near Me! 🍻",
       body: 'Test',
       data: { data: 'goes here' },
     },
-    trigger: { seconds: 2 },
+    trigger: { seconds: 2, repeats: false },
   });
+
+  //console.log('NotificationID:', notificationId);
 }
 
+
 async function schedulePushNotification() {
+
+  // Cancel all previously scheduled notifications
+  //await Notifications.cancelAllScheduledNotificationsAsync();
+
   await Notifications.scheduleNotificationAsync({
+    //identifier: uuidv4(),
     content: {
       title: "Test 2 Schedule Fresh Beer Near Me! 🍻 ",
       body: 'Test',
       data: { data: 'goes here' },
     },
-    trigger: { seconds: 2 },
+    trigger: { seconds: 2, repeats: false},
   });
+
+  //console.log('NotificationID:', notificationId);
 }
 
-async function registerForPushNotificationsAsync() {
+
+
+async function registerForPushNotificationsAsync(projectId) {
   let token;
 
   if (Platform.OS === 'android') {
@@ -271,7 +317,7 @@ async function registerForPushNotificationsAsync() {
       alert('Failed to get push token for push notification!');
       return;
     }
-    token = (await Notifications.getExpoPushTokenAsync()).data;
+    token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
     console.log(token);
   } else {
     alert('Must use physical device for Push Notifications');

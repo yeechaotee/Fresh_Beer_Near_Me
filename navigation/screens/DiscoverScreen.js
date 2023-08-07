@@ -17,6 +17,9 @@ import Categories from '../../components/home/Categories';
 import { ScrollView } from 'react-native';
 import VenueItems, { localRestaurants } from '../../components/home/VenueItems';
 import { Divider } from 'react-native-elements/dist/divider/Divider';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
 
 const YELP_API_KEY = "S_sQQHygX7Ui-K8lufhHmS0SZ_eH9ICa3CFPWTf1a0PcucfjqtH97x-sPBtpF3m65FB2Hp1UAQyMSw3XLlTHm3WALMQ3l5q3YcCmWnVxK8Cyaah2kiYfivsO0U2uZHYx"
 
@@ -29,7 +32,7 @@ export default function DiscoverScreen({ navigation }) {
     const [venueData, setVenueData] = useState(localRestaurants);
     const [city, setCity] = useState("Singapore");
     const [activeTab, setActiveTab] = useState("Delivery");
-
+/*
     // can just change the location city to what we wanna render
     const getVenueFromYelp = () => {
         const yelpUrl = `https://api.yelp.com/v3/businesses/search?term=restaurants&location=${city}`
@@ -64,7 +67,120 @@ export default function DiscoverScreen({ navigation }) {
     // useEffect(() => {
     //     getVenueFromYelp();
     // }, [city, activeTab]);
+*/
 
+
+    const getVenueDataFromFirestore = async (userRegion, userBeerProfile, userFavBeer) => {
+    try {
+        // Get a reference to the "Venue" collection in Firestore
+        const venueCollectionRef = collection(FIRESTORE_DB, 'venues');
+       // Create a base query to fetch the documents with matching region in the "Venue" collection
+        let baseQuery = query(venueCollectionRef, where('region', '==', userRegion));
+
+        // Check if userBeerProfile is defined and not null
+        if (userBeerProfile !== undefined && userBeerProfile !== null) {
+        baseQuery = query(baseQuery, where('beerprofile', 'array-contains', userBeerProfile));
+        }
+
+        // Check if userFavBeer is defined and not null
+        if (userFavBeer !== undefined && userFavBeer !== null) {
+        baseQuery = query(baseQuery, where('favbeer', 'array-contains', userFavBeer));
+        }
+
+        // Execute the query and get the collection snapshot
+        const querySnapshot = await getDocs(baseQuery);
+
+        // Initialize an empty array to hold the data
+        const venueData = [];
+
+        // Loop through the documents in the collection snapshot and extract the data
+        querySnapshot.forEach((doc) => {
+        // Get the data from each document
+        const data = doc.data();
+
+        // Add the data to the venueData array
+        venueData.push(data);
+        });
+
+        // Update the state with the retrieved venue data
+        setVenueData(venueData);
+    } catch (error) {
+        console.log('Error getting venue data from Firestore:', error);
+    }
+    };
+
+        
+    useEffect(() => {
+    //getVenueFromYelp();
+    
+    getCurrentUserDoc().then((result) => {
+    if (result) {
+      const { docId, docData } = result;
+      console.log('Current user document ID:', docId);
+      console.log('Current user document data:', docData);
+
+       // Compare the "region" field from the current user's document with each venue's "region" field in venueData
+      const userRegion = docData.region;
+      console.log('User in region:', userRegion);
+
+      const userBeerProfile = docData.beerProfile;
+      console.log('User beer profile:', userBeerProfile);
+
+      const userFavBeer = docData.favBeer;
+      console.log('User fav beer:', userFavBeer);
+
+      getVenueDataFromFirestore(userRegion,userBeerProfile, userFavBeer); // Call the function to fetch data from Firestore
+      //setVenueData(venueData);
+      // Update the state with the filtered venue data
+      //setVenueData(filteredVenueData); 
+    }
+  });
+    }, [city,activeTab]);
+
+  
+    const getCurrentUserDoc = async () => {
+  try {
+    
+    const userCollectionRef = collection(FIRESTORE_DB, 'users');
+
+    // Get the current user from Firebase Authentication
+    const user = FIREBASE_AUTH.currentUser;
+
+    // Check if there is a current user
+    if (!user) {
+      console.log('No authenticated user.');
+      return null;
+    }
+
+    console.log('My UserID:', user.uid);
+
+    // Create a query to fetch the documents in the user's collection (should be only one document)
+    const q = query(userCollectionRef, where('owner_uid', '==', user.uid));
+
+    // Execute the query and get the query snapshot
+    const querySnapshot = await getDocs(q);
+
+    // Check if there is a document in the user's collection
+    if (!querySnapshot.empty) {
+      // Get the first document from the query snapshot
+      const userDoc = querySnapshot.docs[0];
+      // Get the docID of the user's document
+      const docId = userDoc.id;
+
+      // Get the data from the user's document
+      const docData = userDoc.data();
+
+      // Return both the document ID and data as an object
+      return { docId, docData };
+    } else {
+      console.log('User document not found.');
+      return null;
+    }
+  } catch (error) {
+    console.log('Error getting current user document ID:', error);
+    return null;
+  }
+};
 
     return (
         <SafeAreaView style={{ backgroundColor: "#eee", flex: 1 }}>
@@ -74,6 +190,7 @@ export default function DiscoverScreen({ navigation }) {
             </View>
             <ScrollView showsVerticalScrollIndicator={false}>
                 <Categories />
+                
                 {/* will pass Yelp API data into venueData */}
                 <VenueItems venueData={venueData} navigation={navigation} />
             </ScrollView>

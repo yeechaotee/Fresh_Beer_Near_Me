@@ -80,6 +80,7 @@ export default function DiscoverScreen({ navigation }) {
 
     const [activeTab, setActiveTab] = useState("Delivery");
 
+    /*
     // can just change the location city to what we wanna render
     const getVenueFromYelp = () => {
         const yelpUrl = `https://api.yelp.com/v3/businesses/search?term=restaurants&location=${city}`
@@ -99,49 +100,72 @@ export default function DiscoverScreen({ navigation }) {
 
     };
 
+
     // useEffect hook looking for city dependencies,
     // when city is update, will always re-fire getVenueFromYelp()
     useEffect(() => {
         getVenueFromYelp();
     }, [city]);
-
+*/
+    
     const getVenueDataFromFirestore = async (userRegion, userBeerProfile, userFavBeer) => {
     try {
-        // Get a reference to the "Venue" collection in Firestore
         const venueCollectionRef = collection(FIRESTORE_DB, 'venues');
-       // Create a base query to fetch the documents with matching region in the "Venue" collection
+        
+        // Create a base query to fetch documents with matching region
         let baseQuery = query(venueCollectionRef, where('region', '==', userRegion));
 
-        // Check if userBeerProfile is defined and not null
-        if (userBeerProfile !== undefined && userBeerProfile !== null) {
-        baseQuery = query(baseQuery, where('beerprofile', 'array-contains', userBeerProfile));
-        }
+        // Execute the base query and get the collection snapshot
+        const baseQuerySnapshot = await getDocs(baseQuery);
 
-        // Check if userFavBeer is defined and not null
-        if (userFavBeer !== undefined && userFavBeer !== null) {
-        baseQuery = query(baseQuery, where('favbeer', 'array-contains', userFavBeer));
-        }
+        // Create a query for beerprofile equal to "Crisp"
+        const beerProfileQuery = query(venueCollectionRef, where('beerProfile', 'array-contains-any', userBeerProfile));
 
-        // Execute the query and get the collection snapshot
-        const querySnapshot = await getDocs(baseQuery);
+        // Execute the beerProfileQuery and get the collection snapshot
+        const beerProfileQuerySnapshot = await getDocs(beerProfileQuery);
 
-        // Initialize an empty array to hold the data
+        // Create a query for favorite beers containing any of the user's favorite beers
+        const favBeerQuery = query(venueCollectionRef, where('favBeer', 'array-contains-any', userFavBeer));
+
+        // Execute the favBeerQuery and get the collection snapshot
+        const favBeerQuerySnapshot = await getDocs(favBeerQuery);
+
+        // Merge the results from different queries
+        const combinedQuerySnapshot = mergeQuerySnapshots([
+            baseQuerySnapshot,
+            beerProfileQuerySnapshot,
+            favBeerQuerySnapshot
+        ]);
+
         const venueData = [];
-
-        // Loop through the documents in the collection snapshot and extract the data
-        querySnapshot.forEach((doc) => {
-        // Get the data from each document
-        const data = doc.data();
-
-        // Add the data to the venueData array
-        venueData.push(data);
+        combinedQuerySnapshot.forEach((doc) => {
+            const data = doc.data();
+            venueData.push(data);
         });
 
-        // Update the state with the retrieved venue data
+        console.log('Fetched venue data:', venueData);
+
         setVenueData(venueData);
     } catch (error) {
         console.log('Error getting venue data from Firestore:', error);
     }
+};
+
+// Helper function to merge query snapshots
+ const mergeQuerySnapshots = (snapshots) => {
+        const mergedDocs = [];
+        const mergedDocIds = new Set(); // Keep track of already added document IDs
+        
+        snapshots.forEach((snapshot) => {
+            snapshot.forEach((doc) => {
+                const docId = doc.id;
+                if (!mergedDocIds.has(docId)) {
+                    mergedDocs.push(doc);
+                    mergedDocIds.add(docId);
+                }
+            });
+        });
+        return mergedDocs;
     };
         
     useEffect(() => {
@@ -255,8 +279,8 @@ export default function DiscoverScreen({ navigation }) {
                 <Categories />
 
 
-                {/* will pass Yelp API data into venueData */}
-                <VenueItems venueData={posts} navigation={navigation} />
+                {/* change below code to venueData={post} and it will pass Yelp API data into venueData */}
+                <VenueItems venueData={venueData} navigation={navigation} />
 
             </ScrollView>
             <Divider width={1} />

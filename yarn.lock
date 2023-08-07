@@ -9211,7 +9211,7 @@ react-native-vector-icons@*, react-native-vector-icons@^9.2.0, "react-native-vec
     prop-types "^15.7.2"
     yargs "^16.1.1"
 
-react-native-webview@>=7.5.2:
+react-native-webview@^13.3.1, react-native-webview@>=7.5.2:
   version "13.3.1"
   resolved "https://registry.npmjs.org/react-native-webview/-/react-native-webview-13.3.1.tgz"
   integrity sha512-jTRC7bZB1gedAbZGGzQUnsaU+avZcZrKLT8g+RR0bsGW80tUOvwezwznKvQ+m1xXOpGFTD1B3+AazUP7+jy4mg==

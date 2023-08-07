@@ -76,31 +76,47 @@ function LogonLayout() {
     })
     , []);
 
-
-  
   const [presentedNotificationCount, setPresentedNotificationCount] = useState(0);
 
-  const getPresentedNotifications = async () => {
-    try {
-      const presentedNotifications = await getPresentedNotificationsAsync();
-      const notificationCount = presentedNotifications.length;
-      setPresentedNotificationCount(notificationCount);
-    } catch (error) {
-      console.log('Error getting presented notifications:', error);
-    }
-  };
-
   useEffect(() => {
-    // Call the function to get the initial count
-    getPresentedNotifications();
+    // Fetch user profile from Firestore
+    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+      if (user) {
+        const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          setUserProfile(doc.data());
+        });
+      }
+    });
 
     // Subscribe to notification events and update the count when a new notification is presented
-    const subscription = Notifications.addNotificationResponseReceivedListener(() => {
+    const notificationSubscription = Notifications.addNotificationResponseReceivedListener(() => {
       getPresentedNotifications();
     });
 
-    // Clean up the subscription when the component unmounts
-    return () => subscription.remove();
+    // Function to get the presented notifications count
+    const getPresentedNotifications = async () => {
+      try {
+        const presentedNotifications = await getPresentedNotificationsAsync();
+        const notificationCount = presentedNotifications.length;
+        setPresentedNotificationCount(notificationCount);
+      } catch (error) {
+        console.log('Error getting presented notifications:', error);
+      }
+    };
+
+    // Call the function to get the initial count
+    getPresentedNotifications();
+
+    // Set up an interval to update the notification count every 5 seconds
+    const interval = setInterval(getPresentedNotifications, 5000);
+
+    return () => {
+      unsubscribe();
+      notificationSubscription.remove();
+      clearInterval(interval); // Clear the interval when the component unmounts
+    };
   }, []);
 
   return (

@@ -10,13 +10,23 @@ const surveyModal = ({
   setModalVisible,
   setSurveyIsDone,
   handleSubmit,
+  setBeerProfile,
+  setFavBeer,
+  setRegion,
 }) => {
   //submit button needs
   const handleModalSubmit = (beerProfileValue, favBeerValue, regionValue) => {
     console.log("submit button pressed");
+    // record the values below
     console.log("beer profile: ", beerProfileValue);
     console.log("fav beer: ", favBeerValue);
     console.log("region: ", regionValue);
+
+    //set the values
+    setBeerProfile(beerProfileValue);
+    setFavBeer(favBeerValue);
+    setRegion(regionValue);
+
     setModalVisible(false);
     setSurveyIsDone(true);
     handleSubmit();
@@ -211,7 +221,7 @@ const surveyModal = ({
               setSurveyIsDone(true)
             )}
           />
-          <Button title="skip" onPress={() => handleSkip()} />
+          {/* <Button title="skip" onPress={() => handleSkip()} /> */}
         </View>
       </View>
     </Modal>

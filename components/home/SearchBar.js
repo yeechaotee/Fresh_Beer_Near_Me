@@ -1,3 +1,4 @@
+
 import { View, Text, Image, StyleSheet } from 'react-native'
 import React from 'react'
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete'
@@ -5,9 +6,11 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import LottieView from 'lottie-react-native';
 
+
 // cityHandler is using destructure way
 
 export default function SearchBar({ cityHandler }) {
+
     return (
         <View style={{ marginTop: 15, flexDirection: "row" }}>
             {/* query is using YC API Key to enable auto suggestion */}
@@ -76,3 +79,4 @@ const styles = StyleSheet.create({
         resizeMode: 'contain',
     }
 })
+

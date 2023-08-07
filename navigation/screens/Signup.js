@@ -16,16 +16,19 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
 } from "firebase/auth";
+import { validate, validator } from "email-validator";
+import * as Yup from "yup";
+import { Formik } from "formik";
 import {
   addDoc,
   collection,
   onSnapshot,
   setDoc,
   doc,
+  collectionGroup,
+  firestore,
 } from "firebase/firestore";
-import { validate, validator } from "email-validator";
-import * as Yup from "yup";
-import { Formik } from "formik";
+import { Picker } from "@react-native-picker/picker";
 import SurveyModal from "../../components/signup/surveyModal";
 
 const BEER_LOGO =
@@ -45,8 +48,11 @@ export default function Signup({ navigation }) {
   const [loading, setLoading] = useState(false);
   const auth = FIREBASE_AUTH;
 
+  // const [selectedValue, setSelectedValue] = useState("user");
+  const [selectedRole, setSelectedRole] = useState("user");
+
   //  this will also add to FIREBASE DB collection 'users' with profile pic
-  const onSignup = async (email, password, username) => {
+  const onSignup = async (email, password, username, selectedRole) => {
     setLoading(true);
     try {
       const authUser = await createUserWithEmailAndPassword(
@@ -55,12 +61,24 @@ export default function Signup({ navigation }) {
         password
       );
       console.log(authUser);
+
+      // add to 'users' database firebase
       const doc = await addDoc(collection(FIRESTORE_DB, "users"), {
+        fname: "testfname",
+        lname: "testfname",
         owner_uid: authUser.user.uid,
         username: username,
+        role: selectedRole,
         email: authUser.user.email,
         profile_picture: await getRandomProfilePicture(),
+        createdAt: new Date().toISOString(),
+        // adding beer profile preferences
+        beerProfile: beerProfile,
+        favBeer: favBeer,
+        region: region,
       });
+
+      console.log("document saved correctly", doc.id);
     } catch (error) {
       console.log(error);
       alert("Sign up failed: " + error.message);
@@ -85,6 +103,11 @@ export default function Signup({ navigation }) {
   //modal survey state
   const [surveyIsDone, setSurveyIsDone] = useState(false);
 
+  //modal return contents
+  const [beerProfile, setBeerProfile] = useState([]);
+  const [favBeer, setFavBeer] = useState([]);
+  const [region, setRegion] = useState([]);
+
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
@@ -94,7 +117,12 @@ export default function Signup({ navigation }) {
         <Formik
           initialValues={{ email: "", password: "", username: "" }}
           onSubmit={(values) => {
-            onSignup(values.email, values.password, values.username);
+            onSignup(
+              values.email,
+              values.password,
+              values.username,
+              selectedRole
+            );
           }}
           validationSchema={SignupFormSchema}
           validateOnMount={true}
@@ -125,6 +153,27 @@ export default function Signup({ navigation }) {
                     onBlur={handleBlur("email")}
                     // onChangeText={(text) => setEmail(text)}
                   ></TextInput>
+                </View>
+                <View
+                  style={{
+                    height: 50,
+                    padding: 6,
+                    alignItems: "flex-start",
+                    backgroundColor: "#FAFAFA",
+                    marginBottom: 10,
+                  }}
+                >
+                  <Picker
+                    placeholder="select a role"
+                    style={{ width: "100%", marginTop: -5, marginLeft: -10 }}
+                    selectedValue={selectedRole}
+                    onValueChange={(itemValue, itemIndex) =>
+                      setSelectedRole(itemValue)
+                    }
+                  >
+                    <Picker.Item label="General User" value="user" />
+                    <Picker.Item label="Business User" value="businessUser" />
+                  </Picker>
                 </View>
                 <View
                   style={[
@@ -188,6 +237,9 @@ export default function Signup({ navigation }) {
                       setModalVisible={setModalVisible}
                       setSurveyIsDone={setSurveyIsDone}
                       handleSubmit={handleSubmit}
+                      setBeerProfile={setBeerProfile}
+                      setFavBeer={setFavBeer}
+                      setRegion={setRegion}
                     />
                     <View style={styles.signupContainer}>
                       <Text>Already have an account? </Text>
@@ -210,6 +262,7 @@ export default function Signup({ navigation }) {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 20,

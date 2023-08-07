@@ -19,24 +19,56 @@ import GetRideModal from "../../components/maps/GetRide";
 const { width, height } = Dimensions.get("window");
 
 // location markers
-// let locationsOfInterest = [
-//   {
-//     title: "first",
-//     location: {
-//       latitude: 1.369778,
-//       longitude: 103.849437,
-//     },
-//     description: "my first marker",
-//   },
-//   {
-//     title: "second",
-//     location: {
-//       latitude: 1.316721,
-//       longitude: 103.882049,
-//     },
-//     description: "my second marker",
-//   },
-// ];
+let locationsOfInterest = [
+  {
+    title: "first",
+    location: {
+      latitude: 1.369778,
+      longitude: 103.849437,
+    },
+    description: "my first marker",
+  },
+  {
+    title: "second",
+    location: {
+      latitude: 1.316721,
+      longitude: 103.882049,
+    },
+    description: "my second marker",
+  },
+  {
+    title: "third",
+    location: {
+      latitude: 1.2931,
+      longitude: 103.8558,
+    },
+    description: "my third marker",
+  },
+  {
+    title: "fourth",
+    location: {
+      latitude: 1.3521,
+      longitude: 103.8198,
+    },
+    description: "my fourth marker",
+  },
+  {
+    title: "fifth",
+    location: {
+      latitude: 1.3066,
+      longitude: 103.8549,
+    },
+    description: "my fifth marker",
+  },
+  {
+    title: "sixth",
+    location: {
+      latitude: 1.2903,
+      longitude: 103.8523,
+    },
+    description: "my sixth marker",
+  },
+];
 
 export default function MapsScreen() {
   // states
@@ -94,18 +126,18 @@ export default function MapsScreen() {
     }
   };
 
-  // const showLocationsOfInterest = () => {
-  //   return locationsOfInterest.map((item, index) => {
-  //     return (
-  //       <Marker
-  //         key={index}
-  //         coordinate={item.location}
-  //         title={item.title}
-  //         description={item.description}
-  //       />
-  //     );
-  //   });
-  // };
+  const showLocationsOfInterest = () => {
+    return locationsOfInterest.map((item, index) => {
+      return (
+        <Marker
+          key={index}
+          coordinate={item.location}
+          title={item.title}
+          description={item.description}
+        />
+      );
+    });
+  };
 
   useEffect(() => {
     console.log("use effect run");
@@ -159,9 +191,7 @@ export default function MapsScreen() {
             onDragEnd={(e) => setDestination(e.nativeEvent.coordinate)}
           />
         )}
-        {
-          //showLocationsOfInterest()
-        }
+        {showLocationsOfInterest()}
       </MapView>
       <View style={styles.userLocationContainer}>
         <InputAutoComplete

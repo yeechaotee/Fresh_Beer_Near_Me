@@ -221,7 +221,7 @@ const surveyModal = ({
               setSurveyIsDone(true)
             )}
           />
-          <Button title="skip" onPress={() => handleSkip()} />
+          {/* <Button title="skip" onPress={() => handleSkip()} /> */}
         </View>
       </View>
     </Modal>

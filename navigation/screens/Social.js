@@ -1,13 +1,28 @@
 import React from "react";
-import { StyleSheet, View, Text, FlatList, TextInput, SafeAreaView, Button, ScrollView, KeyboardAvoidingView } from "react-native";
+import { StyleSheet, View, Text, FlatList, TextInput, SafeAreaView, Button, ScrollView, KeyboardAvoidingView, Image } from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import {actions, RichEditor, RichToolbar} from "react-native-pell-rich-editor";
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { FIREBASE_AUTH, FIRESTORE_DB} from '../../firebase';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import Checkbox from 'expo-checkbox';
+import {
+  addDoc,
+  collection,
+  onSnapshot,
+  query,
+  getDocs,
+  setDoc,
+  doc,
+  orderBy
+} from "firebase/firestore";
+import * as ImagePicker from 'expo-image-picker';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import uuid from "uuid";
 
 const Drawer = createDrawerNavigator();
-const Stack = createNativeStackNavigator();
 
 const handleHead = ({tintColor}) => <Text style={{color: tintColor}}>H1</Text>
 
@@ -30,69 +45,440 @@ const generateRandomTime = () => {
 };
 
 function NewsFeed() {
-    const activeData = Array.from({ length: 100 }, (item, index) => ({
-        id: index + 1,
-        name: `Mike ${index + 1}`,
-        message: `testmessage kdsfjkdsljfjklsajfdaskjdfklsj${index + 1}`,
-        time: generateRandomTime(),
-    }));
+  // const activeData = Array.from({ length: 100 }, (item, index) => ({
+  //     id: index + 1,
+  //     name: `Mike ${index + 1}`,
+  //     message: `testmessage kdsfjkdsljfjklsajfdaskjdfklsj${index + 1}`,
+  //     time: generateRandomTime(),
+  // }));
+  const [activeData, setActiveData] = React.useState([]);
+
+  React.useEffect(() => {
+    async function getNewsFeed() {
+      const feedsRef = collection(FIRESTORE_DB, "newsfeed");
+      const q = query(feedsRef, orderBy("createTime"));
+      const querySnapshot = await getDocs(q);
+      const feeds = new Array();
+      querySnapshot.forEach((doc) => {
+        console.log(doc.data());
+        feeds.push({
+          id: doc.id,
+          ...doc.data(),
+          createTime: doc.data().createTime.toDate().toDateString(),
+        });
+      });
+      setActiveData(feeds);
+    }
+    getNewsFeed();
+  }, []);
+
   return (
     <View style={styles.container}>
-        <FlatList
-            data={activeData}
-            renderItem={({ item }) => (
-                <View>
-                    <View style={styles.rowHeader}>
-                        <View style={styles.rowIcon} />
-                        <View style={styles.rowContent}>
-                            <Text style={styles.rowHead}>{item.name}</Text>
-                            <Text style={styles.rowText}>{item.time}</Text>
-                        </View>
-                    </View>
-                    <Text style={styles.rowMessage}>{item.message}</Text>
-                    <View style={{ width: '100%', height: 100, backgroundColor: '#c3c3c3'}}></View>
-                    <View style={styles.rowContainer}>
-                        <FontAwesome5
-                            name={'heart'}
-                            size={20}
-                            color={'black'}
-                        />
-                        <FontAwesome5
-                            name={'comment'}
-                            size={20}
-                            color={'black'}
-                            style={{ paddingLeft: 10 }}
-                        />
-                    </View>
-                </View>
-            )}
-            keyExtractor={(item) => item.id.toString()}
-        />
+          <FlatList
+              data={activeData}
+              renderItem={({ item }) => (
+                  <View>
+                      <View style={styles.rowHeader}>
+                          <View style={styles.rowIcon} >
+                            {
+                              item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
+                            }
+                          </View>
+                          <View style={styles.rowContent}>
+                              <Text style={styles.rowHead}>{item.creater}</Text>
+                              <Text style={styles.rowText}>{item.createTime}</Text>
+                          </View>
+                      </View>
+                      <View style={styles.rowContent}>
+                          {
+                          item.startDateTime && item.endDatTime ?
+                            item.type ? <Text style={{...styles.rowText, marginRight: 5} }>Type: Promotion</Text> : <Text style={styles.rowText}>Type: Event</Text>
+                          : <></>
+                          }
+                          {
+                            item.startDateTime ? <Text style={{...styles.rowText, marginRight: 5}}>Start Date: {item.startDateTime}</Text> : <></>
+                          }
+                          {
+                            item.endDatTime ? <Text style={styles.rowText}>End Date: {item.endDatTime}</Text> : <></>
+                          }
+                          {
+                            item.numberOfPeople ? <Text style={styles.rowText}>Number of people participating: {item.numberOfPeople}</Text> : <></>
+                          }
+                      </View>
+                      <Text style={styles.rowMessage}>{item.description.replace(/<\/?[^>]+(>|$)/g, "")}</Text>
+                      {
+                        item.image ? <Image source={{ uri: item.image }} style={{ width: 250, height: 250 }} /> : <></>
+                      }
+                      <View style={styles.rowContainer}>
+                          <FontAwesome5
+                              name={'heart'}
+                              size={20}
+                              color={'black'}
+                          />
+                          <FontAwesome5
+                              name={'comment'}
+                              size={20}
+                              color={'black'}
+                              style={{ paddingLeft: 10 }}
+                          />
+                      </View>
+                  </View>
+              )}
+              keyExtractor={(item) => item.id.toString()}
+          />
     </View>
   );
 }
 
+async function uploadImageAsync(uri) {
+  // Why are we using XMLHttpRequest? See:
+  // https://github.com/expo/expo/issues/2402#issuecomment-443726662
+  const blob = await new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+      resolve(xhr.response);
+    };
+    xhr.onerror = function (e) {
+      console.log(e);
+      reject(new TypeError("Network request failed"));
+    };
+    xhr.responseType = "blob";
+    xhr.open("GET", uri, true);
+    xhr.send(null);
+  });
+
+  const fileRef = ref(getStorage(), uuid.v4());
+  const result = await uploadBytes(fileRef, blob);
+
+  // We're done with the blob, close and release it
+  blob.close();
+
+  return await getDownloadURL(fileRef);
+}
+
 function CreateFeed() {
-    const richText = React.useRef();
+  const richText = React.useRef();
+  const [state, setState] = React.useState({
+    uploading: false,
+    image: null,
+  });
+  const [description, setDescription] = React.useState("");
+  const _handleImagePicked = async (pickerResult) => {
+    try {
+      setState({ uploading: true });
+
+      if (!pickerResult.cancelled) {
+        const uploadUrl = await uploadImageAsync(pickerResult.uri);
+        setState({ image: uploadUrl });
+      }
+    } catch (e) {
+      console.log(e);
+      alert("Upload failed, sorry :(");
+    } finally {
+      setState({ uploading: false });
+    }
+  };
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let pickerResult = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+    });
+    console.log({ pickerResult });
+    _handleImagePicked(pickerResult);
+  };
+
+  const _maybeRenderImage = () => {
+    let { image } = state;
+    if (!image) {
+      return;
+    }
+
+    return (
+      <View
+        style={{
+          marginTop: 30,
+          width: 250,
+          borderRadius: 3,
+          elevation: 2,
+        }}
+      >
+        <View
+          style={{
+            borderTopRightRadius: 3,
+            borderTopLeftRadius: 3,
+            shadowColor: "rgba(0,0,0,1)",
+            shadowOpacity: 0.2,
+            shadowOffset: { width: 4, height: 4 },
+            shadowRadius: 5,
+            overflow: "hidden",
+          }}
+        >
+          <Image source={{ uri: image }} style={{ width: 250, height: 250 }} />
+        </View>
+      </View>
+    );
+  };
+  
   return (
     <SafeAreaView>
+      <ScrollView>
+        <RichToolbar
+          editor={richText}
+          actions={[ actions.setBold, actions.setItalic, actions.setUnderline, actions.heading1 ]}
+          iconMap={{ [actions.heading1]: handleHead }}
+        />
+        <Button title="Pick an image" onPress={pickImage} />
+        <ScrollView>
+          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}	style={{ flex: 1, minHeight: 500 }}>
+            <Text>Description:</Text>
+            <RichEditor
+                ref={richText}
+                style={{ minHeight: 500 }}
+                onChange={ descriptionText => {
+                  setDescription(descriptionText);
+                }}
+            />
+          </KeyboardAvoidingView>
+          {_maybeRenderImage()}
+          <Button title="Creat Feed"  onPress={async () => {
+            const data = {
+              type: false,
+              startDateTime: "",
+              endDatTime: "",
+              numberOfPeople: "0",
+              description: description,
+              image: state.image,
+              creater: FIREBASE_AUTH.currentUser.email,
+              createTime: new Date(),
+              avatar: FIREBASE_AUTH.currentUser.photoURL,
+            }
+            // Add a new document with a generated id
+            const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
+            // later...
+            await setDoc(newRef, data);
+          }}/>
+        </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+function CreateFeedByAdmin() {
+  const [state, setState] = React.useState({
+    uploading: false,
+    image: null,
+  });
+  const richText = React.useRef();
+  const [dateTimeType, setDateTimeType] = React.useState(true);
+  const [startDateTime, setStartDateTime] = React.useState(new Date());
+  const [endDatTime, setEntDateTime] = React.useState(new Date());
+  const [numberOfPeople, setNumberOfPeople] = React.useState("");
+  const [mode, setMode] = React.useState('date');
+  const [show, setShow] = React.useState(false);
+  const [type, setType] = React.useState(true); // promotion: true, event: false
+  const [description, setDescription] = React.useState("");
+  const [image, setImage] = React.useState(null);
+
+  const onSetPromitionToType = (value) => {
+    setType(true);
+  }
+
+  const onSetEventToType = (value) => {
+    setType(false);
+  }
+
+  const onChange = React.useCallback((event, selectedDate) => {
+    const currentDate = selectedDate;
+    setShow(false);
+    // set date
+    if (dateTimeType) {
+      setStartDateTime(currentDate)
+    } else {
+      setEntDateTime(currentDate)
+    }
+    setShow(false);
+  }, [startDateTime, endDatTime]);
+
+  const _handleImagePicked = async (pickerResult) => {
+    try {
+      setState({ uploading: true });
+
+      if (!pickerResult.cancelled) {
+        const uploadUrl = await uploadImageAsync(pickerResult.uri);
+        setState({ image: uploadUrl });
+      }
+    } catch (e) {
+      console.log(e);
+      alert("Upload failed, sorry :(");
+    } finally {
+      setState({ uploading: false });
+    }
+  };
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let pickerResult = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+    });
+    console.log({ pickerResult });
+    _handleImagePicked(pickerResult);
+  };
+
+  const _maybeRenderImage = () => {
+    let { image } = state;
+    if (!image) {
+      return;
+    }
+
+    return (
+      <View
+        style={{
+          marginTop: 30,
+          width: 250,
+          borderRadius: 3,
+          elevation: 2,
+        }}
+      >
+        <View
+          style={{
+            borderTopRightRadius: 3,
+            borderTopLeftRadius: 3,
+            shadowColor: "rgba(0,0,0,1)",
+            shadowOpacity: 0.2,
+            shadowOffset: { width: 4, height: 4 },
+            shadowRadius: 5,
+            overflow: "hidden",
+          }}
+        >
+          <Image source={{ uri: image }} style={{ width: 250, height: 250 }} />
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView>
+      <ScrollView>
+      <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold", textAlign: "center" }}>
+        Create New Post
+      </Text>
+      <View style={{ display: "flex", flexDirection: "row", padding: 10, alignItems: "center" }}>
+        <Text style={{ marginBottom: 5, marginTop: 5, fontWeight: "bold", textAlign: "center" }}>
+          Type: 
+        </Text>
+        <Checkbox style={{ marginLeft: 10 }} value={type} onValueChange={onSetPromitionToType} />
+        <Text style={{ marginLeft: 10 }}>Promotion</Text>
+        <Checkbox style={{ marginLeft: 10 }} value={!type} onValueChange={onSetEventToType} />
+        <Text style={{ marginLeft: 10 }}>Event</Text>
+      </View>
+      <View style={{ display: "flex", padding: 10, justifyContent: "flex-start" }}>
+        <Text style={{ marginBottom: 5, marginTop: 5, fontWeight: "bold", textAlign: "left" }}>
+          Datetime: 
+        </Text>
+        <View style={{ display: "flex", flexDirection: "row", padding: 0, alignItems: "center",  }}>
+          <Text style={{ marginBottom: 5, marginTop: 5, fontWeight: "bold", textAlign: "left" }}>
+            Start Date:
+          </Text>
+          <TextInput
+            value={startDateTime.toDateString()}
+            style={{ ...styles.numberInput, width: 200 }}
+            placeholder="date time"
+            onTouchStart={() => {
+              setMode("date")
+              setShow(true)
+              setDateTimeType(true);
+            }}
+          />
+        </View>
+        <View style={{ display: "flex", flexDirection: "row", padding: 0, alignItems: "center" }}>
+          <Text style={{ marginBottom: 5, marginTop: 5, fontWeight: "bold", textAlign: "left" }}>
+            End   Date:
+          </Text>
+          <TextInput
+            value={endDatTime.toDateString()}
+            style={{ ...styles.numberInput, width: 200 }}
+            placeholder="date time"
+            keyboardType="default"
+            onTouchStart={() => {
+              setMode("date")
+              setShow(true)
+              setDateTimeType(false);
+            }}
+          />
+        </View>
+        {show && (
+          <DateTimePicker
+            testID="dateTimePicker"
+            value={dateTimeType ? startDateTime : endDatTime}
+            mode={mode}
+            display="spinner"
+            is24Hour={true}
+            onChange={onChange}
+          />
+        )}
+      </View>
+      <View style={{ display: "flex", flexDirection: "row", padding: 10, alignItems: "center" }}>
+        <Text style={{ marginBottom: 5, marginTop: 5, fontWeight: "bold", textAlign: "center" }}>
+          Number of people participating: 
+        </Text>
+        <TextInput
+            value={numberOfPeople}
+            style={styles.numberInput}
+            placeholder="number"
+            keyboardType="numeric"
+            onChange={(val) => {
+              setNumberOfPeople(val.nativeEvent.text);
+            }}
+          />
+      </View>
       <RichToolbar
         editor={richText}
-        actions={[ actions.setBold, actions.setItalic, actions.setUnderline, actions.heading1, actions.insertImage ]}
+        actions={[ actions.setBold, actions.setItalic, actions.setUnderline, actions.heading1 ]}
         iconMap={{ [actions.heading1]: handleHead }}
       />
+      <Button title="Pick an image" onPress={pickImage} />
+
       <ScrollView>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}	style={{ flex: 1, minHeight: 500 }}>
-          <Text>Description:</Text>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}	style={{ flex: 1, minHeight: 100 }}>
           <RichEditor
               ref={richText}
               style={{ minHeight: 500 }}
+              placeholder="Description"
+              value={description}
               onChange={ descriptionText => {
-                  console.log("descriptionText:", descriptionText);
+                setDescription(descriptionText);
               }}
           />
         </KeyboardAvoidingView>
-        <Button title="Creat Feed" />
+        {_maybeRenderImage()}
+        <Button title="Creat Feed" onPress={async () => {
+          const data = {
+            type: type,
+            startDateTime: startDateTime.toDateString(),
+            endDatTime: endDatTime.toDateString(),
+            numberOfPeople: numberOfPeople,
+            description: description,
+            image: image,
+            creater: FIREBASE_AUTH.currentUser.email,
+            createTime: new Date(),
+            avatar: FIREBASE_AUTH.currentUser.photoURL,
+          }
+          console.log(data);
+          try {
+            // Add a new document with a generated id
+            const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
+            // later...
+            
+            await setDoc(newRef, data);
+            alert("Create Feed Success");
+          } catch (e) {
+            alert("Create Feed Fail");
+          }
+        }}/>
+      </ScrollView>
       </ScrollView>
     </SafeAreaView>
   );
@@ -121,66 +507,41 @@ function AddFriends() {
   );
 }
 
-function CreateGroup({ navigation }) {
-    const activeData = Array.from({ length: 5 }, (item, index) => ({
-        id: index + 1,
-        name: `Mike ${index + 1}`,
-        message: `testmessage ${index + 1}`,
-        time: generateRandomTime(),
-    }));
-    const [toggleCheckBox, setToggleCheckBox] = React.useState(false)
-    return (
-        <View style={{ height: 500 }}>
-            <FlatList
-                data={activeData}
-                renderItem={({ item }) => (
-                    <View style={styles.rowContainer}>
-                        <View style={styles.rowIcon} />
-                        <View style={styles.rowContent}>
-                            <Text style={styles.rowHead}>{item.name}</Text>
-                            <Text style={styles.rowText}>{item.time}</Text>
-                        </View>
-                        <View>
-                            <Text style={styles.rowText}>{item.message}</Text>
-                        </View>
-                        <View style={{ marginLeft: 10, marginRight: 10, backgroundColor: '#c3c3c3', height: 10, width: 10, borderColor: 'black', borderWidth: 1 }}></View>
-                    </View>
-                )}
-                keyExtractor={(item) => item.id.toString()}
-            />
-            <Button title="Continue" onPress={() => {
-              navigation.navigate('Continue Create Group')
-            }}/>
-        </View>
-    );
-}
-
-function ContinueCreateGroup() {
+function StarRating() {
   return (
-      <Stack.Navigator>
-        <Stack.Screen name="Groups" component={CreateGroup} />
-        <Stack.Screen name="Continue Create Group" component={Grouops} />
-      </Stack.Navigator>
+    <SafeAreaView style={{ flex: 1, padding: 10 }}>
+      <View style={{ alignItems: "center"}}>
+        <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
+          Add Via User Name
+        </Text>
+      </View>
+    </SafeAreaView>
   )
 }
 
-function Grouops() {
+function Report() {
   return (
-    <View style={{padding: 10}}>
-      <View style={{ alignItems: 'center', justifyContent: 'center', height: 300 }}>
-        <View style={styles.avatar} />
-        <Text style={{ marginTop: 10 }} >Edit</Text>
+    <SafeAreaView style={{ flex: 1, padding: 10 }}>
+      <View style={{ alignItems: "center"}}>
+        <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
+          TODO: Report Page
+        </Text>
       </View>
-      <Text>Groups Name</Text>
-      <TextInput style={styles.input} value="Group Name"/>
-      <View style={{ marginTop: 10 }}>
-        <Button title="Create Group" />
-      </View>
-    </View>
+    </SafeAreaView>
   )
 }
 
 export default function SocialScreen({ navigation }) {
+  const auth = FIREBASE_AUTH;
+
+  function isAdmin() {
+    // todo by profile role
+    if (auth.currentUser.email == "tycb@gmail.com") {
+      return true;
+    }
+    return false;
+  }
+
   return (
     <Drawer.Navigator initialRouteName="Social Home">
       <Drawer.Screen
@@ -189,49 +550,86 @@ export default function SocialScreen({ navigation }) {
         options={{
           title: "News Feed",
           headerStyle: {
-            backgroundColor: '#ffa31a',
+            backgroundColor: "#ffa31a",
           },
           headerTitleAlign: "center",
         }}
       />
-      <Drawer.Screen
-        name="Create Post"
-        component={CreateFeed}
-        options={{
-          title: "Create Post",
-          headerStyle: {
-            backgroundColor: '#ffa31a',
-          },
-          headerTitleAlign: "center",
-        }}
-      />
-      <Drawer.Screen
-        name="Add Friends"
-        component={AddFriends}
-        options={{
-          title: "Add Friends",
-          headerStyle: {
-            backgroundColor: '#ffa31a',
-          },
-          headerTitleAlign: "center",
-        }}
-      />
-      <Drawer.Screen
-        name="Create Group"
-        component={ContinueCreateGroup}
-        options={{
-          title: "Create Group",
-          headerStyle: {
-            backgroundColor: '#ffa31a',
-          },
-          headerTitleAlign: "center",
-        }}
-      />
+      {
+        isAdmin() ? <Drawer.Screen
+                      name="Create Post"
+                      component={CreateFeedByAdmin}
+                      options={{
+                        title: "Create Post",
+                        headerStyle: {
+                          backgroundColor: "#ffa31a",
+                        },
+                        headerTitleAlign: "center",
+                      }}
+                    /> : 
+                    <Drawer.Screen
+                      name="Create Post"
+                      component={CreateFeed}
+                      options={{
+                        title: "Create Post",
+                        headerStyle: {
+                          backgroundColor: "#ffa31a",
+                        },
+                        headerTitleAlign: "center",
+                      }}
+                    />
+      }
+      {
+        !isAdmin() ? <Drawer.Screen
+          name="Add Friends"
+          component={AddFriends}
+          options={{
+            title: "Add Friends",
+            headerStyle: {
+              backgroundColor: "#ffa31a",
+            },
+            headerTitleAlign: "center",
+          }}
+        />: <></>
+      }
+      {
+        !isAdmin() ? <Drawer.Screen
+          name="Star Rating"
+          component={StarRating}
+          options={{
+            title: "Star Rating",
+            headerStyle: {
+              backgroundColor: "#ffa31a",
+            },
+            headerTitleAlign: "center",
+          }}
+        />: <></>
+      }
+      {
+        isAdmin() ? <Drawer.Screen
+          name="Report"
+          component={Report}
+          options={{
+            title: "Report",
+            headerStyle: {
+              backgroundColor: "#ffa31a",
+            },
+            headerTitleAlign: "center",
+          }}
+        />: <></>
+      }
     </Drawer.Navigator>
   );
 }
 
 const styles = StyleSheet.create({
+    numberInput: {
+      width: 100,
+      height: 30,
+      margin: 1,
+      borderWidth: 1,
+      padding: 2,
+    },
     input: {
         width: '90%',
         height: 40,

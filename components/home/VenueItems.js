@@ -43,7 +43,7 @@ export default function VenueItems({ navigation, ...props }) {
             </View>
         );
     }
-    
+
     return (
         <>
             {props.venueData.map((venue, index) => (
@@ -60,10 +60,15 @@ export default function VenueItems({ navigation, ...props }) {
                         categories: venue.categories,
                         caption: venue.caption,
                         manageable: props.manageable,
+                        operating_hour: venue.operating_hour,
+                        location: venue.location,
+                        venueId: (venue.venueId ? venue.venueId : ''),
                     })
                     }>
+                    
                     <View style={{ marginTop: 10, padding: 15, backgroundColor: "white", }}>
                         {/* Venue Image */}
+                        {/* {console.log("Menu item is"+venue.MenuItems)} */}
                         <VenueImage image={venue.image_url} />
                         {/* Venue Info */}
                         <VenueInfo name={venue.name} categories={venue.categories} price={venue.price} reviews={venue.reviews} caption={venue.caption} rating={venue.rating} />

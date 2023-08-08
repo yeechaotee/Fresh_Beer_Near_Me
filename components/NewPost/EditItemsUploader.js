@@ -17,16 +17,18 @@ import SearchBar from '../../components/home/SearchBar';
 
 const PLACEHOLDER_IMG = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg?20200913095930";
 
-const FormikPostUploader = ({ navigation }) => {
+const EditItemsUploader = ({ navigation, ...props }) => {
+
+    const { venueId } = props.route.params;
 
     const [loading, setLoading] = useState(false);
-    const [selectedCat, setSelectedCat] = useState("Bar");
+    // const [selectedCat, setSelectedCat] = useState("Bar");
 
     const uploadPostSchema = Yup.object().shape({
         imageUrl: Yup.string().url().required('A URL is required'),
-        caption: Yup.string().max(2200, 'Caption has reached the max characters (2200)'),
-        resName: Yup.string().required('Restaurant Name is required.').max(255, 'Restaurant name has reached the max characters (255)'),
-        priceRange: Yup.string().required('Price Range is required.').max(5, 'Kindly input between 1 to 5 range only.')
+        description: Yup.string().max(2200, 'Description has reached the max characters (2200)'),
+        title: Yup.string().required('Food Title is required.').max(255, 'Food title has reached the max characters (255)'),
+        price: Yup.string().required('Price is required.'),
     })
 
     const [thumbnailUrl, setThumbnailUrl] = useState(PLACEHOLDER_IMG);
@@ -92,45 +94,30 @@ const FormikPostUploader = ({ navigation }) => {
         getUser();
     }, []);
 
-    const uploadPostToFirebase = async (resName, imageUrl, caption, priceRange, selectedCat) => {
+    const uploadPostToFirebase = async (title, imageUrl, description, price) => {
         setLoading(true);
 
         try {
-            // add to 'posts' database firebase
-            const doc = await addDoc(collection(FIRESTORE_DB, 'venues'),
-                {
-                    // venueId: doc.id,
-                    name: resName,
-                    image_url: imageUrl,
-                    // owner_uid: FIREBASE_AUTH.currentUser.uid,
-                    caption: caption,
-                    categories: [selectedCat],
-                    rating: 0,
-                    price: priceRange,
-                    reviews: 0,
-                    operating_hour: (start && end) ? (start + " - " + end) : "",
-                    location: city,
-                    owner_email: FIREBASE_AUTH.currentUser.email,
-                    owner_uid: FIREBASE_AUTH.currentUser.uid,
-                    // username: username,
-                    profile_picture: await getRandomProfilePicture(),
-                    status: "Pending Approval",
-                    createdAt: new Date().toISOString(),
-                }).then(setTimeout(() => { navigation.goBack() }, 2000));
+            // Get a reference to the existing venue document
+            const venueDocRef = doc(FIRESTORE_DB, 'venues', venueId);
 
-            // Create an initial document to update.
-            const venueRef = doc(FIRESTORE_DB, "venues", doc.id);
-            await setDoc(venueRef, await addDoc(collection(FIRESTORE_DB, 'MenuItems'),
-                {
-                    venueId: doc.id,
-                    description: "With butter lettuce, tomato and sauce bechamel",
-                }));
+            // Create a new sub-collection "MenuItems" within the existing venue document
+            const menuItemCollectionRef = collection(venueDocRef, 'MenuItems');
+            await addDoc(menuItemCollectionRef, {
+                title: title,
+                image: imageUrl,
+                description: description,
+                price: price,
+                owner_email: FIREBASE_AUTH.currentUser.email,
+                owner_uid: FIREBASE_AUTH.currentUser.uid,
+                createdAt: new Date().toISOString(),
+            });
 
-            // const venueRef = doc(FIRESTORE_DB, 'venues', doc.id);
-            // await updateDoc(venueRef, {
-            //     venueId: doc.id.toString()
-            // });
             console.log("new venue added to firebase 'venues' successfully, doc.id ==> " + doc.id);
+            setTimeout(() => {
+                navigation.goBack();
+            }, 2000);
+
         } catch (error) {
             console.log(error);
             alert('venues add to firebase failed: ' + error.message);
@@ -151,9 +138,9 @@ const FormikPostUploader = ({ navigation }) => {
 
     return (
         <Formik
-            initialValues={{ caption: '', imageUrl: '', resName: '', priceRange: '' }}
+            initialValues={{ description: '', imageUrl: '', title: '', price: '' }}
             onSubmit={values => {
-                uploadPostToFirebase(values.resName, values.imageUrl, values.caption, values.priceRange, selectedCat)
+                uploadPostToFirebase(values.title, values.imageUrl, values.description, values.price)
                 // console.log(values)
                 console.log('Your post was submitted successfully')
                 // navigation.goBack()
@@ -178,12 +165,12 @@ const FormikPostUploader = ({ navigation }) => {
                         <View style={{ flex: 1, marginLeft: 12 }} >
                             <TextInput
                                 style={{ fontSize: 20 }}
-                                placeholder='Write a caption...'
+                                placeholder='Write a description...'
                                 placeholderTextColor='gray'
                                 multiline={true}
-                                onChangeText={handleChange('caption')}
-                                onBlur={handleBlur('caption')}
-                                value={values.caption}
+                                onChangeText={handleChange('description')}
+                                onBlur={handleBlur('description')}
+                                value={values.description}
 
                             />
                         </View>
@@ -193,45 +180,39 @@ const FormikPostUploader = ({ navigation }) => {
                     <View style={{ marginBottom: 10 }} >
                         <TextInput
                             style={{ fontSize: 17 }}
-                            placeholder='Input Restaurant Name'
+                            placeholder='Input Food Title'
                             placeholderTextColor='gray'
                             multiline={false}
-                            onChangeText={handleChange('resName')}
-                            onBlur={handleBlur('resName')}
-                            value={values.resName}
+                            onChangeText={handleChange('title')}
+                            onBlur={handleBlur('title')}
+                            value={values.title}
 
                         />
-                        {errors.resName && (
+                        {errors.title && (
                             <Text style={{ fontSize: 10, color: 'red' }}>
-                                {errors.resName}
+                                {errors.title}
                             </Text>
                         )}
                     </View>
                     <Divider width={0.2} orientation='vertical' />
-                    <View style={{ marginBottom: 10 }} >
+                    <View style={{ marginBottom: 5 }} >
                         <TextInput
                             style={{ fontSize: 17 }}
-                            placeholder='Input Price Range ($ only)'
+                            placeholder='Input Price ($xx.xx)'
                             placeholderTextColor='gray'
                             multiline={false}
-                            onChangeText={handleChange('priceRange')}
-                            onBlur={handleBlur('priceRange')}
-                            value={values.priceRange}
+                            onChangeText={handleChange('price')}
+                            onBlur={handleBlur('price')}
+                            value={values.price}
 
                         />
-                        {errors.priceRange && (
+                        {errors.price && (
                             <Text style={{ fontSize: 10, color: 'red' }}>
-                                {errors.priceRange}
+                                {errors.price}
                             </Text>
                         )}
                     </View>
-                    <Divider width={0.2} orientation='vertical' />
-                    <View style={{ padding: 10 }}>
-                        {/* <HeaderTabs activeTab={activeTab} setActiveTab={setActiveTab} /> */}
-                        <SearchBar cityHandler={setCity} />
-                    </View>
-                    <Divider width={0.2} orientation='vertical' />
-                    <View>
+                    {/* <View>
                         <View>
                             <Text style={{ fontSize: 17, fontWeight: '500', marginTop: 10, marginBottom: 10, marginLeft: 5 }}>Operating Hour: {start} - {end}</Text>
                         </View>
@@ -245,7 +226,7 @@ const FormikPostUploader = ({ navigation }) => {
                             onSelect={onSelect}
 
                         />
-                    </View>
+                    </View> */}
 
                     {/* <View style={{
                         height: 40,
@@ -284,7 +265,7 @@ const FormikPostUploader = ({ navigation }) => {
                     </View> */}
 
                     <Divider width={0.2} orientation='vertical' />
-                    <View style={{ marginBottom: 15 }} >
+                    <View style={{ marginBottom: 5 }} >
                         <TextInput
                             onChange={(e) => setThumbnailUrl(e.nativeEvent.text)}
                             style={{ fontSize: 17 }}
@@ -378,4 +359,4 @@ const styles = StyleSheet.create({
 })
 
 
-export default FormikPostUploader
+export default EditItemsUploader

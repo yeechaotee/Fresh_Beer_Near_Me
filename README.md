@@ -25,7 +25,7 @@ npm install react-redux
 npm install lottie-react-native  (for animation icon on page, as json file)
 ```
 
-## 📝 Discoery Module required CLI installation:
+## 📝 Discovery Module required CLI installation:
 
 ```sh
 npm install -D tailwindcss
@@ -39,6 +39,14 @@ npm install react-native-google-places-autocomplete --save
 npm install valid-url
 npm install lottie-react-native
 npm i react-native-heroicons
+npm i react-native-modal-datetime-picker
+npx expo install react-native-modal-datetime-picker
+npx expo install @react-native-community/datetimepicker
+npm install react-native-range-timepicker
+npm install patch-package
+npm install deprecated-react-native-prop-types
+npm install react-native-swipe-list-view --save
+npm install react-native-action-button
 ```
 
 
@@ -80,6 +88,13 @@ npm i @react-navigation/drawer
 ## in case bad things happen:
 ```sh
 git reset HEAD^ --hard and git push --force
+
+For Master branch messed up:
+git checkout branch1
+git merge -s ours master
+git checkout master
+git merge branch1
+git push --force origin master
 ```
 
 ## 📝 Notes

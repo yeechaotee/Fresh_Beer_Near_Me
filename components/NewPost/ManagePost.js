@@ -134,7 +134,7 @@ export default function ManagePost({ navigation }) {
                 {/* <Categories /> */}
 
                 {/* posts state will filter out only searched result if any and pass it to venueData */}
-                <VenueItems venueData={posts} navigation={navigation} manageable={true} />
+                <VenueItems venueData={posts} navigation={navigation} />
             </ScrollView>
             {/* <Divider width={1} /> */}
 

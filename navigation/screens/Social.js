@@ -3,8 +3,6 @@ import { StyleSheet, View, Text, FlatList, TextInput, SafeAreaView, Button, Scro
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import {actions, RichEditor, RichToolbar} from "react-native-pell-rich-editor";
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { FIREBASE_AUTH, FIRESTORE_DB} from '../../firebase';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Checkbox from 'expo-checkbox';
@@ -25,24 +23,6 @@ import uuid from "uuid";
 const Drawer = createDrawerNavigator();
 
 const handleHead = ({tintColor}) => <Text style={{color: tintColor}}>H1</Text>
-
-const generateRandomTime = () => {
-    const hours = Math.floor(Math.random() * 12); // Random hour (0-11)
-    const minutes = Math.floor(Math.random() * 60); // Random minute (0-59)
-    const isAM = Math.random() < 0.5; // Randomly choose AM or PM
-  
-    // Format hours to be in two digits
-    const formattedHours = hours.toString().padStart(2, '0');
-  
-    // Format minutes to be in two digits
-    const formattedMinutes = minutes.toString().padStart(2, '0');
-  
-    // Determine if it's AM or PM
-    const period = isAM ? 'AM' : 'PM';
-  
-    // Return the formatted time
-    return `${formattedHours}:${formattedMinutes} ${period}`;
-};
 
 function NewsFeed() {
   // const activeData = Array.from({ length: 100 }, (item, index) => ({

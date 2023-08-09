@@ -69,7 +69,8 @@ export default function NotificationsScreen(navigation) {
     }
   };
 
-  dismissAllNotificationsAsync();
+  //To be uncomment after integration
+  //dismissAllNotificationsAsync();
 
 
   const [presentedNotificationCount, setPresentedNotificationCount] = useState(0);

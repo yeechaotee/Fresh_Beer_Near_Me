@@ -1,4 +1,4 @@
-import { GOOGLE_API_KEY } from "../../environments";
+import { GOOGLE_API_KEY } from "./environments";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 import { Text, StyleSheet } from "react-native";
 

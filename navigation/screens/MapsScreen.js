@@ -10,35 +10,164 @@ import {
 } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import * as Location from "expo-location";
-import darkModeStyle from "./darkMode.json";
+//import darkModeStyle from "../../components/maps/darkMode.json";
 import Constants from "expo-constants";
-import InputAutoComplete from "./InputAutoComplete";
+import InputAutoComplete from "../../components/maps/InputAutoComplete";
 import { endAsyncEvent } from "react-native/Libraries/Performance/Systrace";
-import GetRideModal from "./GetRide";
+import GetRideModal from "../../components/maps/GetRide";
+import { FIRESTORE_DB } from "../../firebase";
+import {
+  addDoc,
+  collection,
+  onSnapshot,
+  getDocs,
+  limit,
+  setDoc,
+  doc,
+  firestore,
+  collectionGroup,
+  query,
+  where,
+} from "firebase/firestore";
+import { GOOGLE_API_KEY } from "../../components/maps/environments";
+import axios from "axios";
 
 const { width, height } = Dimensions.get("window");
 
-// location markers
-// let locationsOfInterest = [
-//   {
-//     title: "first",
-//     location: {
-//       latitude: 1.369778,
-//       longitude: 103.849437,
-//     },
-//     description: "my first marker",
-//   },
-//   {
-//     title: "second",
-//     location: {
-//       latitude: 1.316721,
-//       longitude: 103.882049,
-//     },
-//     description: "my second marker",
-//   },
-// ];
+let locationsOfInterest = [];
 
 export default function MapsScreen() {
+  //get data from firebase, title, location, description
+  const [venueData, setVenueData] = useState([]);
+  const getVenueDataFromFirestore = async () => {
+    try {
+      // Get a reference to the "Venue" collection in Firestore
+      const venueCollectionRef = collection(FIRESTORE_DB, "venues");
+
+      // Execute the query and get the collection snapshot
+      const querySnapshot = await getDocs(venueCollectionRef);
+
+      // Initialize an empty array to hold the data
+      const venueData = [];
+
+      // Loop through the documents in the collection snapshot and extract the data
+      querySnapshot.forEach((doc) => {
+        // Get the data from each document
+        const data = doc.data();
+
+        // Add the data to the venueData array
+        venueData.push(data);
+      });
+
+      // Update the state with the retrieved venue data
+      setVenueData(venueData);
+
+      //debug statements
+      console.log("Venue data retrieved from Firestore:", venueData);
+      console.log("trying to get specific contents");
+
+      for (let i = 0; i < venueData.length; i++) {
+        console.log("entry #", i);
+        console.log(
+          "Venue data retrieved from Firestore, name: ",
+          venueData[i].name
+        );
+        console.log(
+          "Venue data retrieved from Firestore,location: ",
+          venueData[i].location
+        );
+        console.log(
+          "Venue data retrieved from Firestore, caption: ",
+          venueData[i].caption
+        );
+      }
+    } catch (error) {
+      console.log("Error getting venue data from Firestore:", error);
+    }
+
+    for (const venue of venueData) {
+      try {
+        const { latitude, longitude } = await geocodeAddress(venue.location);
+        venue.latitude = latitude;
+        venue.longitude = longitude;
+        console.log("lat and long retrieved");
+      } catch (error) {
+        console.error(error.message);
+      }
+    }
+
+    console.log(venueData); // Updated venueData array with latitude and longitude
+    for (let i = 0; i < venueData.length; i++) {
+      console.log("entry #", i);
+      console.log(
+        "Venue data retrieved from Firestore, name: ",
+        venueData[i].name
+      );
+      console.log(
+        "Venue data retrieved from Firestore,latitude: ",
+        venueData[i].latitude
+      );
+      console.log(
+        "Venue data retrieved from Firestore,longitude: ",
+        venueData[i].longitude
+      );
+      console.log(
+        "Venue data retrieved from Firestore, caption: ",
+        venueData[i].caption
+      );
+    }
+
+    locationsOfInterest = venueData
+      .filter(
+        (data) =>
+          typeof data.latitude !== "undefined" &&
+          typeof data.longitude !== "undefined"
+      )
+      .map((data) => {
+        return {
+          title: data.name,
+          location: {
+            latitude: data.latitude,
+            longitude: data.longitude,
+          },
+          description: data.caption,
+        };
+      });
+
+    console.log("locations of interest");
+    console.log(locationsOfInterest);
+  };
+
+  //geocode location to get coordinates
+  //Function to geocode an address using the Google Maps Geocoding API
+  async function geocodeAddress(address) {
+    // Check if address is undefined
+    if (typeof address === "undefined") {
+      return "undefined"; // or any other appropriate value to indicate that geocoding was skipped
+    }
+
+    try {
+      const response = await axios.get(
+        "https://maps.googleapis.com/maps/api/geocode/json",
+        {
+          params: {
+            address: address,
+            key: GOOGLE_API_KEY,
+          },
+        }
+      );
+
+      if (response.data.results.length > 0) {
+        const { lat, lng } = response.data.results[0].geometry.location;
+        return { latitude: lat, longitude: lng };
+      } else {
+        throw new Error("No results found for the address");
+      }
+    } catch (error) {
+      throw new Error(`Error geocoding the address: ${address}`);
+    }
+  }
+
   // states
   const chekInPress = () => {
     console.log("User Location:", userLocation);
@@ -94,18 +223,21 @@ export default function MapsScreen() {
     }
   };
 
-  // const showLocationsOfInterest = () => {
-  //   return locationsOfInterest.map((item, index) => {
-  //     return (
-  //       <Marker
-  //         key={index}
-  //         coordinate={item.location}
-  //         title={item.title}
-  //         description={item.description}
-  //       />
-  //     );
-  //   });
-  // };
+  const showLocationsOfInterest = () => {
+    // Perform asynchronous operations, e.g., fetching data
+    //await updateVenueDataWithCoordinates();
+    // Now you can use the fetched data in the map function
+    return locationsOfInterest.map((item, index) => {
+      return (
+        <Marker
+          key={index}
+          coordinate={item.location}
+          title={item.title}
+          description={item.description}
+        />
+      );
+    });
+  };
 
   useEffect(() => {
     console.log("use effect run");
@@ -130,6 +262,11 @@ export default function MapsScreen() {
       }
     };
     getPermissions();
+
+    console.log("getting venue data");
+    getVenueDataFromFirestore();
+    // console.log("updating venue data with coordinates");
+    // updateVenueDataWithCoordinates();
   }, []);
 
   return (
@@ -139,7 +276,7 @@ export default function MapsScreen() {
         style={styles.map}
         provider={PROVIDER_GOOGLE}
         initialRegion={userLocation}
-        customMapStyle={darkModeStyle}
+        //customMapStyle={darkModeStyle}
       >
         {userLocation && (
           <Marker
@@ -159,9 +296,7 @@ export default function MapsScreen() {
             onDragEnd={(e) => setDestination(e.nativeEvent.coordinate)}
           />
         )}
-        {
-          //showLocationsOfInterest()
-        }
+        {showLocationsOfInterest()}
       </MapView>
       <View style={styles.userLocationContainer}>
         <InputAutoComplete
@@ -170,12 +305,12 @@ export default function MapsScreen() {
             onPlaceSelected(details, "userLocation");
           }}
         />
-        <InputAutoComplete
+        {/* <InputAutoComplete
           label="My Destination"
           onPlaceSelected={(details) => {
             onPlaceSelected(details, "destination");
           }}
-        />
+        /> */}
         <View
           style={{
             width: "50%",
@@ -196,21 +331,20 @@ export default function MapsScreen() {
           onPress={chekInPress}
           style={{
             flexDirection: "row",
-            backgroundColor: "#ffa31a",
-            borderRadius: 30,
-            alignContent: "center",
             alignItems: "center",
-            width: 10,
+            alignContent: "center",
+            top: 5,
           }}
         >
           <Image
-            source={require("../../assets/navIcons/goal.png")}
+            source={require("../../assets/navIcons/beermap.png")}
             style={{
               width: 40,
               height: 40,
+              tintColor: "#292929",
             }}
           />
-          <Text style={{ color: "white" }}>Check In</Text>
+          <Text style={{ color: "#292929" }}>Check In</Text>
         </Pressable>
       </View>
     </View>
@@ -241,14 +375,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     color: "#ffffff",
     top: Constants.statusBarHeight,
+    opacity: 0.85,
   },
   checkIn: {
     position: "absolute",
     alignItems: "center",
-    bottom: 100,
+    alignContent: "center",
+    bottom: 10,
+    right: 10,
+    height: 50,
+    width: 120,
+    backgroundColor: "#ffa31a",
+    borderRadius: 30,
+    opacity: 0.85,
   },
 });
-
-// to improve
-// -dynamic location and destination wording on drag end
-// -dynamic floating tootltip for pins on dragend. and on creation

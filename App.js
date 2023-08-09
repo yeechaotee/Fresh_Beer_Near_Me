@@ -80,7 +80,6 @@ function LogonLayout() {
     })
     , []);
 
-
   return (
     <Tab.Navigator initialRouteName='Discovery'
       screenOptions={({ route }) => ({
@@ -193,6 +192,7 @@ function LogonLayout() {
         component={ProfileStack}
       /> */}
 
+
     </Tab.Navigator>
   )
 }
@@ -285,8 +285,10 @@ function App() {
   const SignedInStack = () => (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Discovery">
+
         <Stack.Screen name="LoggedOn" component={LogonLayout} options={{ headerShown: false /*title: "Logon as " + user.email*/ }} />
         <Stack.Screen name="NewPostScreen" component={NewPostScreen} options={{ headerShown: false }} />
+
       </Stack.Navigator>
     </NavigationContainer>
   )
@@ -304,6 +306,7 @@ function App() {
   return (
     <>
       {user ? !loadingInitial && SignedInStack() : !loadingInitial && SignedOutStack()}
+
     </>
     // <NavigationContainer>
     //   <Stack.Navigator initialRouteName="Login">

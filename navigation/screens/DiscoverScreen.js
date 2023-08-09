@@ -42,7 +42,7 @@ const Drawer = createDrawerNavigator();
 function Home({ navigation }) {
     // passing data from VenueItems localRestaurant into venueData
     const [venueData, setVenueData] = useState(localRestaurants);
-    const [city, setCity] = useState("Singapore");
+    //const [city, setCity] = useState("Singapore");
 
        // const [activeTab, setActiveTab] = useState("Delivery");
     const [posts, setPosts] = useState([]);
@@ -118,7 +118,7 @@ function Home({ navigation }) {
     //     return () => unsubcribe();
     // }, [])
 
-    /*
+    
     // can just change the location city to what we wanna render
     // const getVenueFromYelp = () => {
     //     const yelpUrl = `https://api.yelp.com/v3/businesses/search?term=restaurants&location=${city}`
@@ -153,22 +153,7 @@ function Home({ navigation }) {
             //     console.log(doc.id, " => User Role: ", doc.data().role);
             // });
         }
-
-        // get YELP Api, get json , hold json, set venuedata to all retrieved json data
-        return fetch(yelpUrl, apiOptions)
-            .then((res) => res.json())
-            .then((json) => setVenueData(json.businesses))
-            .catch(error => console.error('Error:', error));
-
     };
-
-
-    // useEffect hook looking for city dependencies,
-    // when city is update, will always re-fire getVenueFromYelp()
-    useEffect(() => {
-        getVenueFromYelp();
-    }, [city]);
-*/
     
     const getVenueDataFromFirestore = async (userRegion, userBeerProfile, userFavBeer) => {
     try {
@@ -255,7 +240,7 @@ function Home({ navigation }) {
       //setVenueData(filteredVenueData); 
     }
   });
-    }, [city,activeTab]);
+    }, []);
 
   
     const getCurrentUserDoc = async () => {

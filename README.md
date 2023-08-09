@@ -84,6 +84,12 @@ npm i @react-navigation/drawer
 npm install react-native-dropdown-picker
 ```
 
+## 📝 Maps component:
+
+```sh
+npm i axios
+```
+
 ## in case bad things happen:
 
 ```sh

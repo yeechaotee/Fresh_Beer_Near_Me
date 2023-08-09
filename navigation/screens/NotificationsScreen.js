@@ -22,9 +22,7 @@ import TabNotif from '../../components/TabNotif';
 // import SearchBar from '../../components/SearchBar';
 // import Categories from '../../components/Categories';
 
-
 ///////////////////////////////////////////////
-
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -37,10 +35,10 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from "expo-constants";
 //import { Text, View, Button, Platform } from 'react-native';
-import { addDoc, collection, collectionGroup, onSnapshot, setDoc, doc, getDoc,updateDoc, query, where, getDocs } from 'firebase/firestore';
+import { addDoc, collection, collectionGroup, onSnapshot, setDoc, doc, getDoc,updateDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
-import { dismissAllNotificationsAsync, getPresentedNotificationsAsync, cancelScheduledNotificationAsync  } from 'expo-notifications';
+import { FIREBASE_AUTH, FIRESTORE_DB  } from '../../firebase';
+import { dismissAllNotificationsAsync, getPresentedNotificationsAsync, cancelScheduledNotificationAsync,getNotificationAsync  } from 'expo-notifications';
 import { updateUsertoken } from 'firebase/firestore';// Import your function for updating the Firestore document
 //import { v4 as uuidv4 } from 'uuid';
 /////////////////////////////////////////////////////////
@@ -78,6 +76,7 @@ export default function NotificationsScreen(navigation) {
       const presentedNotifications = await getPresentedNotificationsAsync();
       const notificationCount = presentedNotifications.length;
       setPresentedNotificationCount(notificationCount);
+
     } catch (error) {
       console.log('Error getting presented notifications:', error);
     }
@@ -178,8 +177,6 @@ useEffect(() => {
   };
 }, []);
 
-
-
       return (
 
         <TailwindProvider>
@@ -237,9 +234,6 @@ useEffect(() => {
 
       );
   };
-  
-
-
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -256,21 +250,44 @@ const styles = StyleSheet.create({
 
 // Can use this function below or use Expo's Push Notification Tool from: https://expo.dev/notifications
 async function sendPushNotification() {
-  // Cancel all previously scheduled notifications
-  //await Notifications.cancelAllScheduledNotificationsAsync();
+  try {
+    // Cancel all previously scheduled notifications
+    //await Notifications.cancelAllScheduledNotificationsAsync();
 
-  // Schedule a new notification
-  await Notifications.scheduleNotificationAsync({
-    //identifier: uuidv4(),
-    content: {
-      title: "Test 1 Fresh Beer Near Me! 🍻",
-      body: 'Test',
-      data: { data: 'goes here' },
-    },
-    trigger: { seconds: 2, repeats: false },
-  });
+    // Schedule a new notification
+     const notification = await Notifications.scheduleNotificationAsync({
+      //identifier: uuidv4(),
+      content: {
+        title: "Happy Hour! Huat Arhhh 🍻",
+        body: 'Test',
+        //data: { data: 'goes here' },
+      },
+      trigger: { seconds: 2, repeats: false },
+    });
 
-  //console.log('NotificationID:', notificationId);
+    //console.log('NotificationID:', notificationId);
+  
+    // Convert the timestamp to a string
+    const timestampString = new Date().toISOString();
+
+    // Add the notification data to Firestore
+    if (notification) {
+      const notificationData = {
+        owner_uid: FIREBASE_AUTH.currentUser.uid,
+        title: "Happy Hour! Huat Arhhh 🍻",
+        body: 'Test',
+        //data: { data: 'goes here' },
+        timestamp: timestampString,
+        
+        //timestamp: serverTimestamp(),
+        type: "Promotion"
+      };
+      await addDoc(collection(FIRESTORE_DB, 'notifications'), notificationData);
+      console.log('Notification data added to Firestore:', notificationData);
+    }
+  } catch (error) {
+    console.log('Error sending push notification:', error);
+  }
 }
 
 
@@ -280,7 +297,7 @@ async function schedulePushNotification() {
   //await Notifications.cancelAllScheduledNotificationsAsync();
 
   await Notifications.scheduleNotificationAsync({
-    //identifier: uuidv4(),
+    identifier: notification.identifier, 
     content: {
       title: "Test 2 Schedule Fresh Beer Near Me! 🍻 ",
       body: 'Test',

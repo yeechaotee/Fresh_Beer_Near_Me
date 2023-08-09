@@ -11,7 +11,7 @@ import {
 import { ScrollView } from 'react-native';
 import VenueItems, { localRestaurants } from '../../components/home/VenueItems';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
-import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where } from 'firebase/firestore';
+import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { Searchbar } from 'react-native-paper';
 import LottieView from 'lottie-react-native';
@@ -44,11 +44,15 @@ export default function ManagePost({ navigation }) {
                 });
 
                 setPosts([]);
-                const unsubcribe = onSnapshot(collection(FIRESTORE_DB, 'venues'), (snapshot) => {
+
+                const subquerySnapshot = query(collection(FIRESTORE_DB, 'venues'), orderBy('createdAt', "desc"));
+                const unsubcribe = onSnapshot(subquerySnapshot, (snapshot) => {
                     snapshot.docChanges().forEach((change) => {
                         if (change.type === "added" && change.doc.data().owner_uid === user.uid) {
                             console.log("New Venue", change.doc.data());
-                            setPosts((prevVenues) => [...prevVenues, change.doc.data()])
+                            const venueData = change.doc.data();
+                            const venueId = change.doc.id; // Get the document ID
+                            setPosts((prevVenues) => [...prevVenues, { venueId: venueId, ...venueData }])
                         }
                     })
                 })

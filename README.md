@@ -26,7 +26,7 @@ npm install react-redux
 npm install lottie-react-native  (for animation icon on page, as json file)
 ```
 
-## 📝 Discoery Module required CLI installation:
+## 📝 Discovery Module required CLI installation:
 
 ```sh
 npm install -D tailwindcss
@@ -40,6 +40,14 @@ npm install react-native-google-places-autocomplete --save
 npm install valid-url
 npm install lottie-react-native
 npm i react-native-heroicons
+npm i react-native-modal-datetime-picker
+npx expo install react-native-modal-datetime-picker
+npx expo install @react-native-community/datetimepicker
+npm install react-native-range-timepicker
+npm install patch-package
+npm install deprecated-react-native-prop-types
+npm install react-native-swipe-list-view --save
+npm install react-native-action-button
 ```
 
 ## 📝 Firebase Database:
@@ -78,6 +86,12 @@ npm i react-native-pell-rich-editor
 npm i @react-navigation/drawer
 ```
 
+## 📝 Maps component:
+
+```sh
+npm i axios
+```
+
 ## 📝 Modal component:
 
 ```sh
@@ -96,6 +110,19 @@ git reset HEAD^ --hard and git push --force
 git reset HEAD^ --hard and git push --force
 ```
 
+## in case bad things happen:
+
+```sh
+git reset HEAD^ --hard and git push --force
+
+For Master branch messed up:
+git checkout branch1
+git merge -s ours master
+git checkout master
+git merge branch1
+git push --force origin master
+```
+
 ## 📝 Notes
 
 - VSCode IDE Extension tools:
@@ -110,6 +137,7 @@ git reset HEAD^ --hard and git push --force
 
   - YELP API Key: https://www.yelp.com/developers/v3/manage_app
   - Created Google Console Cloud: https://console.cloud.google.com/getting-started?pli=1
+  - Places API from Google: https://console.cloud.google.com/apis/library/places-backend.googleapis.com?authuser=2&organizationId=0&project=freshbeernearme-392607
 
 - Some dependencies fixing hacks:
   - In most cases, this can be fixed by cleaning the application's cache. Depending on your workflow or favorite package manager that could be done by:

@@ -17,14 +17,21 @@ import Signup from './navigation/screens/Signup';
 import NotificationsScreen from './navigation/screens/NotificationsScreen';
 import EditProfileScreen from './navigation/screens/EditProfileScreen';
 import NewPostScreen from './navigation/screens/NewPostScreen';
+import 'react-native-gesture-handler';
 import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where } from 'firebase/firestore';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from "expo-constants";
 import { Image, Text, View, Button, Platform } from 'react-native';
 import { dismissAllNotificationsAsync, getPresentedNotificationsAsync } from 'expo-notifications';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { createDrawerNavigator } from '@react-navigation/drawer'; import ManagePost from './components/NewPost/ManagePost';
+
+const Drawer = createDrawerNavigator();
+
 
 const Tab = createMaterialBottomTabNavigator();
+
 const Stack = createNativeStackNavigator();
 const LogonStack = createNativeStackNavigator();
 

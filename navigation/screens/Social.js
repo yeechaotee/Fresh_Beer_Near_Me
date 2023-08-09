@@ -189,7 +189,7 @@ export default function SocialScreen({ navigation }) {
         options={{
           title: "News Feed",
           headerStyle: {
-            backgroundColor: "#694fad",
+            backgroundColor: '#ffa31a',
           },
           headerTitleAlign: "center",
         }}
@@ -200,7 +200,7 @@ export default function SocialScreen({ navigation }) {
         options={{
           title: "Create Post",
           headerStyle: {
-            backgroundColor: "#694fad",
+            backgroundColor: '#ffa31a',
           },
           headerTitleAlign: "center",
         }}
@@ -211,7 +211,7 @@ export default function SocialScreen({ navigation }) {
         options={{
           title: "Add Friends",
           headerStyle: {
-            backgroundColor: "#694fad",
+            backgroundColor: '#ffa31a',
           },
           headerTitleAlign: "center",
         }}
@@ -222,7 +222,7 @@ export default function SocialScreen({ navigation }) {
         options={{
           title: "Create Group",
           headerStyle: {
-            backgroundColor: "#694fad",
+            backgroundColor: '#ffa31a',
           },
           headerTitleAlign: "center",
         }}

@@ -71,6 +71,137 @@ let locationsOfInterest = [
 ];
 
 export default function MapsScreen() {
+  //get data from firebase, title, location, description
+  const [venueData, setVenueData] = useState([]);
+  const getVenueDataFromFirestore = async () => {
+    try {
+      // Get a reference to the "Venue" collection in Firestore
+      const venueCollectionRef = collection(FIRESTORE_DB, "venues");
+
+      // Execute the query and get the collection snapshot
+      const querySnapshot = await getDocs(venueCollectionRef);
+
+      // Initialize an empty array to hold the data
+      const venueData = [];
+
+      // Loop through the documents in the collection snapshot and extract the data
+      querySnapshot.forEach((doc) => {
+        // Get the data from each document
+        const data = doc.data();
+
+        // Add the data to the venueData array
+        venueData.push(data);
+      });
+
+      // Update the state with the retrieved venue data
+      setVenueData(venueData);
+
+      //debug statements
+      console.log("Venue data retrieved from Firestore:", venueData);
+      console.log("trying to get specific contents");
+
+      for (let i = 0; i < venueData.length; i++) {
+        console.log("entry #", i);
+        console.log(
+          "Venue data retrieved from Firestore, name: ",
+          venueData[i].name
+        );
+        console.log(
+          "Venue data retrieved from Firestore,location: ",
+          venueData[i].location
+        );
+        console.log(
+          "Venue data retrieved from Firestore, caption: ",
+          venueData[i].caption
+        );
+      }
+    } catch (error) {
+      console.log("Error getting venue data from Firestore:", error);
+    }
+
+    for (const venue of venueData) {
+      try {
+        const { latitude, longitude } = await geocodeAddress(venue.location);
+        venue.latitude = latitude;
+        venue.longitude = longitude;
+        console.log("lat and long retrieved");
+      } catch (error) {
+        console.error(error.message);
+      }
+    }
+
+    console.log(venueData); // Updated venueData array with latitude and longitude
+    for (let i = 0; i < venueData.length; i++) {
+      console.log("entry #", i);
+      console.log(
+        "Venue data retrieved from Firestore, name: ",
+        venueData[i].name
+      );
+      console.log(
+        "Venue data retrieved from Firestore,latitude: ",
+        venueData[i].latitude
+      );
+      console.log(
+        "Venue data retrieved from Firestore,longitude: ",
+        venueData[i].longitude
+      );
+      console.log(
+        "Venue data retrieved from Firestore, caption: ",
+        venueData[i].caption
+      );
+    }
+
+    locationsOfInterest = venueData
+      .filter(
+        (data) =>
+          typeof data.latitude !== "undefined" &&
+          typeof data.longitude !== "undefined"
+      )
+      .map((data) => {
+        return {
+          title: data.name,
+          location: {
+            latitude: data.latitude,
+            longitude: data.longitude,
+          },
+          description: data.caption,
+        };
+      });
+
+    console.log("locations of interest");
+    console.log(locationsOfInterest);
+  };
+
+  //geocode location to get coordinates
+  //Function to geocode an address using the Google Maps Geocoding API
+  async function geocodeAddress(address) {
+    // Check if address is undefined
+    if (typeof address === "undefined") {
+      return "undefined"; // or any other appropriate value to indicate that geocoding was skipped
+    }
+
+    try {
+      const response = await axios.get(
+        "https://maps.googleapis.com/maps/api/geocode/json",
+        {
+          params: {
+            address: address,
+            key: GOOGLE_API_KEY,
+          },
+        }
+      );
+
+      if (response.data.results.length > 0) {
+        const { lat, lng } = response.data.results[0].geometry.location;
+        return { latitude: lat, longitude: lng };
+      } else {
+        throw new Error("No results found for the address");
+      }
+    } catch (error) {
+      throw new Error(`Error geocoding the address: ${address}`);
+    }
+  }
+
   // states
   const chekInPress = () => {
     console.log("User Location:", userLocation);
@@ -162,6 +293,11 @@ export default function MapsScreen() {
       }
     };
     getPermissions();
+
+    console.log("getting venue data");
+    getVenueDataFromFirestore();
+    // console.log("updating venue data with coordinates");
+    // updateVenueDataWithCoordinates();
   }, []);
 
   return (
@@ -200,12 +336,12 @@ export default function MapsScreen() {
             onPlaceSelected(details, "userLocation");
           }}
         />
-        <InputAutoComplete
+        {/* <InputAutoComplete
           label="My Destination"
           onPlaceSelected={(details) => {
             onPlaceSelected(details, "destination");
           }}
-        />
+        /> */}
         <View
           style={{
             width: "50%",
@@ -285,7 +421,3 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
 });
-
-// to improve
-// -dynamic location and destination wording on drag end
-// -dynamic floating tootltip for pins on dragend. and on creation

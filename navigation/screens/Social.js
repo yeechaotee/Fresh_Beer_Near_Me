@@ -110,17 +110,23 @@ function NewsFeed() {
                         item.image ? <Image source={{ uri: item.image }} style={{ width: 250, height: 250 }} /> : <></>
                       }
                       <View style={styles.rowContainer}>
-                          <FontAwesome5
-                              name={'heart'}
-                              size={20}
-                              color={'black'}
-                          />
-                          <FontAwesome5
-                              name={'comment'}
-                              size={20}
-                              color={'black'}
-                              style={{ paddingLeft: 10 }}
-                          />
+                          <View style={styles.rowContainer}>
+                            {
+                              isAdmin() ? <>
+                                <FontAwesome5
+                                  name={'heart'}
+                                  size={20}
+                                  color={'black'}
+                                />
+                                <FontAwesome5
+                                    name={'comment'}
+                                    size={20}
+                                    color={'black'}
+                                    style={{ paddingLeft: 10 }}
+                                />
+                              </> : <></>
+                            }
+                          </View>
                       </View>
                   </View>
               )}
@@ -231,11 +237,11 @@ function CreateFeed() {
         />
         <Button title="Pick an image" onPress={pickImage} />
         <ScrollView>
-          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}	style={{ flex: 1, minHeight: 500 }}>
+          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}	style={{ flex: 1, minHeight: 400 }}>
             <Text>Description:</Text>
             <RichEditor
                 ref={richText}
-                style={{ minHeight: 500 }}
+                style={{ minHeight: 400 }}
                 onChange={ descriptionText => {
                   setDescription(descriptionText);
                 }}

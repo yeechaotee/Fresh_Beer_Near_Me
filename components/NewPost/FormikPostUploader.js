@@ -36,21 +36,6 @@ const FormikPostUploader = ({ navigation }) => {
 
     const [city, setCity] = useState("Singapore");
 
-    // const [selectedDate, setSelectedDate] = useState(new Date());
-    // const [datePickerVisible, setDatePickerVisible] = useState(false);
-
-    // const showDatePicker = () => {
-    //     setDatePickerVisible(true);
-    // };
-
-    // const hideDatePicker = () => {
-    //     setDatePickerVisible(false);
-    // };
-
-    // const handleConfirm = (date) => {
-    //     setSelectedDate(date);
-    //     hideDatePicker();
-    // };
 
     const [visible, setVisible] = useState(false);
     const [start, setStart] = useState("");
@@ -118,18 +103,6 @@ const FormikPostUploader = ({ navigation }) => {
                     createdAt: new Date().toISOString(),
                 }).then(setTimeout(() => { navigation.goBack() }, 2000));
 
-            // Create an initial document to update.
-            const venueRef = doc(FIRESTORE_DB, "venues", doc.id);
-            await setDoc(venueRef, await addDoc(collection(FIRESTORE_DB, 'MenuItems'),
-                {
-                    venueId: doc.id,
-                    description: "With butter lettuce, tomato and sauce bechamel",
-                }));
-
-            // const venueRef = doc(FIRESTORE_DB, 'venues', doc.id);
-            // await updateDoc(venueRef, {
-            //     venueId: doc.id.toString()
-            // });
             console.log("new venue added to firebase 'venues' successfully, doc.id ==> " + doc.id);
         } catch (error) {
             console.log(error);
@@ -141,13 +114,6 @@ const FormikPostUploader = ({ navigation }) => {
 
     }
 
-    // const onAnimationFinish = () => {
-    //     setLottieFinished(true);
-    //     setTimeout(() => {
-    //         //Go Back to home page after 4 seconds
-    //         navigation.goBack()
-    //     }, 4000);
-    // }
 
     return (
         <Formik
@@ -247,7 +213,7 @@ const FormikPostUploader = ({ navigation }) => {
                         />
                     </View>
 
-                    {/* <View style={{
+                    <View style={{
                         height: 40,
                         alignItems: 'flex-start',
                         backgroundColor: '#FAFAFA',
@@ -268,7 +234,7 @@ const FormikPostUploader = ({ navigation }) => {
                             <Picker.Item label="Restaurant" value="Restaurant" />
                         </Picker>
                     </View>
-                    <View>
+                    {/* <View>
                         <Text>Operating Hour:</Text>
                         <Text style={{ fontSize: 17, fontWeight: 'bold', marginBottom: 10 }}>
                             {selectedDate ? selectedDate.toLocaleDateString() + ", " +  selectedDate.toLocaleTimeString() : 'No date selected'}

@@ -86,22 +86,16 @@ npm i react-native-pell-rich-editor
 npm i @react-navigation/drawer
 ```
 
-## 📝 Modal component:
-
-```sh
-npm install react-native-dropdown-picker
-```
-
 ## 📝 Maps component:
 
 ```sh
 npm i axios
 ```
 
-## in case bad things happen:
+## 📝 Modal component:
 
 ```sh
-git reset HEAD^ --hard and git push --force
+npm install react-native-dropdown-picker
 ```
 
 ## in case bad things happen:
@@ -115,6 +109,12 @@ git merge -s ours master
 git checkout master
 git merge branch1
 git push --force origin master
+```
+
+## Other package:
+
+```sh
+npm i expo-device
 ```
 
 ## 📝 Notes

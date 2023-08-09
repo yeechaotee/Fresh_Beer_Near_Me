@@ -41,8 +41,9 @@ const Drawer = createDrawerNavigator();
 
 function Home({ navigation }) {
     // passing data from VenueItems localRestaurant into venueData
-    // const [venueData, setVenueData] = useState(localRestaurants);
-    // const [city, setCity] = useState("Singapore");
+    const [venueData, setVenueData] = useState(localRestaurants);
+    //const [city, setCity] = useState("Singapore");
+
     // const [activeTab, setActiveTab] = useState("Delivery");
     const [posts, setPosts] = useState([]);
 
@@ -117,6 +118,7 @@ function Home({ navigation }) {
     //     return () => unsubcribe();
     // }, [])
 
+
     // can just change the location city to what we wanna render
     // const getVenueFromYelp = () => {
     //     const yelpUrl = `https://api.yelp.com/v3/businesses/search?term=restaurants&location=${city}`
@@ -143,16 +145,144 @@ function Home({ navigation }) {
             // console.log("user id is:: " + user.uid);
             const querySnapshot = await getDocs(q);
             setSuggestion(querySnapshot.docs);
-            console.log("suggestion length is: " + suggestion.length);
-            // querySnapshot.forEach((doc) => {
-            //     // doc.data() is never undefined for query doc snapshots
-            //     setQueryRole(doc.data().role);
-            //     // console.log(doc.id, " => ", doc.data());
-            //     console.log(doc.id, " => User Role: ", doc.data().role);
-            // });
         }
+    };
 
-    }
+
+    // ------------------------- Cindy changes from here----------------
+    const getVenueDataFromFirestore = async (userRegion, userBeerProfile, userFavBeer) => {
+        try {
+            const venueCollectionRef = collection(FIRESTORE_DB, 'venues');
+
+            // Create a base query to fetch documents with matching region
+            let baseQuery = query(venueCollectionRef, where('region', '==', userRegion));
+
+            // Execute the base query and get the collection snapshot
+            const baseQuerySnapshot = await getDocs(baseQuery);
+
+            // Create a query for beerprofile equal to "Crisp"
+            const beerProfileQuery = query(venueCollectionRef, where('beerProfile', 'array-contains-any', userBeerProfile));
+
+            // Execute the beerProfileQuery and get the collection snapshot
+            const beerProfileQuerySnapshot = await getDocs(beerProfileQuery);
+
+            // Create a query for favorite beers containing any of the user's favorite beers
+            const favBeerQuery = query(venueCollectionRef, where('favBeer', 'array-contains-any', userFavBeer));
+
+            // Execute the favBeerQuery and get the collection snapshot
+            const favBeerQuerySnapshot = await getDocs(favBeerQuery);
+
+            // Merge the results from different queries
+            const combinedQuerySnapshot = mergeQuerySnapshots([
+                baseQuerySnapshot,
+                beerProfileQuerySnapshot,
+                favBeerQuerySnapshot
+            ]);
+
+            const venueData = [];
+            combinedQuerySnapshot.forEach((doc) => {
+                const data = doc.data();
+                venueData.push(data);
+            });
+
+            console.log('Fetched venue data:', venueData);
+
+            setVenueData(venueData);
+        } catch (error) {
+            console.log('Error getting venue data from Firestore:', error);
+        }
+    };
+
+    // Helper function to merge query snapshots
+    const mergeQuerySnapshots = (snapshots) => {
+        const mergedDocs = [];
+        const mergedDocIds = new Set(); // Keep track of already added document IDs
+
+        snapshots.forEach((snapshot) => {
+            snapshot.forEach((doc) => {
+                const docId = doc.id;
+                if (!mergedDocIds.has(docId)) {
+                    mergedDocs.push(doc);
+                    mergedDocIds.add(docId);
+                }
+            });
+        });
+        return mergedDocs;
+    };
+
+    useEffect(() => {
+        //getVenueFromYelp();
+
+        getCurrentUserDoc().then((result) => {
+            if (result) {
+                const { docId, docData } = result;
+                console.log('Current user document ID:', docId);
+                console.log('Current user document data:', docData);
+
+                // Compare the "region" field from the current user's document with each venue's "region" field in venueData
+                const userRegion = docData.region;
+                console.log('User in region:', userRegion);
+
+                const userBeerProfile = docData.beerProfile;
+                console.log('User beer profile:', userBeerProfile);
+
+                const userFavBeer = docData.favBeer;
+                console.log('User fav beer:', userFavBeer);
+
+                getVenueDataFromFirestore(userRegion, userBeerProfile, userFavBeer); // Call the function to fetch data from Firestore
+                //setVenueData(venueData);
+                // Update the state with the filtered venue data
+                //setVenueData(filteredVenueData); 
+            }
+        });
+    }, []);
+
+
+    const getCurrentUserDoc = async () => {
+        try {
+
+            const userCollectionRef = collection(FIRESTORE_DB, 'users');
+
+            // Get the current user from Firebase Authentication
+            const user = FIREBASE_AUTH.currentUser;
+
+            // Check if there is a current user
+            if (!user) {
+                console.log('No authenticated user.');
+                return null;
+            }
+
+            console.log('My UserID:', user.uid);
+
+            // Create a query to fetch the documents in the user's collection (should be only one document)
+            const q = query(userCollectionRef, where('owner_uid', '==', user.uid));
+
+            // Execute the query and get the query snapshot
+            const querySnapshot = await getDocs(q);
+
+            // Check if there is a document in the user's collection
+            if (!querySnapshot.empty) {
+                // Get the first document from the query snapshot
+                const userDoc = querySnapshot.docs[0];
+                // Get the docID of the user's document
+                const docId = userDoc.id;
+
+                // Get the data from the user's document
+                const docData = userDoc.data();
+
+                // Return both the document ID and data as an object
+                return { docId, docData };
+            } else {
+                console.log('User document not found.');
+                return null;
+            }
+        } catch (error) {
+            console.log('Error getting current user document ID:', error);
+            return null;
+        }
+    };
+
+    // ------------------------- Cindy changes To here----------------
 
     return (
         <SafeAreaView style={{ backgroundColor: "#eee", flex: 1 }}>

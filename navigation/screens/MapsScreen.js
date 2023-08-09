@@ -15,26 +15,60 @@ import Constants from "expo-constants";
 import InputAutoComplete from "../../components/maps/InputAutoComplete";
 import { endAsyncEvent } from "react-native/Libraries/Performance/Systrace";
 import GetRideModal from "../../components/maps/GetRide";
-import { FIRESTORE_DB } from "../../firebase";
-import {
-  addDoc,
-  collection,
-  onSnapshot,
-  getDocs,
-  limit,
-  setDoc,
-  doc,
-  firestore,
-  collectionGroup,
-  query,
-  where,
-} from "firebase/firestore";
-import { GOOGLE_API_KEY } from "../../components/maps/environments";
-import axios from "axios";
 
 const { width, height } = Dimensions.get("window");
 
-let locationsOfInterest = [];
+// location markers
+let locationsOfInterest = [
+  {
+    title: "first",
+    location: {
+      latitude: 1.369778,
+      longitude: 103.849437,
+    },
+    description: "my first marker",
+  },
+  {
+    title: "second",
+    location: {
+      latitude: 1.316721,
+      longitude: 103.882049,
+    },
+    description: "my second marker",
+  },
+  {
+    title: "third",
+    location: {
+      latitude: 1.2931,
+      longitude: 103.8558,
+    },
+    description: "my third marker",
+  },
+  {
+    title: "fourth",
+    location: {
+      latitude: 1.3521,
+      longitude: 103.8198,
+    },
+    description: "my fourth marker",
+  },
+  {
+    title: "fifth",
+    location: {
+      latitude: 1.3066,
+      longitude: 103.8549,
+    },
+    description: "my fifth marker",
+  },
+  {
+    title: "sixth",
+    location: {
+      latitude: 1.2903,
+      longitude: 103.8523,
+    },
+    description: "my sixth marker",
+  },
+];
 
 export default function MapsScreen() {
   //get data from firebase, title, location, description
@@ -224,9 +258,6 @@ export default function MapsScreen() {
   };
 
   const showLocationsOfInterest = () => {
-    // Perform asynchronous operations, e.g., fetching data
-    //await updateVenueDataWithCoordinates();
-    // Now you can use the fetched data in the map function
     return locationsOfInterest.map((item, index) => {
       return (
         <Marker

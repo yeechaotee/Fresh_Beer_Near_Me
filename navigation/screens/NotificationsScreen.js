@@ -69,6 +69,9 @@ export default function NotificationsScreen(navigation) {
     }
   };
 
+  dismissAllNotificationsAsync();
+
+
   const [presentedNotificationCount, setPresentedNotificationCount] = useState(0);
 
   const getPresentedNotifications = async () => {
@@ -274,14 +277,15 @@ async function sendPushNotification() {
     if (notification) {
       const notificationData = {
         owner_uid: FIREBASE_AUTH.currentUser.uid,
-        title: "Happy Hour! Huat Arhhh 🍻",
+        title: "Happy Hour! Huat 8 🍻",
         body: 'Test',
         //data: { data: 'goes here' },
         timestamp: timestampString,
-        
         //timestamp: serverTimestamp(),
         type: "Promotion"
       };
+
+      console.log('timestampString:', timestampString);
       await addDoc(collection(FIRESTORE_DB, 'notifications'), notificationData);
       console.log('Notification data added to Firestore:', notificationData);
     }

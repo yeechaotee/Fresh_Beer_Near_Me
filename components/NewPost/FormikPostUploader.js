@@ -284,7 +284,7 @@ const FormikPostUploader = ({ navigation }) => {
                     </View> */}
 
                     <Divider width={0.2} orientation='vertical' />
-                    <View style={{ marginBottom: 15 }} >
+                    <View style={{ marginBottom: 1 }} >
                         <TextInput
                             onChange={(e) => setThumbnailUrl(e.nativeEvent.text)}
                             style={{ fontSize: 17 }}
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         minHeight: 42,
         borderRadius: 4,
-        marginTop: 20,
+        marginTop: 5,
         maxWidth: 280, fontWeight: '600', fontSize: 20, borderRadius: 30,
         width: 70, justifyContent: 'center', alignSelf: 'center', textAlign: 'center'
     }),

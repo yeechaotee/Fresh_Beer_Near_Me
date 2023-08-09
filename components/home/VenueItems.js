@@ -33,53 +33,47 @@ export const localRestaurants = [
 ];
 
 export default function VenueItems({ navigation, ...props }) {
-  if (props.venueData == null) {
-    return (
-      <View>
-        <Text>No venues found.</Text>
-      </View>
-    );
-  }
+    if (props.venueData == null) {
+        return (
+            <View >
+                <Text >No venues found.</Text>
+            </View>
+        );
+    }
 
-  return (
-    <>
-      {props.venueData.map((venue, index) => (
-        <TouchableOpacity
-          key={index}
-          activeOpacity={1}
-          style={{ marginBottom: 0 }}
-          onPress={() =>
-            navigation.navigate("VenueDetail", {
-              name: venue.name,
-              image: venue.image_url,
-              price: venue.price,
-              reviews: venue.reviews,
-              rating: venue.rating,
-              categories: venue.categories,
-              caption: venue.caption,
-              manageable: props.manageable,
-            })
-          }
-        >
-          <View
-            style={{ marginTop: 10, padding: 15, backgroundColor: "white" }}
-          >
-            {/* Venue Image */}
-            <VenueImage image={venue.image_url} />
-            {/* Venue Info */}
-            <VenueInfo
-              name={venue.name}
-              categories={venue.categories}
-              price={venue.price}
-              reviews={venue.reviews}
-              caption={venue.caption}
-              rating={venue.rating}
-            />
-          </View>
-        </TouchableOpacity>
-      ))}
-    </>
-  );
+    return (
+        <>
+            {props.venueData.map((venue, index) => (
+                <TouchableOpacity
+                    key={index}
+                    activeOpacity={1}
+                    style={{ marginBottom: 0 }}
+                    onPress={() => navigation.navigate("VenueDetail", {
+                        name: venue.name,
+                        image: venue.image_url,
+                        price: venue.price,
+                        reviews: venue.reviews,
+                        rating: venue.rating,
+                        categories: venue.categories,
+                        caption: venue.caption,
+                        manageable: props.manageable,
+                        operating_hour: venue.operating_hour,
+                        location: venue.location,
+                        venueId: (venue.venueId ? venue.venueId : ''),
+                    })
+                    }>
+                    
+                    <View style={{ marginTop: 10, padding: 15, backgroundColor: "white", }}>
+                        {/* Venue Image */}
+                        {/* {console.log("Menu item is"+venue.MenuItems)} */}
+                        <VenueImage image={venue.image_url} />
+                        {/* Venue Info */}
+                        <VenueInfo name={venue.name} categories={venue.categories} price={venue.price} reviews={venue.reviews} caption={venue.caption} rating={venue.rating} />
+                    </View>
+                </TouchableOpacity>
+            ))}
+        </>
+    );
 }
 
 const VenueImage = (props) => (

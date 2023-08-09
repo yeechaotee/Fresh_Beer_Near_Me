@@ -18,7 +18,7 @@ import { ScrollView } from 'react-native';
 import VenueItems, { localRestaurants } from '../../components/home/VenueItems';
 // import { Divider } from 'react-native-elements/dist/divider/Divider';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
-import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where } from 'firebase/firestore';
+import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { Searchbar } from 'react-native-paper';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -30,6 +30,7 @@ import ManagePost from '../../components/NewPost/ManagePost';
 import { Button } from 'react-native-elements';
 import { DrawerActions } from '@react-navigation/native';
 import NewPostScreen from './NewPostScreen';
+
 
 
 const YELP_API_KEY = "S_sQQHygX7Ui-K8lufhHmS0SZ_eH9ICa3CFPWTf1a0PcucfjqtH97x-sPBtpF3m65FB2Hp1UAQyMSw3XLlTHm3WALMQ3l5q3YcCmWnVxK8Cyaah2kiYfivsO0U2uZHYx"
@@ -55,16 +56,27 @@ function Home({ navigation }) {
     // render all venues data and setPosts
     useEffect(() => {
         setPosts([]);
-        const unsubcribe = onSnapshot(collection(FIRESTORE_DB, 'venues'), (snapshot) => {
+        const querySnapshot = query(collection(FIRESTORE_DB, 'venues'), orderBy('createdAt', "desc"));
+        const unsubcribe = onSnapshot(querySnapshot, (snapshot) => {
             snapshot.docChanges().forEach((change) => {
                 if (change.type === "added") {
                     console.log("New Venue", change.doc.data());
-                    setPosts((prevVenues) => [...prevVenues, change.doc.data()])
+                    const venueData = change.doc.data();
+                    const venueId = change.doc.id; // Get the document ID
+                    console.log('New Venue ID: ', venueId);
+                    // console.log("New Venue uid: ", change.id);
+                    setPosts((prevVenues) => [...prevVenues, { venueId: venueId, ...venueData }])
                 }
             })
         })
         return () => unsubcribe();
     }, [])
+
+    // const sfRef = db.collection('cities').doc('SF');
+    // const collections = await sfRef.listCollections();
+    // collections.forEach(collection => {
+    //     console.log('Found subcollection with id:', collection.id);
+    // });
 
     // get current user and user role from firebase
     useEffect(() =>
@@ -207,6 +219,9 @@ function Home({ navigation }) {
                                                 rating: suggestionVenue.data().rating,
                                                 categories: suggestionVenue.data().categories,
                                                 caption: suggestionVenue.data().caption,
+                                                operating_hour: suggestionVenue.data().operating_hour,
+                                                location: suggestionVenue.data().location,
+                                                venueId: suggestionVenue.id,
                                             })}
                                             key={index}
                                             activeOpacity={1}
@@ -240,7 +255,7 @@ function Home({ navigation }) {
                     }} /> */}
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
                 {/* <Categories /> */}
 
                 {/* posts state will filter out only searched result if any and pass it to venueData */}

@@ -25,12 +25,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginTop: 30,
+        marginTop: 20,
         marginRight: 70,
     },
 
     headerText: {
-        fontWeight: '700',
         fontSize: 20,
         marginRight: 10,
     }

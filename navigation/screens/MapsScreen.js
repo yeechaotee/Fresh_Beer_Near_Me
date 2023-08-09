@@ -85,6 +85,8 @@ export default function MapsScreen() {
       console.log("Error getting venue data from Firestore:", error);
     }
 
+    //get coordinates for each location
+    console.log("updating venue data with coordinates");
     for (const venue of venueData) {
       try {
         const { latitude, longitude } = await geocodeAddress(venue.location);
@@ -96,7 +98,7 @@ export default function MapsScreen() {
       }
     }
 
-    console.log(venueData); // Updated venueData array with latitude and longitude
+    console.log("adding latitude and longitude to contents");
     for (let i = 0; i < venueData.length; i++) {
       console.log("entry #", i);
       console.log(
@@ -117,6 +119,7 @@ export default function MapsScreen() {
       );
     }
 
+    console.log("populating locations of interest");
     locationsOfInterest = venueData
       .filter(
         (data) =>
@@ -134,7 +137,7 @@ export default function MapsScreen() {
         };
       });
 
-    console.log("locations of interest");
+    console.log("locations of interest:");
     console.log(locationsOfInterest);
   };
 
@@ -225,7 +228,7 @@ export default function MapsScreen() {
 
   const showLocationsOfInterest = () => {
     // Perform asynchronous operations, e.g., fetching data
-    //await updateVenueDataWithCoordinates();
+    //await getVenueDataFromFirestore();
     // Now you can use the fetched data in the map function
     return locationsOfInterest.map((item, index) => {
       return (

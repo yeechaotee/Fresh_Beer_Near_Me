@@ -531,6 +531,7 @@ function StarRating() {
     }
     const newRef = doc(collection(FIRESTORE_DB, "reviews"));
     await setDoc(newRef, data);
+    alert("success")
   }
   return (
     <SafeAreaView style={{ flex: 1, padding: 10 }}>

@@ -32,10 +32,13 @@ import {
 } from "firebase/firestore";
 import { GOOGLE_API_KEY } from "../../components/maps/environments";
 import axios from "axios";
+import { useNavigation } from "@react-navigation/native"; // Import the useNavigation hook
 
 const { width, height } = Dimensions.get("window");
 
 export default function MapsScreen() {
+  const navigation = useNavigation();
+
   //states
   const [venueData, setVenueData] = useState([]);
   const [userLocation, setUserLocation] = useState({
@@ -348,6 +351,7 @@ export default function MapsScreen() {
           modalVisible={mapInfoModalVisible}
           setModalVisible={setMapInfoModalVisible}
           locationTitle={selectedLocationTitle} // Pass the selected location title to the modal
+          navigation={navigation}
         />
       </View>
       <View style={styles.checkIn}>

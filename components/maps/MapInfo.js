@@ -25,9 +25,16 @@ import {
   orderBy,
 } from "firebase/firestore";
 
-const MapInfoModal = ({ modalVisible, setModalVisible, locationTitle }) => {
+const MapInfoModal = ({
+  modalVisible,
+  setModalVisible,
+  locationTitle,
+  navigation,
+}) => {
   const [posts, setPosts] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(modalVisible);
   useEffect(() => {
+    setIsModalVisible(modalVisible);
     if (modalVisible) {
       console.log("passed location name:", locationTitle);
       setPosts([]);
@@ -35,12 +42,12 @@ const MapInfoModal = ({ modalVisible, setModalVisible, locationTitle }) => {
         collection(FIRESTORE_DB, "venues"),
         where("name", "==", locationTitle)
       );
-      const unsubcribe = onSnapshot(querySnapshot, (snapshot) => {
+      const unsubscribe = onSnapshot(querySnapshot, (snapshot) => {
         snapshot.docChanges().forEach((change) => {
           if (change.type === "added") {
             console.log("New Venue", change.doc.data());
             const venueData = change.doc.data();
-            const venueId = change.doc.id; // Get the document ID
+            const venueId = change.doc.id;
             console.log("New Venue ID: ", venueId);
             setPosts((prevVenues) => [
               ...prevVenues,
@@ -49,23 +56,32 @@ const MapInfoModal = ({ modalVisible, setModalVisible, locationTitle }) => {
           }
         });
       });
-      return () => unsubcribe();
+      return () => unsubscribe();
     }
   }, [modalVisible, locationTitle]);
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+    if (setModalVisible) {
+      setModalVisible(false);
+    }
+  };
 
   return (
     <Modal
       visible={modalVisible}
       animationType="slide"
       transparent={true}
-      onRequestClose={() => setModalVisible(false)}
+      onRequestClose={closeModal}
+      onPress={closeModal}
     >
       <View style={styles.modalContainer}>
-        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+        <TouchableWithoutFeedback onPress={closeModal}>
           <View style={styles.modalContainer}>
             <VenueItems
+              onPress={closeModal}
               venueData={posts}
-              //navigation={navigation}
+              navigation={navigation}
               manageable={false}
             />
           </View>

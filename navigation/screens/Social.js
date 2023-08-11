@@ -160,16 +160,18 @@ function CreateFeed() {
   const richText = React.useRef();
   const [state, setState] = React.useState({
     uploading: false,
-    image: null,
   });
+  const [image, setImage] = React.useState("");
   const [description, setDescription] = React.useState("");
+
   const _handleImagePicked = async (pickerResult) => {
     try {
       setState({ uploading: true });
 
       if (!pickerResult.cancelled) {
         const uploadUrl = await uploadImageAsync(pickerResult.uri);
-        setState({ image: uploadUrl });
+        console.log(uploadUrl)
+        setImage(uploadUrl);
       }
     } catch (e) {
       console.log(e);
@@ -190,7 +192,6 @@ function CreateFeed() {
   };
 
   const _maybeRenderImage = () => {
-    let { image } = state;
     if (!image) {
       return;
     }
@@ -200,6 +201,7 @@ function CreateFeed() {
         style={{
           marginTop: 30,
           width: 250,
+
           borderRadius: 3,
           elevation: 2,
         }}
@@ -241,15 +243,14 @@ function CreateFeed() {
                 }}
             />
           </KeyboardAvoidingView>
-          {_maybeRenderImage()}
-          <Button title="Creat Feed"  onPress={async () => {
+          <Button title="Creat Feed" onPress={async () => {
             const data = {
               type: false,
               startDateTime: "",
               endDatTime: "",
               numberOfPeople: "0",
               description: description,
-              image: state.image,
+              image: image,
               creater: FIREBASE_AUTH.currentUser.email,
               createTime: new Date(),
               avatar: FIREBASE_AUTH.currentUser.photoURL,
@@ -304,17 +305,17 @@ function CreateFeedByAdmin() {
 
   const _handleImagePicked = async (pickerResult) => {
     try {
-      setState({ uploading: true });
+      setState({ ...state, uploading: true });
 
       if (!pickerResult.cancelled) {
         const uploadUrl = await uploadImageAsync(pickerResult.uri);
-        setState({ image: uploadUrl });
+        setImage(uploadUrl);
       }
     } catch (e) {
       console.log(e);
       alert("Upload failed, sorry :(");
     } finally {
-      setState({ uploading: false });
+      setState({ ...state, uploading: false });
     }
   };
 
@@ -454,7 +455,6 @@ function CreateFeedByAdmin() {
               }}
           />
         </KeyboardAvoidingView>
-        {_maybeRenderImage()}
         <Button title="Creat Feed" onPress={async () => {
           const data = {
             type: type,

@@ -11,9 +11,9 @@ import {
     Alert
 } from 'react-native'
 import React, { useState } from 'react'
-import { FIREBASE_AUTH, FIRESTORE_DB} from '../../firebase';
+import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
 import { ActivityIndicator } from 'react-native-paper';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { validate, validator } from 'email-validator';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
@@ -36,7 +36,14 @@ export default function Login({ navigation }) {
         setLoading(true);
         try {
             const response = await signInWithEmailAndPassword(auth, email, password);
-            console.log(response);
+            console.log("Logon log: ===> " + response);
+
+            // Check if the user's email is verified
+            const user = auth.currentUser;
+            if (user && !user.emailVerified) {
+                alert("Email Verification Required. Please verify your email before logging in.");
+                signOut(auth);
+            }
         }
         catch (error) {
             console.log(error);
@@ -95,14 +102,31 @@ export default function Login({ navigation }) {
 
     return (
         <View style={styles.container}>
+            {navigation &&
+                <TouchableOpacity onPress={() => navigation.goBack()}
+                    style={{
+                        top: 40,
+                        left: 1,
+                        zIndex: 1,
+                        position: 'absolute',
+                        paddingVerticle: 9,
+                        borderRadius: 20,
+                    }}>
+                    <Image
+                        source={require('../../assets/arrowback.png')}
+                        style={{ width: 20, height: 20 }}
+                    />
+                    {/* <FontAwesome5 name={'arrow-alt-circle-left'} color={'#fff'} size={30} /> */}
+                </TouchableOpacity>}
             <View style={styles.logoContainer}>
                 <Image source={{ uri: BEER_LOGO, height: 200, width: 200 }} />
             </View>
             <View>
                 <Formik
                     initialValues={{ email: '', password: '' }}
-                    onSubmit={values => {
-                        onLogin(values.email, values.password)
+                    onSubmit={(values, { resetForm }) => {
+                        onLogin(values.email, values.password);
+                        resetForm({ values: { email: '', password: '' } })
                     }}
                     validationSchema={LoginFormSchema}
                     validateOnMount={true}
@@ -118,7 +142,6 @@ export default function Login({ navigation }) {
                                     <TextInput
                                         placeholder='Email'
                                         autoCapitalize='none'
-                                        placeholderTextColor='#444'
                                         keyboardType='email-address'
                                         autoFocus={true}
                                         // value={email}

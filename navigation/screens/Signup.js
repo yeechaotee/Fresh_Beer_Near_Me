@@ -15,6 +15,8 @@ import { ActivityIndicator } from "react-native-paper";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendEmailVerification,
+  signOut,
 } from "firebase/auth";
 import { validate, validator } from "email-validator";
 import * as Yup from "yup";
@@ -30,6 +32,7 @@ import {
 } from "firebase/firestore";
 import { Picker } from "@react-native-picker/picker";
 import SurveyModal from "../../components/signup/surveyModal";
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const BEER_LOGO =
   "https://static.vecteezy.com/system/resources/thumbnails/007/306/850/small/beer-glasses-hand-drawn-illustration-cheers-lettering-phrase-cartoon-style-design-for-logo-banner-poster-greeting-cards-web-invitation-to-party-vector.jpg";
@@ -60,7 +63,17 @@ export default function Signup({ navigation }) {
         email,
         password
       );
-      console.log(authUser);
+
+      // send out email verification for new sign up user after created For email verification process before they can logon to our mobile (security enhancement)
+      await sendEmailVerification(authUser.user);
+
+      // Sign out the user after email verification is sent
+      await signOut(auth);
+
+      // Show an alert to the user indicating that an email has been sent
+      alert("Email verification sent. Please check your inbox.");
+
+      navigation.push("Login");
 
       // add to 'users' database firebase
       const doc = await addDoc(collection(FIRESTORE_DB, "users"), {
@@ -77,8 +90,8 @@ export default function Signup({ navigation }) {
         favBeer: favBeer,
         region: region,
       });
-
       console.log("document saved correctly", doc.id);
+
     } catch (error) {
       console.log(error);
       alert("Sign up failed: " + error.message);
@@ -89,9 +102,11 @@ export default function Signup({ navigation }) {
 
   // (Test data only) get random user profile from API, look more json data on the link
   const getRandomProfilePicture = async () => {
-    const response = await fetch("https://randomuser.me/api");
+    // const response = await fetch("https://randomuser.me/api");
+    const response = await fetch("https://api.waifu.pics/sfw/waifu");
     const data = await response.json();
-    return data.results[0].picture.large;
+    // return data.results[0].picture.large;
+    return data.url;
   };
 
   //modal needs
@@ -110,19 +125,36 @@ export default function Signup({ navigation }) {
 
   return (
     <View style={styles.container}>
+      {navigation &&
+        <TouchableOpacity onPress={() => navigation.goBack()}
+          style={{
+            top: 40,
+            left: 1,
+            zIndex: 1,
+            position: 'absolute',
+            paddingVerticle: 9,
+            borderRadius: 20,
+          }}>
+          <Image
+            source={require('../../assets/arrowback.png')}
+            style={{ width: 20, height: 20 }}
+          />
+          {/* <FontAwesome5 name={'arrow-alt-circle-left'} color={'#fff'} size={30} /> */}
+        </TouchableOpacity>}
       <View style={styles.logoContainer}>
         <Image source={{ uri: BEER_LOGO, height: 200, width: 200 }} />
       </View>
       <View>
         <Formik
           initialValues={{ email: "", password: "", username: "" }}
-          onSubmit={(values) => {
+          onSubmit={(values, { resetForm }) => {
             onSignup(
               values.email,
               values.password,
               values.username,
               selectedRole
             );
+            // resetForm({ values: { email: '', password: '', username: '' } });
           }}
           validationSchema={SignupFormSchema}
           validateOnMount={true}
@@ -151,7 +183,7 @@ export default function Signup({ navigation }) {
                     value={values.email}
                     onChangeText={handleChange("email")}
                     onBlur={handleBlur("email")}
-                    // onChangeText={(text) => setEmail(text)}
+                  // onChangeText={(text) => setEmail(text)}
                   ></TextInput>
                 </View>
                 <View
@@ -181,7 +213,7 @@ export default function Signup({ navigation }) {
                     {
                       borderColor:
                         1 > values.username.length ||
-                        values.username.length >= 2
+                          values.username.length >= 2
                           ? "#ccc"
                           : "red",
                     },
@@ -193,8 +225,8 @@ export default function Signup({ navigation }) {
                     value={values.username}
                     onChangeText={handleChange("username")}
                     onBlur={handleBlur("username")}
-                    // value={password}
-                    // onChangeText={(text) => setPassword(text)}
+                  // value={password}
+                  // onChangeText={(text) => setPassword(text)}
                   ></TextInput>
                 </View>
                 <View
@@ -203,7 +235,7 @@ export default function Signup({ navigation }) {
                     {
                       borderColor:
                         1 > values.password.length ||
-                        values.password.length >= 6
+                          values.password.length >= 6
                           ? "#ccc"
                           : "red",
                     },
@@ -216,8 +248,8 @@ export default function Signup({ navigation }) {
                     value={values.password}
                     onChangeText={handleChange("password")}
                     onBlur={handleBlur("password")}
-                    // value={password}
-                    // onChangeText={(text) => setPassword(text)}
+                  // value={password}
+                  // onChangeText={(text) => setPassword(text)}
                   ></TextInput>
                 </View>
                 {loading ? (

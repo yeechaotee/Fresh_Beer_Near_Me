@@ -1,4 +1,4 @@
-import React, { useEffect, useState,useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 //import { Image } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
@@ -62,6 +62,7 @@ const ProfileStack = ({ navigation, route }) => (
 );
 
 function LogonLayout() {
+  
 
   const [userProfile, setUserProfile] = useState(null);
 
@@ -186,7 +187,7 @@ function LogonLayout() {
       <Tab.Screen
         name="Social"
         component={Social}
-        //options={{ tabBarBadge: 45 }}
+      //options={{ tabBarBadge: 45 }}
       />
       <Tab.Screen
         name="Discovery"
@@ -195,11 +196,12 @@ function LogonLayout() {
       <Tab.Screen
         name="Notification"
         component={NotificationsScreen}
-        options={{  tabBarBadge: presentedNotificationCount > 0 ? presentedNotificationCount : null,
-         }}>
+        options={{
+          tabBarBadge: presentedNotificationCount > 0 ? presentedNotificationCount : null,
+        }}>
 
-           
-         </Tab.Screen>
+
+      </Tab.Screen>
       {userProfile && userProfile.profile_picture != null ?
         <Tab.Screen
           name="Profile"
@@ -325,7 +327,6 @@ function App() {
   useEffect(
     () =>
       onAuthStateChanged(FIREBASE_AUTH, (user) => {
-        // console.log('User info ---> ', user);
         if (user) {
           setUser(user);
         }
@@ -359,9 +360,22 @@ function App() {
     </NavigationContainer>
   )
 
+
+
+  const getEmailVerificationStatus = () => {
+    // Check if the user is logged in and their email is verified
+    if (user && user.emailVerified) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  };
+
+
   return (
     <>
-      {user ? !loadingInitial && SignedInStack() : !loadingInitial && SignedOutStack()}
+      {user && getEmailVerificationStatus() ? !loadingInitial && SignedInStack() : !loadingInitial && SignedOutStack()}
 
     </>
     // <NavigationContainer>

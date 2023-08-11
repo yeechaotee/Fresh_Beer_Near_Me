@@ -27,12 +27,6 @@ const Drawer = createDrawerNavigator();
 const handleHead = ({tintColor}) => <Text style={{color: tintColor}}>H1</Text>
 
 function NewsFeed() {
-  // const activeData = Array.from({ length: 100 }, (item, index) => ({
-  //     id: index + 1,
-  //     name: `Mike ${index + 1}`,
-  //     message: `testmessage kdsfjkdsljfjklsajfdaskjdfklsj${index + 1}`,
-  //     time: generateRandomTime(),
-  // }));
   const [activeData, setActiveData] = React.useState([]);
   const auth = FIREBASE_AUTH;
 
@@ -46,7 +40,7 @@ function NewsFeed() {
   React.useEffect(() => {
     async function getNewsFeed() {
       const feedsRef = collection(FIRESTORE_DB, "newsfeed");
-      const q = query(feedsRef, orderBy("createTime"));
+      const q = query(feedsRef, orderBy("createTime", "desc"));
       const querySnapshot = await getDocs(q);
       const feeds = new Array();
       querySnapshot.forEach((doc) => {
@@ -59,6 +53,7 @@ function NewsFeed() {
       });
       setActiveData(feeds);
     }
+    console.log("render list")
     getNewsFeed();
   }, []);
 
@@ -682,6 +677,8 @@ export default function SocialScreen({ navigation }) {
             backgroundColor: "#ffa31a",
           },
           headerTitleAlign: "center",
+          lazy: false,
+          unmountOnBlur: true,
         }}
       />
       {

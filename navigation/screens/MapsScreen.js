@@ -15,6 +15,7 @@ import Constants from "expo-constants";
 import InputAutoComplete from "../../components/maps/InputAutoComplete";
 import { endAsyncEvent } from "react-native/Libraries/Performance/Systrace";
 import GetRideModal from "../../components/maps/GetRide";
+import MapInfoModal from "../../components/maps/MapInfo";
 import { FIRESTORE_DB } from "../../firebase";
 import {
   addDoc,
@@ -45,6 +46,10 @@ export default function MapsScreen() {
   });
   const [destination, setDestination] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [mapInfoModalVisible, setMapInfoModalVisible] = useState(false);
+  const [selectedLocationTitle, setSelectedLocationTitle] = useState("");
+  const [markerPressCount, setMarkerPressCount] = useState(0);
+  const [lastPressedMarkerIndex, setLastPressedMarkerIndex] = useState(-1); // Initialize with an invalid index
 
   //geocode location to get coordinates
   //Function to geocode an address using the Google Maps Geocoding API
@@ -166,6 +171,11 @@ export default function MapsScreen() {
     setModalVisible(true);
   };
 
+  const handleOpenMapInfoModal = (title) => {
+    setSelectedLocationTitle(title);
+    setMapInfoModalVisible(true);
+  };
+
   const mapRef = useRef(null);
 
   const moveTo = async (position) => {
@@ -215,11 +225,34 @@ export default function MapsScreen() {
       }
 
       return (
+        // <Marker
+        //   key={index}
+        //   coordinate={{ latitude: item.latitude, longitude: item.longitude }}
+        //   title={item.name}
+        //   description={item.caption}
+        //   //onPress={() => handleOpenMapInfoModal(item.name)}
+        //   onPress={() => {
+        //     setMarkerPressCount((prevCount) => prevCount + 1);
+        //     if (markerPressCount === 1) {
+        //       handleOpenMapInfoModal(item.name);
+        //       setMarkerPressCount(0); // Reset the counter after handling the second press
+        //     }
+        //   }}
+        // />
         <Marker
           key={index}
           coordinate={{ latitude: item.latitude, longitude: item.longitude }}
           title={item.name}
           description={item.caption}
+          onPress={() => {
+            if (lastPressedMarkerIndex === index) {
+              // Second press on the same marker
+              handleOpenMapInfoModal(item.name);
+              setLastPressedMarkerIndex(-1); // Reset the marker index
+            } else {
+              setLastPressedMarkerIndex(index); // Set the current marker index
+            }
+          }}
         />
       );
     });
@@ -314,12 +347,20 @@ export default function MapsScreen() {
           }}
         >
           <Button title="Take me There" onPress={handleOpenModal} />
+          {/* <Button title="Temp button" onPress={handleOpenMapInfoModal} /> */}
         </View>
       </View>
       <View>
         <GetRideModal
           modalVisible={modalVisible}
           setModalVisible={setModalVisible}
+        />
+      </View>
+      <View>
+        <MapInfoModal
+          modalVisible={mapInfoModalVisible}
+          setModalVisible={setMapInfoModalVisible}
+          locationTitle={selectedLocationTitle} // Pass the selected location title to the modal
         />
       </View>
       <View style={styles.checkIn}>

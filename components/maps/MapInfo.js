@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "flex-end", // Align modal to the bottom of the screen
     margin: 0, // Remove default margin
-    marginBottom: 40,
+    marginBottom: 7,
   },
   modalContent: {
     backgroundColor: "#808080",

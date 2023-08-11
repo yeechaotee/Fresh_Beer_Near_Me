@@ -33,6 +33,14 @@ function NewsFeed() {
   // }));
   const [activeData, setActiveData] = React.useState([]);
 
+  function isAdmin() {
+    // todo by profile role
+    if (auth.currentUser.email == "tycb@gmail.com") {
+      return true;
+    }
+    return false;
+  }
+
   React.useEffect(() => {
     async function getNewsFeed() {
       const feedsRef = collection(FIRESTORE_DB, "newsfeed");

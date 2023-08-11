@@ -9,7 +9,7 @@ const transportApps = {
   },
   grab: {
     name: "Grab",
-    deepLink: "grab://'",
+    deepLink: "grab://",
   },
   cdgZig: {
     name: "CDG Zig",

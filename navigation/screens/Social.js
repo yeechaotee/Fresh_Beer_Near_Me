@@ -37,7 +37,6 @@ function NewsFeed() {
   const auth = FIREBASE_AUTH;
 
   function isAdmin() {
-    // todo by profile role
     if (auth.currentUser.email == "tycb@gmail.com") {
       return true;
     }
@@ -103,7 +102,7 @@ function NewsFeed() {
                       <View style={styles.rowContainer}>
                           <View style={styles.rowContainer}>
                             {
-                              isAdmin() ? <>
+                              !isAdmin() ? <>
                                 <FontAwesome5
                                   name={'heart'}
                                   size={20}

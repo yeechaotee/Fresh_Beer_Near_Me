@@ -10,6 +10,7 @@ import {
   addDoc,
   collection,
   onSnapshot,
+  getDoc,
   query,
   getDocs,
   setDoc,
@@ -30,12 +31,17 @@ function NewsFeed() {
   const [activeData, setActiveData] = React.useState([]);
   const auth = FIREBASE_AUTH;
 
-  function isAdmin() {
-    if (auth.currentUser.email == "tycb@gmail.com") {
-      return true;
+  const [isAdmin, setIsAdmin] = React.useState(false);
+
+  React.useEffect(() => {
+    async function isAdmin() {
+      console.log(auth.currentUser.uid)
+      const docRef = doc(FIRESTORE_DB, "profiles", auth.currentUser.uid);
+      const docSnap = await getDoc(docRef);
+      setIsAdmin(docSnap.exists());
     }
-    return false;
-  }
+    isAdmin();
+  }, [])
 
   React.useEffect(() => {
     async function getNewsFeed() {
@@ -44,7 +50,6 @@ function NewsFeed() {
       const querySnapshot = await getDocs(q);
       const feeds = new Array();
       querySnapshot.forEach((doc) => {
-        console.log(doc.data());
         feeds.push({
           id: doc.id,
           ...doc.data(),
@@ -97,7 +102,7 @@ function NewsFeed() {
                       <View style={styles.rowContainer}>
                           <View style={styles.rowContainer}>
                             {
-                              !isAdmin() ? <>
+                              !isAdmin ? <>
                                 <FontAwesome5
                                   name={'heart'}
                                   size={20}
@@ -657,14 +662,18 @@ function Report() {
 
 export default function SocialScreen({ navigation }) {
   const auth = FIREBASE_AUTH;
+  const [isAdmin, setIsAdmin] = React.useState(false);
 
-  function isAdmin() {
-    // todo by profile role
-    if (auth.currentUser.email == "tycb@gmail.com") {
-      return true;
+  React.useEffect(() => {
+    async function isAdmin() {
+      console.log(auth.currentUser.uid)
+      const docRef = doc(FIRESTORE_DB, "profiles", auth.currentUser.uid);
+      const docSnap = await getDoc(docRef);
+      console.log(auth.currentUser.uid, docSnap.exists())
+      setIsAdmin(docSnap.exists());
     }
-    return false;
-  }
+    isAdmin();
+  }, [])
 
   return (
     <Drawer.Navigator initialRouteName="Social Home">
@@ -682,7 +691,7 @@ export default function SocialScreen({ navigation }) {
         }}
       />
       {
-        isAdmin() ? <Drawer.Screen
+        isAdmin ? <Drawer.Screen
                       name="Create Post"
                       component={CreateFeedByAdmin}
                       options={{
@@ -706,7 +715,7 @@ export default function SocialScreen({ navigation }) {
                     />
       }
       {
-        !isAdmin() ? <Drawer.Screen
+        !isAdmin ? <Drawer.Screen
           name="Add Friends"
           component={AddFriends}
           options={{
@@ -719,7 +728,7 @@ export default function SocialScreen({ navigation }) {
         />: <></>
       }
       {
-        !isAdmin() ? <Drawer.Screen
+        !isAdmin ? <Drawer.Screen
           name="Star Rating"
           component={StarRating}
           options={{
@@ -732,7 +741,7 @@ export default function SocialScreen({ navigation }) {
         />: <></>
       }
       {
-        isAdmin() ? <Drawer.Screen
+        isAdmin ? <Drawer.Screen
           name="Report"
           component={Report}
           options={{

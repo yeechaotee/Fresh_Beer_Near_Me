@@ -35,10 +35,14 @@ function NewsFeed() {
 
   React.useEffect(() => {
     async function isAdmin() {
-      console.log(auth.currentUser.uid)
-      const docRef = doc(FIRESTORE_DB, "profiles", auth.currentUser.uid);
-      const docSnap = await getDoc(docRef);
-      setIsAdmin(docSnap.exists());
+      const feedsRef = collection(FIRESTORE_DB, "users");
+      const q = query(feedsRef, where("email", "==", auth.currentUser.email));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        console.log(data.role)
+        setIsAdmin(data.role === "businessUser");
+      })
     }
     isAdmin();
   }, [])
@@ -666,11 +670,14 @@ export default function SocialScreen({ navigation }) {
 
   React.useEffect(() => {
     async function isAdmin() {
-      console.log(auth.currentUser.uid)
-      const docRef = doc(FIRESTORE_DB, "profiles", auth.currentUser.uid);
-      const docSnap = await getDoc(docRef);
-      console.log(auth.currentUser.uid, docSnap.exists())
-      setIsAdmin(docSnap.exists());
+      const feedsRef = collection(FIRESTORE_DB, "users");
+      const q = query(feedsRef, where("email", "==", auth.currentUser.email));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        console.log(data.role)
+        setIsAdmin(data.role === "businessUser");
+      })
     }
     isAdmin();
   }, [])

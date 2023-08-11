@@ -244,6 +244,7 @@ export default function MapsScreen() {
       return (
         <Marker
           key={index}
+          pinColor="#ff4500"
           coordinate={{ latitude: item.latitude, longitude: item.longitude }}
           title={item.name}
           description={item.caption}
@@ -333,9 +334,10 @@ export default function MapsScreen() {
             title="Your Location"
             description="You are here"
             onDragEnd={(e) => setUserLocation(e.nativeEvent.coordinate)}
+            pinColor="blue"
           />
         )}
-        {destination && (
+        {/* {destination && (
           <Marker
             draggable
             coordinate={destination}
@@ -343,7 +345,7 @@ export default function MapsScreen() {
             description="Your destination"
             onDragEnd={(e) => setDestination(e.nativeEvent.coordinate)}
           />
-        )}
+        )} */}
         {showLocationsOfInterest()}
       </MapView>
       <View style={styles.userLocationContainer}>

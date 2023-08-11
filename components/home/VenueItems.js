@@ -76,7 +76,7 @@ export default function VenueItems({ navigation, ...props }) {
 
 
 
-const VenueImage = (props) => (
+export const VenueImage = (props) => (
     <>
         <Image
             source={{
@@ -90,7 +90,7 @@ const VenueImage = (props) => (
     </>
 )
 
-const VenueInfo = (props) => (
+export const VenueInfo = (props) => (
     <View style={{
         flexDirection: "row",
         justifyContent: "space-between",

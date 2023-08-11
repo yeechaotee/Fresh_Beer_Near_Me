@@ -14,11 +14,13 @@ import {
   getDocs,
   setDoc,
   doc,
-  orderBy
+  orderBy,
+  where
 } from "firebase/firestore";
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import uuid from "uuid";
+import { VenueInfo, VenueImage } from "../../components/home/VenueItems";
 
 const Drawer = createDrawerNavigator();
 
@@ -505,7 +507,9 @@ function AddFriends() {
 function StarRating() {
 
   const [state, setState] = React.useState({
+    id: null,
     Default_Rating: 2.5,
+    message: "",
     Max_Rating: 5,
   })
 
@@ -514,49 +518,119 @@ function StarRating() {
     //Empty Star. You can also give the path from local
   const Star_With_Border = 'https://raw.githubusercontent.com/AboutReact/sampleresource/master/star_corner.png';
 
-  const [rating, setRating] = React.useState([]);
-
-  function UpdateRating(key) {
-    console.log(key)
-    setState({
-      ...state,
-      Default_Rating: key
-    });
-  }
-  
-  React.useEffect(() => {
-    const ratings = [];
-    for (let i = 1; i <= state.Max_Rating; i++) {
-      ratings.push(
-        <TouchableOpacity
-          activeOpacity={0.7}
-          key={i}
-          onPress={UpdateRating(i)}>
-          <Image
-            style={ratingStyles.StarImage}
-            source={
-              i <= state.Default_Rating
-                ? { uri: Star }
-                : { uri: Star_With_Border }
-            }
-          />
-        </TouchableOpacity>
-      );
+  async function onSubmitComment() {
+    if (id === null) {
+      alert("Please search and select one beer")
+      return
     }
-    console.log(state.Default_Rating)
-    setRating(ratings);
-    setState({
-      ...state,
-      Default_Rating: 2.5
-    });
-  }, [state.Default_Rating])
-
+    const data = {
+      id: state.id,
+      rating: state.Default_Rating,
+      message: state.message,
+      data: null
+    }
+    const newRef = doc(collection(FIRESTORE_DB, "reviews"));
+    await setDoc(newRef, data);
+  }
   return (
     <SafeAreaView style={{ flex: 1, padding: 10 }}>
-      <View style={{ alignItems: "center", justifyContent: "center" }}>
-        <TextInput style={styles.input} value="searching" />
-
-        <View style={ratingStyles.childView}>{rating}</View>
+      <ScrollView>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <TextInput style={styles.input} placeholder="searching beer by name" onChangeText={async (text) => {
+          if (text === "" || !text) {
+            setState({
+              ...state,
+              data: null
+            })
+          }
+          const feedsRef = collection(FIRESTORE_DB, "venues");
+          const q = query(feedsRef, where("name", "==", text));
+          const querySnapshot = await getDocs(q);
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            setState({
+              ...state,
+              id: doc.id,
+              data: data
+            })
+          })
+        }}/>
+        {
+          state.data ? (
+            <View style={{ marginTop: 10, padding: 15, backgroundColor: "white", }}>
+              <Image
+                  source={{
+                      uri: state.data.image_url,
+                  }}
+                  style={{ width: 300, height: 180 }}
+              />
+              {/* Venue Info */}
+              <VenueInfo name={state.data.name} categories={state.data.categories} price={state.data.price} reviews={state.data.rating}/>
+             </View>
+          ) : <></>
+        }
+        <View style={ratingStyles.childView}>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setState({ ...state, Default_Rating: 1 })}>
+              <Image
+                style={ratingStyles.StarImage}
+                source={
+                  1 <= state.Default_Rating
+                    ? { uri: Star }
+                    : { uri: Star_With_Border }
+                }
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setState({ ...state, Default_Rating: 2 })}>
+              <Image
+                style={ratingStyles.StarImage}
+                source={
+                  2 <= state.Default_Rating
+                    ? { uri: Star }
+                    : { uri: Star_With_Border }
+                }
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setState({ ...state, Default_Rating: 3 })}>
+              <Image
+                style={ratingStyles.StarImage}
+                source={
+                  3 <= state.Default_Rating
+                    ? { uri: Star }
+                    : { uri: Star_With_Border }
+                }
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setState({ ...state, Default_Rating: 4 })}>
+              <Image
+                style={ratingStyles.StarImage}
+                source={
+                  4 <= state.Default_Rating
+                    ? { uri: Star }
+                    : { uri: Star_With_Border }
+                }
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setState({ ...state, Default_Rating: 5 })}>
+              <Image
+                style={ratingStyles.StarImage}
+                source={
+                  5 <= state.Default_Rating
+                    ? { uri: Star }
+                    : { uri: Star_With_Border }
+                }
+              />
+            </TouchableOpacity>
+        </View>
         
         <Text style={ratingStyles.textStyle}>
           {state.Default_Rating} / {state.Max_Rating}
@@ -564,8 +638,12 @@ function StarRating() {
         <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
           leave a comment
         </Text>
-        <TextInput style={styles.input} placeholder="leave a comment" />
+        <TextInput style={styles.input} placeholder="leave a comment" onChangeText={(text) => {
+          setState({ ...state, message: text})
+        }}/>
+        <Button style={{ width: "100%" }} title="Submit" onPress={onSubmitComment} />
       </View>
+      </ScrollView>
     </SafeAreaView>
   )
 }

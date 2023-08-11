@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, Text, FlatList, TextInput, SafeAreaView, Button, ScrollView, KeyboardAvoidingView, Image } from "react-native";
+import { StyleSheet, View, Text, FlatList, TextInput, SafeAreaView, Button, ScrollView, KeyboardAvoidingView, Image, TouchableOpacity } from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import {actions, RichEditor, RichToolbar} from "react-native-pell-rich-editor";
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -503,10 +503,68 @@ function AddFriends() {
 }
 
 function StarRating() {
+
+  const [state, setState] = React.useState({
+    Default_Rating: 2.5,
+    Max_Rating: 5,
+  })
+
+  const Star = 'https://raw.githubusercontent.com/AboutReact/sampleresource/master/star_filled.png';
+
+    //Empty Star. You can also give the path from local
+  const Star_With_Border = 'https://raw.githubusercontent.com/AboutReact/sampleresource/master/star_corner.png';
+
+  const [rating, setRating] = React.useState([]);
+
+  function UpdateRating(key) {
+    console.log(key)
+    setState({
+      ...state,
+      Default_Rating: key
+    });
+  }
+  
+  React.useEffect(() => {
+    const ratings = [];
+    for (let i = 1; i <= state.Max_Rating; i++) {
+      ratings.push(
+        <TouchableOpacity
+          activeOpacity={0.7}
+          key={i}
+          onPress={UpdateRating(i)}>
+          <Image
+            style={ratingStyles.StarImage}
+            source={
+              i <= state.Default_Rating
+                ? { uri: Star }
+                : { uri: Star_With_Border }
+            }
+          />
+        </TouchableOpacity>
+      );
+    }
+    console.log(state.Default_Rating)
+    setRating(ratings);
+    setState({
+      ...state,
+      Default_Rating: 2.5
+    });
+  }, [state.Default_Rating])
+
   return (
     <SafeAreaView style={{ flex: 1, padding: 10 }}>
-      <View style={{ alignItems: "center"}}>
+      <View style={{ alignItems: "center", justifyContent: "center" }}>
         <TextInput style={styles.input} value="searching" />
+
+        <View style={ratingStyles.childView}>{rating}</View>
+        
+        <Text style={ratingStyles.textStyle}>
+          {state.Default_Rating} / {state.Max_Rating}
+        </Text>
+        <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
+          leave a comment
+        </Text>
+        <TextInput style={styles.input} placeholder="leave a comment" />
       </View>
     </SafeAreaView>
   )
@@ -615,6 +673,45 @@ export default function SocialScreen({ navigation }) {
   );
 }
 
+const ratingStyles = StyleSheet.create({
+  MainContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: Platform.OS === 'ios' ? 20 : 0,
+  },
+  childView: {
+    justifyContent: 'center',
+    flexDirection: 'row',
+    marginTop: 30,
+  },
+  button: {
+    justifyContent: 'center',
+    flexDirection: 'row',
+    marginTop: 30,
+    padding: 15,
+    backgroundColor: '#8ad24e',
+  },
+  StarImage: {
+    width: 40,
+    height: 40,
+    resizeMode: 'cover',
+  },
+  textStyle: {
+    textAlign: 'center',
+    fontSize: 23,
+    color: '#000',
+    marginTop: 15,
+  },
+  textStyleSmall: {
+    textAlign: 'center',
+    fontSize: 16,
+
+    color: '#000',
+    marginTop: 15,
+  },
+});
+
 const styles = StyleSheet.create({
     numberInput: {
       width: 100,
@@ -687,4 +784,4 @@ const styles = StyleSheet.create({
       backgroundColor: '#c3c3c3',
       borderRadius: 50,
     },
-  });
+});

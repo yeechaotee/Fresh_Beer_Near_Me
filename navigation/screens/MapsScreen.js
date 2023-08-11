@@ -35,6 +35,7 @@ import { GOOGLE_API_KEY } from "../../components/maps/environments";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native"; // Import the useNavigation hook
 import { Searchbar } from "react-native-paper";
+import LottieView from "lottie-react-native";
 
 const { width, height } = Dimensions.get("window");
 
@@ -57,6 +58,7 @@ export default function MapsScreen() {
   const [lastPressedMarkerIndex, setLastPressedMarkerIndex] = useState(-1); // Initialize with an invalid index
   const [searchString, setSearchString] = useState("");
   const [suggestion, setSuggestion] = useState([]);
+  const [isCheckmarkVisible, setIsCheckmarkVisible] = useState(false);
 
   //geocode location to get coordinates
   //Function to geocode an address using the Google Maps Geocoding API
@@ -172,6 +174,13 @@ export default function MapsScreen() {
 
   const chekInPress = () => {
     console.log("User Location:", userLocation);
+    // Show the checkmark animation
+    setIsCheckmarkVisible(true);
+
+    // Hide the checkmark animation after the animation completes
+    setTimeout(() => {
+      setIsCheckmarkVisible(false);
+    }, 4000); // Adjust the duration as needed based on the animation duration
   };
 
   const handleOpenModal = () => {
@@ -453,6 +462,21 @@ export default function MapsScreen() {
           <Text style={{ color: "#292929" }}>Check In</Text>
         </Pressable>
       </View>
+      {/* Checkmark Animation */}
+      {isCheckmarkVisible && (
+        <LottieView
+          source={require("../../assets/animations/check-mark.json")} // Provide the correct path to your checkmark animation JSON file
+          autoPlay
+          loop={false}
+          style={{
+            position: "absolute",
+            bottom: 30, // Adjust the position as needed
+            right: 30, // Adjust the position as needed
+            width: 100,
+            height: 100,
+          }}
+        />
+      )}
     </View>
   );
 }

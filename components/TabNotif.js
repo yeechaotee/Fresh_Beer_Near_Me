@@ -4,24 +4,6 @@ import { FIREBASE_AUTH, FIRESTORE_DB } from '../firebase';
 import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
-const generateRandomTime = () => {
-  const hours = Math.floor(Math.random() * 12); // Random hour (0-11)
-  const minutes = Math.floor(Math.random() * 60); // Random minute (0-59)
-  const isAM = Math.random() < 0.5; // Randomly choose AM or PM
-
-  // Format hours to be in two digits
-  const formattedHours = hours.toString().padStart(2, '0');
-
-  // Format minutes to be in two digits
-  const formattedMinutes = minutes.toString().padStart(2, '0');
-
-  // Determine if it's AM or PM
-  const period = isAM ? 'AM' : 'PM';
-
-  // Return the formatted time
-  return `${formattedHours}:${formattedMinutes} ${period}`;
-};
-
 const HeaderButton = (props) => (
   <TouchableOpacity
     style={{
@@ -43,7 +25,7 @@ const HeaderButton = (props) => (
   </TouchableOpacity>
 );
 
-const TabNotif = () => {
+const TabNotif = ({ userRole }) => {
   const [activeTab, setActiveTab] = useState('Activity');
   const [activeData, setActiveData] = useState([]);
   
@@ -91,15 +73,44 @@ const TabNotif = () => {
     handleTabClick(activeTab);
   }, []);
 
-  const tabs = [
-    { id: '1', name: 'Activity' },
+  const tabsBD = [
+    //{ id: '1', name: 'Activity' },
     { id: '2', name: 'Promotion' },
     { id: '3', name: 'Event' },
     { id: '4', name: 'News Feed' },
     // Add more tabs as needed
   ];
 
-  /*
+  const tabsBO = [
+    { id: '1', name: 'Activity' },
+    { id: '2', name: 'Promotion' },
+    { id: '3', name: 'Event' },
+    //{ id: '4', name: 'News Feed' },
+    // Add more tabs as needed
+  ];
+  const tabs = userRole = "businessUser"? tabsBO:tabsBD;
+  console.log('tabs is ',tabs);
+
+  /* //hardcoded testing data
+
+  const generateRandomTime = () => {
+  const hours = Math.floor(Math.random() * 12); // Random hour (0-11)
+  const minutes = Math.floor(Math.random() * 60); // Random minute (0-59)
+  const isAM = Math.random() < 0.5; // Randomly choose AM or PM
+
+  // Format hours to be in two digits
+  const formattedHours = hours.toString().padStart(2, '0');
+
+  // Format minutes to be in two digits
+  const formattedMinutes = minutes.toString().padStart(2, '0');
+
+  // Determine if it's AM or PM
+  const period = isAM ? 'AM' : 'PM';
+
+  // Return the formatted time
+  return `${formattedHours}:${formattedMinutes} ${period}`;
+};
+
   const SampleDataActivity = [
     { id: '1', name: 'Franco', message: 'testmessage', time: generateRandomTime() },
     { id: '2', name: 'Matilda', message: 'testmessage', time: generateRandomTime() },

@@ -60,10 +60,11 @@ export default function NotificationsScreen(navigation) {
   const notificationListener = useRef();
   const responseListener = useRef();
 
+  //for manual dismiss
   const dismissAllNotifications = async () => {
     try {
       await dismissAllNotificationsAsync();
-      console.log('All notifications dismissed successfully.');
+      //console.log('All notifications dismissed successfully.');
     } catch (error) {
       console.log('Error dismissing notifications:', error);
     }
@@ -72,7 +73,7 @@ export default function NotificationsScreen(navigation) {
   //To be uncomment after integration
   //dismissAllNotificationsAsync();
 
-
+  //for manual trigger
   const [presentedNotificationCount, setPresentedNotificationCount] = useState(0);
 
   const getPresentedNotifications = async () => {
@@ -104,7 +105,7 @@ export default function NotificationsScreen(navigation) {
   try {
     // Assuming you have a collection named after the current user's ID in Firestore
     const userCollectionRef = collection(FIRESTORE_DB, 'users');
-    console.log('My UserID:', userId);
+    //console.log('My UserID:', userId);
     // Create a query to fetch the documents in the user's collection (should be only one document)
     const q = query(userCollectionRef, where('owner_uid', '==', userId));
 
@@ -117,9 +118,12 @@ export default function NotificationsScreen(navigation) {
       const userDoc = querySnapshot.docs[0];
       // Get the docID of the user's document
       const docId = userDoc.id;
-      return docId;
+      //const userRole = userDoc.role;
+      const userRole = userDoc.data().role; // Access the "role" field
+      return { docId, userRole };
+      //return docId;
     } else {
-      console.log('User document not found.');
+      console.log('User document not found');
       return null;
     }
   } catch (error) {
@@ -153,11 +157,13 @@ useEffect(() => {
       // Call the function to get the current user's document ID
       const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
       if (userId) {
-        const docId = await getCurrentUserDocId(userId);
-
+        const { docId, userRole } = await getCurrentUserDocId(userId);
+        //console.log('user role is', userRole);
         // Call the function to update the Firestore document with the new expoPushToken
+      
         if (docId) {
           updateUsertoken(docId, token);
+          setCurrentLoggedInUser({ docId, userRole });
         } else {
           console.log('User document not found.');
         }
@@ -228,7 +234,7 @@ useEffect(() => {
 
                 {/* Second Section */}
                 <View style={{ backgroundColor: 'white', padding: 10 }}>
-                    <TabNotif />
+                    <TabNotif userRole={currentLoggedInUser ? currentLoggedInUser.userRole : null} />
                 </View>
 
                 

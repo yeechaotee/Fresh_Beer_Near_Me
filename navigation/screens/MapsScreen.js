@@ -7,6 +7,7 @@ import {
   Button,
   Image,
   Text,
+  TouchableOpacity,
 } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import * as Location from "expo-location";
@@ -33,6 +34,7 @@ import {
 import { GOOGLE_API_KEY } from "../../components/maps/environments";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native"; // Import the useNavigation hook
+import { Searchbar } from "react-native-paper";
 
 const { width, height } = Dimensions.get("window");
 
@@ -53,6 +55,8 @@ export default function MapsScreen() {
   const [selectedLocationTitle, setSelectedLocationTitle] = useState("");
   const [markerPressCount, setMarkerPressCount] = useState(0);
   const [lastPressedMarkerIndex, setLastPressedMarkerIndex] = useState(-1); // Initialize with an invalid index
+  const [searchString, setSearchString] = useState("");
+  const [suggestion, setSuggestion] = useState([]);
 
   //geocode location to get coordinates
   //Function to geocode an address using the Google Maps Geocoding API
@@ -288,6 +292,22 @@ export default function MapsScreen() {
     fetchDataAndPopulateLocations();
   }, []);
 
+  const handleSearchInput = async (text) => {
+    setSearchString(text);
+
+    if (text !== "") {
+      const q = query(
+        collection(FIRESTORE_DB, "venues"),
+        where("name", ">=", searchString),
+        where("name", "<=", searchString + "\uf8ff"),
+        limit(2)
+      );
+      // console.log("user id is:: " + user.uid);
+      const querySnapshot = await getDocs(q);
+      setSuggestion(querySnapshot.docs);
+    }
+  };
+
   return (
     <View style={styles.viewStyle}>
       <MapView
@@ -318,18 +338,76 @@ export default function MapsScreen() {
         {showLocationsOfInterest()}
       </MapView>
       <View style={styles.userLocationContainer}>
-        <InputAutoComplete
-          label="My Location"
-          onPlaceSelected={(details) => {
-            onPlaceSelected(details, "userLocation");
-          }}
-        />
+        <View>
+          <InputAutoComplete
+            label="My Location"
+            onPlaceSelected={(details) => {
+              onPlaceSelected(details, "userLocation");
+            }}
+          />
+        </View>
         {/* <InputAutoComplete
           label="My Destination"
           onPlaceSelected={(details) => {
             onPlaceSelected(details, "destination");
           }}
         /> */}
+        <View>
+          <Searchbar
+            placeholder="Search for venue..."
+            ref={(search) => (this.search = search)}
+            onChangeText={handleSearchInput}
+            value={searchString}
+            lightTheme={true}
+            round={true}
+            containerStyle={{ backgroundColor: "beige" }}
+          />
+        </View>
+        <View>
+          {suggestion.length > 0 && searchString !== "" && (
+            <View
+              style={{
+                alignItems: "center",
+                zIndex: 15,
+                elevation: Platform.OS === "android" ? 50 : 0,
+              }}
+            >
+              {suggestion.map((suggestionVenue, index) => {
+                return (
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: "white",
+                      borderColor: "#CECECE",
+                      borderWidth: 1,
+                      width: "95%",
+                      borderRadius: 5,
+                    }}
+                    onPress={() =>
+                      navigation.navigate("VenueDetail", {
+                        name: suggestionVenue.data().name,
+                        image: suggestionVenue.data().image_url,
+                        price: suggestionVenue.data().price,
+                        reviews: suggestionVenue.data().reviews,
+                        rating: suggestionVenue.data().rating,
+                        categories: suggestionVenue.data().categories,
+                        caption: suggestionVenue.data().caption,
+                        operating_hour: suggestionVenue.data().operating_hour,
+                        location: suggestionVenue.data().location,
+                        venueId: suggestionVenue.id,
+                      })
+                    }
+                    key={index}
+                    activeOpacity={1}
+                  >
+                    <Text style={{ padding: 10, fontSize: 17 }}>
+                      {suggestionVenue.data().name}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
+        </View>
         <View
           style={{
             width: "50%",

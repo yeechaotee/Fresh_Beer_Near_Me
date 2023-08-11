@@ -32,6 +32,7 @@ function NewsFeed() {
   //     time: generateRandomTime(),
   // }));
   const [activeData, setActiveData] = React.useState([]);
+  const auth = FIREBASE_AUTH;
 
   function isAdmin() {
     // todo by profile role
@@ -505,9 +506,7 @@ function StarRating() {
   return (
     <SafeAreaView style={{ flex: 1, padding: 10 }}>
       <View style={{ alignItems: "center"}}>
-        <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
-          Add Via User Name
-        </Text>
+        <TextInput style={styles.input} value="searching" />
       </View>
     </SafeAreaView>
   )

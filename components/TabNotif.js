@@ -88,8 +88,8 @@ const TabNotif = ({ userRole }) => {
     //{ id: '4', name: 'News Feed' },
     // Add more tabs as needed
   ];
-  const tabs = userRole = "businessUser"? tabsBO:tabsBD;
-  console.log('tabs is ',tabs);
+  const tabs = userRole === "businessUser"? tabsBO:tabsBD;
+  //console.log('tabs is ',userRole);
 
   /* //hardcoded testing data
 

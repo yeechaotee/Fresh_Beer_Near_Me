@@ -96,7 +96,7 @@ function NewsFeed() {
                             item.endDatTime ? <Text style={styles.rowText}>End Date: {item.endDatTime}</Text> : <></>
                           }
                           {
-                            item.numberOfPeople ? <Text style={styles.rowText}>Number of people participating: {item.numberOfPeople}</Text> : <></>
+                            item.numberOfPeople && item.numberOfPeople !== "" && item.numberOfPeople !== "0" ? <Text style={styles.rowText}>Number of people participating: {item.numberOfPeople}</Text> : <></>
                           }
                       </View>
                       <Text style={styles.rowMessage}>{item.description.replace(/<\/?[^>]+(>|$)/g, "")}</Text>

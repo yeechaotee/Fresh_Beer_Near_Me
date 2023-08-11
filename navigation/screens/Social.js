@@ -258,6 +258,7 @@ function CreateFeed() {
             const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
             // later...
             await setDoc(newRef, data);
+            alert("Create Feed Success")
           }}/>
         </ScrollView>
       </ScrollView>

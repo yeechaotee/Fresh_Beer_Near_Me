@@ -111,23 +111,10 @@ git merge branch1
 git push --force origin master
 ```
 
-## in case bad things happen:
+## Other package:
 
 ```sh
-git reset HEAD^ --hard and git push --force
-```
-
-## in case bad things happen:
-
-```sh
-git reset HEAD^ --hard and git push --force
-
-For Master branch messed up:
-git checkout branch1
-git merge -s ours master
-git checkout master
-git merge branch1
-git push --force origin master
+npm i expo-device
 ```
 
 ## 📝 Notes

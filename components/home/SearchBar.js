@@ -28,7 +28,7 @@ export default function SearchBar({ cityHandler }) {
                     textInput: {
                         backgroundColor: "orange",
                         borderRadius: 20,
-                        fontWeight: '550',
+                        fontWeight: '500',
                         marginTop: 7,
                     },
                     textInputContainer: {

@@ -173,6 +173,7 @@ export default function MapsScreen() {
 
   const handleOpenMapInfoModal = (title) => {
     setSelectedLocationTitle(title);
+    console.log("Selected Location Title:", title);
     setMapInfoModalVisible(true);
   };
 
@@ -225,20 +226,6 @@ export default function MapsScreen() {
       }
 
       return (
-        // <Marker
-        //   key={index}
-        //   coordinate={{ latitude: item.latitude, longitude: item.longitude }}
-        //   title={item.name}
-        //   description={item.caption}
-        //   //onPress={() => handleOpenMapInfoModal(item.name)}
-        //   onPress={() => {
-        //     setMarkerPressCount((prevCount) => prevCount + 1);
-        //     if (markerPressCount === 1) {
-        //       handleOpenMapInfoModal(item.name);
-        //       setMarkerPressCount(0); // Reset the counter after handling the second press
-        //     }
-        //   }}
-        // />
         <Marker
           key={index}
           coordinate={{ latitude: item.latitude, longitude: item.longitude }}

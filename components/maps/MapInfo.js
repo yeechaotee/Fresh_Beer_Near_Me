@@ -25,36 +25,33 @@ import {
   orderBy,
 } from "firebase/firestore";
 
-const MapInfoModal = ({ modalVisible, setModalVisible, locationName }) => {
+const MapInfoModal = ({ modalVisible, setModalVisible, locationTitle }) => {
   const [posts, setPosts] = useState([]);
-  let venueName = "Beer-BearBrick";
-  //let venueName = locationName !== '' ? locationName : "Beer-BearBrick"; // Updated venueName assignment
-  // render all venues data and setPosts
   useEffect(() => {
-    console.log("passed location name:", locationName);
-    setPosts([]);
-    const querySnapshot = query(
-      collection(FIRESTORE_DB, "venues"),
-      where("name", "==", venueName),
-      orderBy("createdAt", "desc")
-    );
-    const unsubcribe = onSnapshot(querySnapshot, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === "added") {
-          console.log("New Venue", change.doc.data());
-          const venueData = change.doc.data();
-          const venueId = change.doc.id; // Get the document ID
-          console.log("New Venue ID: ", venueId);
-          // console.log("New Venue uid: ", change.id);
-          setPosts((prevVenues) => [
-            ...prevVenues,
-            { venueId: venueId, ...venueData },
-          ]);
-        }
+    if (modalVisible) {
+      console.log("passed location name:", locationTitle);
+      setPosts([]);
+      const querySnapshot = query(
+        collection(FIRESTORE_DB, "venues"),
+        where("name", "==", locationTitle)
+      );
+      const unsubcribe = onSnapshot(querySnapshot, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === "added") {
+            console.log("New Venue", change.doc.data());
+            const venueData = change.doc.data();
+            const venueId = change.doc.id; // Get the document ID
+            console.log("New Venue ID: ", venueId);
+            setPosts((prevVenues) => [
+              ...prevVenues,
+              { venueId: venueId, ...venueData },
+            ]);
+          }
+        });
       });
-    });
-    return () => unsubcribe();
-  }, []);
+      return () => unsubcribe();
+    }
+  }, [modalVisible, locationTitle]);
 
   return (
     <Modal
@@ -63,18 +60,6 @@ const MapInfoModal = ({ modalVisible, setModalVisible, locationName }) => {
       transparent={true}
       onRequestClose={() => setModalVisible(false)}
     >
-      {/* <View style={styles.modalContainer}>
-        <VenueItems
-          venueData={posts}
-          //navigation={navigation}
-          manageable={false}
-        />
-        <Button
-          title="Cancel"
-          onPress={() => setModalVisible(false)}
-          color="#ffa31a"
-        />
-      </View> */}
       <View style={styles.modalContainer}>
         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
           <View style={styles.modalContainer}>
@@ -83,7 +68,6 @@ const MapInfoModal = ({ modalVisible, setModalVisible, locationName }) => {
               //navigation={navigation}
               manageable={false}
             />
-            {/* No cancel button needed */}
           </View>
         </TouchableWithoutFeedback>
       </View>

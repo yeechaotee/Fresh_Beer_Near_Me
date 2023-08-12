@@ -523,7 +523,7 @@ function StarRating() {
   const Star_With_Border = 'https://raw.githubusercontent.com/AboutReact/sampleresource/master/star_corner.png';
 
   async function onSubmitComment() {
-    if (id === null) {
+    if (state.id === null) {
       alert("Please search and select one beer")
       return
     }
@@ -535,6 +535,32 @@ function StarRating() {
     }
     const newRef = doc(collection(FIRESTORE_DB, "reviews"));
     await setDoc(newRef, data);
+    // reviews & rating
+    console.log(state.id)
+    const docRef = doc(FIRESTORE_DB, "venues", state.id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      const reviews = data.reviews;
+      const rating = data.rating;
+      const newRating = (rating * reviews + state.Default_Rating) / (reviews + 1);
+      await setDoc(docRef, {
+        ...data,
+        rating: newRating,
+        reviews: reviews + 1
+      })
+      setState({
+        ...state,
+        data: {
+          ...state.data,
+          rating: newRating,
+          reviews: reviews + 1
+        }
+      })
+    } else {
+      // doc.data() will be undefined in this case
+      console.log("No such document!");
+    }
     alert("success")
   }
   return (
@@ -552,6 +578,7 @@ function StarRating() {
           const q = query(feedsRef, where("name", "==", text));
           const querySnapshot = await getDocs(q);
           querySnapshot.forEach((doc) => {
+            console.log(doc.id)
             const data = doc.data();
             setState({
               ...state,
@@ -570,7 +597,13 @@ function StarRating() {
                   style={{ width: 300, height: 180 }}
               />
               {/* Venue Info */}
-              <VenueInfo name={state.data.name} categories={state.data.categories} price={state.data.price} reviews={state.data.rating}/>
+              <VenueInfo
+                name={state.data.name}
+                categories={state.data.categories}
+                price={state.data.price}
+                reviews={state.data.reviews}
+                rating={state.data.rating}
+              />
              </View>
           ) : <></>
         }
@@ -722,7 +755,7 @@ export default function SocialScreen({ navigation }) {
                       }}
                     />
       }
-      {
+      {/* {
         !isAdmin ? <Drawer.Screen
           name="Add Friends"
           component={AddFriends}
@@ -734,7 +767,7 @@ export default function SocialScreen({ navigation }) {
             headerTitleAlign: "center",
           }}
         />: <></>
-      }
+      } */}
       {
         !isAdmin ? <Drawer.Screen
           name="Star Rating"
@@ -748,7 +781,7 @@ export default function SocialScreen({ navigation }) {
           }}
         />: <></>
       }
-      {
+      {/* {
         isAdmin ? <Drawer.Screen
           name="Report"
           component={Report}
@@ -760,7 +793,7 @@ export default function SocialScreen({ navigation }) {
             headerTitleAlign: "center",
           }}
         />: <></>
-      }
+      } */}
     </Drawer.Navigator>
   );
 }

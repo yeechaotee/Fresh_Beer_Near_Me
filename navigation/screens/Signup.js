@@ -38,12 +38,21 @@ const BEER_LOGO =
   "https://static.vecteezy.com/system/resources/thumbnails/007/306/850/small/beer-glasses-hand-drawn-illustration-cheers-lettering-phrase-cartoon-style-design-for-logo-banner-poster-greeting-cards-web-invitation-to-party-vector.jpg";
 
 export default function Signup({ navigation }) {
-  const SignupFormSchema = Yup.object().shape({
+  const UserSignupFormSchema = Yup.object().shape({
     email: Yup.string().email().required("An email is required"),
     username: Yup.string().required().min(2, "Username is required"),
     password: Yup.string()
       .required()
       .min(6, "Your password has to have at least 8 characters"),
+  });
+
+  const BizUserSignupFormSchema = Yup.object().shape({
+    email: Yup.string().email().required("An email is required"),
+    username: Yup.string().required().min(2, "Username is required"),
+    password: Yup.string()
+      .required()
+      .min(6, "Your password has to have at least 8 characters"),
+    businessUEN: Yup.string().required(),
   });
 
   // const [email, setEmail] = useState('');
@@ -55,7 +64,7 @@ export default function Signup({ navigation }) {
   const [selectedRole, setSelectedRole] = useState("user");
 
   //  this will also add to FIREBASE DB collection 'users' with profile pic
-  const onSignup = async (email, password, username, selectedRole) => {
+  const onSignup = async (email, password, username, selectedRole, businessUEN) => {
     setLoading(true);
     try {
       const authUser = await createUserWithEmailAndPassword(
@@ -83,6 +92,7 @@ export default function Signup({ navigation }) {
         username: username,
         role: selectedRole,
         email: authUser.user.email,
+        businessUEN: businessUEN,
         profile_picture: await getRandomProfilePicture(),
         createdAt: new Date().toISOString(),
         // adding beer profile preferences
@@ -146,17 +156,18 @@ export default function Signup({ navigation }) {
       </View>
       <View>
         <Formik
-          initialValues={{ email: "", password: "", username: "" }}
+          initialValues={{ email: "", password: "", username: "", businessUEN: "" }}
           onSubmit={(values, { resetForm }) => {
             onSignup(
               values.email,
               values.password,
               values.username,
-              selectedRole
+              selectedRole,
+              values.businessUEN
             );
             // resetForm({ values: { email: '', password: '', username: '' } });
           }}
-          validationSchema={SignupFormSchema}
+          validationSchema={selectedRole === "businessUser" ? BizUserSignupFormSchema : UserSignupFormSchema}
           validateOnMount={true}
         >
           {({ handleChange, handleBlur, handleSubmit, values, isValid }) => (
@@ -252,6 +263,27 @@ export default function Signup({ navigation }) {
                   // onChangeText={(text) => setPassword(text)}
                   ></TextInput>
                 </View>
+
+                {selectedRole === "businessUser" && (
+                  <View
+                    style={[
+                      styles.inputField,
+                      {
+                        borderColor: values.businessUEN.length > 0 ? "#ccc" : "red",
+                      },
+                    ]}
+                  >
+                    <TextInput
+                      placeholder="Business UEN"
+                      autoCapitalize="none"
+                      value={values.businessUEN}
+                      onChangeText={handleChange("businessUEN")}
+                      onBlur={handleBlur("businessUEN")}
+                    />
+                  </View>
+                )}
+
+
                 {loading ? (
                   <ActivityIndicator size="large" color="#0000ff" />
                 ) : (

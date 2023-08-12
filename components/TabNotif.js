@@ -162,6 +162,14 @@ const TabNotif = ({ userRole }) => {
   }
   */
 
+  function removeDivTags(text) {
+    // Replace <div> and </div> tags with an empty string
+    const cleanedText = text.replace(/<\/?div>/g, '');
+
+    return cleanedText;
+  }
+
+
   return (
     
     <View style={{ alignSelf: 'center' }}>
@@ -187,7 +195,7 @@ const TabNotif = ({ userRole }) => {
               <View style={styles.rowIcon} />
               <View style={styles.rowContent}>
                 <Text style={styles.rowHead}>{item.title}</Text>
-                <Text style={styles.rowText}>{item.body}</Text>
+                <Text style={styles.rowText}>{removeDivTags(item.body)}</Text>
                  <Text style={styles.rowText}>{item.timestamp.toLocaleString()}</Text>
               </View>
             </View>

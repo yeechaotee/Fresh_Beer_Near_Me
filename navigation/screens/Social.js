@@ -22,6 +22,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import uuid from "uuid";
 import { VenueInfo, VenueImage } from "../../components/home/VenueItems";
+import { sendCustomPushNotification } from './NotificationUtils';
 
 const Drawer = createDrawerNavigator();
 
@@ -85,6 +86,9 @@ function NewsFeed() {
                       </View>
                       <View style={styles.rowContent}>
                           {
+                          <Text style={{...styles.rowText, marginRight: 5}}>Title: {item.title}</Text> 
+                          }
+                          {
                           item.startDateTime && item.endDatTime ?
                             item.type ? <Text style={{...styles.rowText, marginRight: 5} }>Type: Promotion</Text> : <Text style={styles.rowText}>Type: Event</Text>
                           : <></>
@@ -98,6 +102,7 @@ function NewsFeed() {
                           {
                             item.numberOfPeople && item.numberOfPeople !== "" && item.numberOfPeople !== "0" ? <Text style={styles.rowText}>Number of people participating: {item.numberOfPeople}</Text> : <></>
                           }
+                          
                       </View>
                       <Text style={styles.rowMessage}>{item.description.replace(/<\/?[^>]+(>|$)/g, "")}</Text>
                       {
@@ -243,7 +248,7 @@ function CreateFeed() {
                 }}
             />
           </KeyboardAvoidingView>
-          <Button title="Creat Feed" onPress={async () => {
+          <Button title="Create Feed" onPress={async () => {
             const data = {
               type: false,
               startDateTime: "",
@@ -254,12 +259,16 @@ function CreateFeed() {
               creater: FIREBASE_AUTH.currentUser.email,
               createTime: new Date(),
               avatar: FIREBASE_AUTH.currentUser.photoURL,
+              title: title,
             }
             // Add a new document with a generated id
             const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
             // later...
             await setDoc(newRef, data);
-            alert("Create Feed Success")
+            alert("Create Feed Success");
+
+            sendCustomPushNotification(title, description, type?"Promotion":"Event");
+            
           }}/>
         </ScrollView>
       </ScrollView>
@@ -277,6 +286,7 @@ function CreateFeedByAdmin() {
   const [startDateTime, setStartDateTime] = React.useState(new Date());
   const [endDatTime, setEntDateTime] = React.useState(new Date());
   const [numberOfPeople, setNumberOfPeople] = React.useState("");
+  const [title, setTitle] = React.useState("");
   const [mode, setMode] = React.useState('date');
   const [show, setShow] = React.useState(false);
   const [type, setType] = React.useState(true); // promotion: true, event: false
@@ -436,6 +446,21 @@ function CreateFeedByAdmin() {
             }}
           />
       </View>
+      <View style={{ display: "flex", flexDirection: "row", padding: 10, alignItems: "center" }}>
+        <Text style={{ marginBottom: 5, marginTop: 5, fontWeight: "bold", textAlign: "center" }}>
+          Title: 
+        </Text>
+        <TextInput
+          value={title}
+          style={styles.numberInput}
+          placeholder="title"
+          //keyboardType="numeric"
+          onChange={(event) => {
+            setTitle(event.nativeEvent.text);
+          }}
+        />
+      </View>
+
       <RichToolbar
         editor={richText}
         actions={[ actions.setBold, actions.setItalic, actions.setUnderline, actions.heading1 ]}
@@ -455,7 +480,7 @@ function CreateFeedByAdmin() {
               }}
           />
         </KeyboardAvoidingView>
-        <Button title="Creat Feed" onPress={async () => {
+        <Button title="Create Feed" onPress={async () => {
           const data = {
             type: type,
             startDateTime: startDateTime.toDateString(),
@@ -466,7 +491,9 @@ function CreateFeedByAdmin() {
             creater: FIREBASE_AUTH.currentUser.email,
             createTime: new Date(),
             avatar: FIREBASE_AUTH.currentUser.photoURL,
+            title: title,
           }
+          
           console.log(data);
           try {
             // Add a new document with a generated id
@@ -475,6 +502,8 @@ function CreateFeedByAdmin() {
             
             await setDoc(newRef, data);
             alert("Create Feed Success");
+            sendCustomPushNotification(title, description, type?"Promotion":"Event");
+
           } catch (e) {
             alert("Create Feed Fail");
           }

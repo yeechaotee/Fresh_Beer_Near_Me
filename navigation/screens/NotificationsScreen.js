@@ -71,7 +71,7 @@ export default function NotificationsScreen(navigation) {
   };
 
   //To be uncomment after integration
-  //dismissAllNotificationsAsync();
+  dismissAllNotificationsAsync();
 
   //for manual trigger
   const [presentedNotificationCount, setPresentedNotificationCount] = useState(0);
@@ -200,7 +200,7 @@ useEffect(() => {
                 <View className="flex-row px-6 mt-8 items-center space-x-2">
                     <Text className="text-[#2A2B4B] text-3xl font-semibold">Notification</Text>
                 </View>
-                {/* Test send Section */}
+                {/* Test send Section 
                 <View
                     style={{ backgroundColor: 'white', padding: 10 }}>
                     <Text>Your expo push token: {expoPushToken}</Text>
@@ -232,7 +232,7 @@ useEffect(() => {
                 <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                       <Text>Notification Count: {presentedNotificationCount}</Text>
                 </View>
-
+                */}
                 {/* Second Section */}
                 <View style={{ backgroundColor: 'white', padding: 10 }}>
                     <TabNotif userRole={currentLoggedInUser ? currentLoggedInUser.userRole : null} />

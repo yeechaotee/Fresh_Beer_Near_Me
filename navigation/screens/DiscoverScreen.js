@@ -53,6 +53,11 @@ function Home({ navigation }) {
     const [searchString, setSearchString] = useState("");
     const [suggestion, setSuggestion] = useState([]);
 
+    const [r, setR] = useState(null);
+    const [bp, setBP] = useState(null);
+    const [fb, setFB] = useState(null);
+
+    const [loading, setLoading] = useState(true);
 
     // render all venues data and setPosts
     useEffect(() => {
@@ -66,10 +71,11 @@ function Home({ navigation }) {
                     const venueId = change.doc.id; // Get the document ID
                     // console.log('New Venue ID: ', venueId);
                     // console.log("New Venue uid: ", change.id);
-                    setPosts((prevVenues) => [...prevVenues, { venueId: venueId, ...venueData }])
+                    // Check if initial posts have been set
+                    setPosts((prevVenues) => [...prevVenues, { venueId: venueId, ...venueData }]);
                 }
             })
-        })
+        });
         return () => unsubcribe();
     }, [])
 
@@ -89,12 +95,25 @@ function Home({ navigation }) {
                 const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
                 // console.log("user id is:: " + user.uid);
                 const querySnapshot = await getDocs(q);
-                querySnapshot.forEach((doc) => {
+
+                const promises = querySnapshot.docs.map(async (doc) => {
                     // doc.data() is never undefined for query doc snapshots
                     setQueryRole(doc.data().role);
                     // console.log(doc.id, " => ", doc.data());
-                    console.log(doc.id, " => User Role: ", doc.data().role);
+                    console.log(doc.id, " => User Role: ", doc.data().role,
+                    " => User Region: ", doc.data().region,
+                    " => User BP: ", doc.data().beerProfile,
+                    " => User FB: ", doc.data().favBeer,
+                    );
+                    
+                    setR(doc.data().region);
+                    
+                    setBP(doc.data().beerProfile);
+                    
+                    setFB(doc.data().favBeer);
+                   
                 });
+                await Promise.all(promises);
             }
             else {
                 setUser(null);
@@ -103,6 +122,10 @@ function Home({ navigation }) {
         })
         , []);
 
+    useEffect(() => {
+    // This effect runs whenever r, bp, or fb changes
+        updateUserPreferences(r, bp, fb);
+    }, [r, bp, fb]);
 
 
 
@@ -151,137 +174,127 @@ function Home({ navigation }) {
         }
     };
 
-
     // ------------------------- Cindy changes from here----------------
-    const getVenueDataFromFirestore = async (userRegion, userBeerProfile, userFavBeer) => {
+
+    const updateUserPreferences = async (r,bp,fb) => {
+        try {
+            // Initialize updated preferences
+            let matchedRegion = [];
+            let matchedBeerProfile = [];
+            let matchedFavBeer = [];
+            let fullVenue = posts;
+
+            console.log("User Preference Region:", r);
+            console.log("User Preference beerprofile:", bp);
+            console.log("User Preference favbeer:", fb);
+
+            // Check and update docData preferences
+            if (r !== undefined && r !== null) {
+                matchedRegion = await getVenueData("region", r, "string");
+                //console.log("Region matched:", matchedRegion);
+            }
+            if (bp !== undefined && bp!== null) {
+                matchedBeerProfile = await getVenueData("beerProfile", bp, "array");
+                //console.log("beer profile matched:", matchedBeerProfile);
+            }
+            if (fb !== undefined && fb !== null) {
+                matchedFavBeer = await getVenueData("favBeer", fb, "array");
+                console.log("fav beer matched:", matchedFavBeer);
+            }
+
+            // Combine arrays with matching preference
+            const combinedArray = [...matchedRegion, ...matchedBeerProfile, ...matchedFavBeer, ...fullVenue];
+            //console.log("combinedArray isss:", combinedArray);
+        
+            // Count the occurrences of each venueId
+            const venueIdCounts = {};
+            combinedArray.forEach(item => {
+                if (venueIdCounts[item.venueId] === undefined) {
+                    venueIdCounts[item.venueId] = 0;
+                }
+                venueIdCounts[item.venueId]++;
+            });
+
+            // Sort the combinedArray based on the occurrence of venueId
+            /*
+            If the subtraction result is positive, it means that b.venueId occurs more frequently than a.venueId, so b should appear before a in the sorted array.
+            If the subtraction result is negative, it means that a.venueId occurs more frequently than b.venueId, so a should appear before b in the sorted array.
+            If the subtraction result is zero, it means that both a.venueId and b.venueId occur the same number of times, so their relative order remains unchanged.
+            */
+            combinedArray.sort((a, b) => venueIdCounts[b.venueId] - venueIdCounts[a.venueId]);
+
+            //This method iterates through the array and keeps only the first occurrence of each venueId.
+            const uniqueArray = combinedArray.filter((item, index) => {
+                return combinedArray.findIndex(i => i.venueId === item.venueId) === index;
+            });
+           setPosts(uniqueArray);
+
+            
+        } catch (error) {
+            console.log('Error updating user preferences:', error);
+        }
+    };
+/*
+    useEffect(() => {
+        //getVenueFromYelp();
+        updateUserPreferences();
+    }, []);
+    */
+        
+    const getVenueData = async (fieldName, fieldValue, fieldtype) => {
         try {
             const venueCollectionRef = collection(FIRESTORE_DB, 'venues');
 
             // Create a base query to fetch documents with matching region
-            let baseQuery = query(venueCollectionRef, where('region', '==', userRegion));
+            let baseQuery = query(venueCollectionRef, where(fieldName, '==', fieldValue));
 
             // Execute the base query and get the collection snapshot
             const baseQuerySnapshot = await getDocs(baseQuery);
 
-            // Create a query for beerprofile equal to "Crisp"
-            const beerProfileQuery = query(venueCollectionRef, where('beerProfile', 'array-contains-any', userBeerProfile));
+            let querySnapshot;
 
-            // Execute the beerProfileQuery and get the collection snapshot
-            const beerProfileQuerySnapshot = await getDocs(beerProfileQuery);
-
-            // Create a query for favorite beers containing any of the user's favorite beers
-            const favBeerQuery = query(venueCollectionRef, where('favBeer', 'array-contains-any', userFavBeer));
-
-            // Execute the favBeerQuery and get the collection snapshot
-            const favBeerQuerySnapshot = await getDocs(favBeerQuery);
-
-            // Merge the results from different queries
-            const combinedQuerySnapshot = mergeQuerySnapshots([
-                baseQuerySnapshot,
-                beerProfileQuerySnapshot,
-                favBeerQuerySnapshot
-            ]);
-
+            if (fieldtype === 'array') {
+                // For array fields like beerProfile and favBeer
+                querySnapshot = await getDocs(query(venueCollectionRef, where(fieldName, 'array-contains-any', fieldValue)));
+            } else {
+                // For single value fields like region 
+                querySnapshot = await getDocs(query(venueCollectionRef, where(fieldName, '==', fieldValue)));
+            }
             const venueData = [];
-            combinedQuerySnapshot.forEach((doc) => {
+            querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                venueData.push(data);
+                venueData.push({ venueId: doc.id, ...data }); // Include the venueId
             });
 
-            console.log('Fetched venue data:', venueData);
+            //console.log(`Fetched venue data by ${fieldName}:`, venueData);
+            
+            //console.log(`Fetched ${fieldName}:`, fieldValue);
 
-            setVenueData(venueData);
+             // Fetch the existing posts
+            //const existingPosts = [...posts];
+            //console.log('existingPosts:', existingPosts);
+
+            /*
+            // Remove entries from prevVenues that match venueData criteria
+            const updatedPrevVenues = existingPosts.filter((existingPost) => {
+                return !venueData.some((venue) => {
+                    return (
+                        venue.venueId === existingPost.venueId
+                    );
+                });
+            });
+            
+
+            console.log('Updated prevVenues (filtered):', updatedPrevVenues);
+            */
+
+            // Merge the filtered prevVenues with the new venueData
+            
+            //setPosts([...venueData, ...existingPosts]);
+            return venueData;
+
         } catch (error) {
             console.log('Error getting venue data from Firestore:', error);
-        }
-    };
-
-    // Helper function to merge query snapshots
-    const mergeQuerySnapshots = (snapshots) => {
-        const mergedDocs = [];
-        const mergedDocIds = new Set(); // Keep track of already added document IDs
-
-        snapshots.forEach((snapshot) => {
-            snapshot.forEach((doc) => {
-                const docId = doc.id;
-                if (!mergedDocIds.has(docId)) {
-                    mergedDocs.push(doc);
-                    mergedDocIds.add(docId);
-                }
-            });
-        });
-        return mergedDocs;
-    };
-
-    useEffect(() => {
-        //getVenueFromYelp();
-
-        getCurrentUserDoc().then((result) => {
-            if (result) {
-                const { docId, docData } = result;
-                console.log('Current user document ID:', docId);
-                console.log('Current user document data:', docData);
-
-                // Compare the "region" field from the current user's document with each venue's "region" field in venueData
-                const userRegion = docData.region;
-                console.log('User in region:', userRegion);
-
-                const userBeerProfile = docData.beerProfile;
-                console.log('User beer profile:', userBeerProfile);
-
-                const userFavBeer = docData.favBeer;
-                console.log('User fav beer:', userFavBeer);
-
-                getVenueDataFromFirestore(userRegion, userBeerProfile, userFavBeer); // Call the function to fetch data from Firestore
-                //setVenueData(venueData);
-                // Update the state with the filtered venue data
-                //setVenueData(filteredVenueData); 
-            }
-        });
-    }, []);
-
-
-    const getCurrentUserDoc = async () => {
-        try {
-
-            const userCollectionRef = collection(FIRESTORE_DB, 'users');
-
-            // Get the current user from Firebase Authentication
-            const user = FIREBASE_AUTH.currentUser;
-
-            // Check if there is a current user
-            if (!user) {
-                console.log('No authenticated user.');
-                return null;
-            }
-
-            console.log('My UserID:', user.uid);
-
-            // Create a query to fetch the documents in the user's collection (should be only one document)
-            const q = query(userCollectionRef, where('owner_uid', '==', user.uid));
-
-            // Execute the query and get the query snapshot
-            const querySnapshot = await getDocs(q);
-
-            // Check if there is a document in the user's collection
-            if (!querySnapshot.empty) {
-                // Get the first document from the query snapshot
-                const userDoc = querySnapshot.docs[0];
-                // Get the docID of the user's document
-                const docId = userDoc.id;
-
-                // Get the data from the user's document
-                const docData = userDoc.data();
-
-                // Return both the document ID and data as an object
-                return { docId, docData };
-            } else {
-                console.log('User document not found.');
-                return null;
-            }
-        } catch (error) {
-            console.log('Error getting current user document ID:', error);
-            return null;
         }
     };
 
@@ -390,7 +403,6 @@ function Home({ navigation }) {
 
             <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
                 {/* <Categories /> */}
-
                 {/* posts state will filter out only searched result if any and pass it to venueData */}
                 <VenueItems venueData={posts} navigation={navigation} manageable={false} />
             </ScrollView>

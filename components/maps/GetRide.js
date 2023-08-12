@@ -7,18 +7,18 @@ const transportApps = {
     name: "Gojek",
     deepLink: "gojek://",
   },
-  grab: {
-    name: "Grab",
-    deepLink: "grab://'",
-  },
-  cdgZig: {
-    name: "CDG Zig",
-    deepLink: "comfortdelgro://",
-  },
-  tada: {
-    name: "Tada",
-    deepLink: "tada://",
-  },
+  // grab: {
+  //   name: "Grab",
+  //   deepLink: "grab://",
+  // },
+  // cdgZig: {
+  //   name: "CDG Zig",
+  //   deepLink: "comfortdelgro://",
+  // },
+  // tada: {
+  //   name: "Tada",
+  //   deepLink: "tada://",
+  // },
 };
 
 const GetRideModal = ({ modalVisible, setModalVisible }) => {
@@ -52,6 +52,9 @@ const GetRideModal = ({ modalVisible, setModalVisible }) => {
                 />
               </View>
             ))}
+          </View>
+          <View style={styles.buttonContainer}>
+            <Text style={styles.textStyle}>Other options soon...</Text>
           </View>
           <Button
             title="Cancel"

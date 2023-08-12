@@ -86,7 +86,7 @@ function NewsFeed() {
                       </View>
                       <View style={styles.rowContent}>
                           {
-                          <Text style={{...styles.rowText, marginRight: 5}}>Title: {item.title}</Text> 
+                          <Text style={{...styles.rowText, marginRight: 5}}>{item.title}</Text> 
                           }
                           {
                           item.startDateTime && item.endDatTime ?
@@ -167,6 +167,7 @@ function CreateFeed() {
     uploading: false,
   });
   const [image, setImage] = React.useState("");
+  const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
 
   const _handleImagePicked = async (pickerResult) => {
@@ -239,6 +240,17 @@ function CreateFeed() {
         <Button title="Pick an image" onPress={pickImage} />
         <ScrollView>
           <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}	style={{ flex: 1, minHeight: 400 }}>
+            <View style={styles.inputRow}>
+              <Text style={styles.label}>Title:</Text>
+              <TextInput
+                value={title}
+                style={styles.titleInput}
+                placeholder="title"
+                onChange={(event) => {
+                  setTitle(event.nativeEvent.text);
+                }}
+              />
+            </View>
             <Text>Description:</Text>
             <RichEditor
                 ref={richText}
@@ -259,7 +271,7 @@ function CreateFeed() {
               creater: FIREBASE_AUTH.currentUser.email,
               createTime: new Date(),
               avatar: FIREBASE_AUTH.currentUser.photoURL,
-              
+              title:title
             }
             // Add a new document with a generated id
             const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
@@ -938,4 +950,19 @@ const styles = StyleSheet.create({
       backgroundColor: '#c3c3c3',
       borderRadius: 50,
     },
+    inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  label: {
+    marginRight: 10,
+  },
+  titleInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: 'gray',
+    padding: 5,
+    borderRadius: 5,
+  },
 });

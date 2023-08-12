@@ -84,6 +84,11 @@ npm i @react-native-picker/picker
 ```sh
 npm i react-native-pell-rich-editor
 npm i @react-navigation/drawer
+npx expo install expo-checkbox
+npx expo install @react-native-community/datetimepicker
+npx expo install react-native-webview
+npm install uuid@3.2 -S
+npx expo install expo-image-picker
 ```
 
 ## 📝 Maps component:

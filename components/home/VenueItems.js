@@ -76,50 +76,43 @@ export default function VenueItems({ navigation, ...props }) {
     );
 }
 
-const VenueImage = (props) => (
-  <>
-    <Image
-      source={{
-        uri: props.image,
-      }}
-      style={{ width: "100%", height: 180 }}
-    />
-    <TouchableOpacity style={{ position: "absolute", right: 20, top: 20 }}>
-      <MaterialCommunityIcons name="heart-outline" size={25} color="#fff" />
-    </TouchableOpacity>
-  </>
-);
+export const VenueImage = (props) => (
+    <>
+        <Image
+            source={{
+                uri: props.image,
+            }}
+            style={{ width: "100%", height: 180 }}
+        />
+        <TouchableOpacity style={{ position: 'absolute', right: 20, top: 20 }}>
+            <MaterialCommunityIcons name='heart-outline' size={25} color="#fff" />
+        </TouchableOpacity>
+    </>
+)
 
-const VenueInfo = (props) => (
-  <View
-    style={{
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginTop: 10,
-    }}
-  >
-    {/* by default View is column base */}
-    <View>
-      <Text style={{ fontSize: 15, fontWeight: "bold" }}>{props.name}</Text>
-      <Text style={{ fontSize: 13, color: "gray" }}>{`${props.categories
-        .map((cat) => cat)
-        .join(" • ")} ${props.price ? " • " + props.price : ""} •💲• ${
-        props.rating
-      } ⭐ (${props.reviews}+)`}</Text>
-      {/* <Text style={{ fontSize: 13, color: "gray" }}>{props.caption}</Text> */}
-    </View>
-    <View
-      style={{
-        backgroundColor: "#eee",
-        height: 30,
-        width: 30,
+export const VenueInfo = (props) => (
+    <View style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
         alignItems: "center",
-        justifyContent: "center",
-        borderRadius: 15,
-      }}
-    >
-      <Text>{props.rating}</Text>
+        marginTop: 10,
+    }} >
+        {/* by default View is column base */}
+        <View>
+            <Text style={{ fontSize: 15, fontWeight: "bold" }}>{props.name}</Text>
+            <Text style={{ fontSize: 13, color: "gray" }}>{`${props.categories.map((cat) => cat).join(" • ")} ${props.price ? ' • ' + props.price : ''} •💲• ${props.rating} ⭐ (${props.reviews}+)`}</Text>
+            {/* <Text style={{ fontSize: 13, color: "gray" }}>{props.caption}</Text> */}
+        </View>
+        <View
+            style={{
+                backgroundColor: '#eee',
+                height: 30,
+                width: 30,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 15,
+            }}>
+            <Text>{props.rating}</Text>
+        </View>
     </View>
-  </View>
-);
+)

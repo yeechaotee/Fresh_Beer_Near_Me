@@ -127,8 +127,6 @@ function Home({ navigation }) {
         updateUserPreferences(r, bp, fb);
     }, [r, bp, fb]);
 
-
-
     // render all venues data and setPosts
     // useEffect(() => {
     //     setPosts([]);

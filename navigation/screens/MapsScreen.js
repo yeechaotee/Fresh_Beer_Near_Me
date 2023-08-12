@@ -325,7 +325,7 @@ export default function MapsScreen() {
         style={styles.map}
         provider={PROVIDER_GOOGLE}
         initialRegion={userLocation}
-        //customMapStyle={darkModeStyle}
+      //customMapStyle={darkModeStyle}
       >
         {userLocation && (
           <Marker

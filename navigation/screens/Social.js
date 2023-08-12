@@ -259,7 +259,7 @@ function CreateFeed() {
               creater: FIREBASE_AUTH.currentUser.email,
               createTime: new Date(),
               avatar: FIREBASE_AUTH.currentUser.photoURL,
-              title: title,
+              
             }
             // Add a new document with a generated id
             const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
@@ -267,7 +267,7 @@ function CreateFeed() {
             await setDoc(newRef, data);
             alert("Create Feed Success");
 
-            sendCustomPushNotification(title, description, type?"Promotion":"Event");
+            //sendCustomPushNotification(title, description, type?"Promotion":"Event");
             
           }}/>
         </ScrollView>

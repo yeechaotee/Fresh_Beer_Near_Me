@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../firebase';
-import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where } from 'firebase/firestore';
+import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where, orderBy  } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 const HeaderButton = (props) => (
@@ -43,8 +43,8 @@ const TabNotif = ({ userRole }) => {
       const q = query(
         notificationsRef,
         where('owner_uid', '==', userId),
-        where('type', '==', tabName)
-        
+        where('type', '==', tabName),
+        orderBy('timestamp', 'desc')
       );
 
       const querySnapshot = await getDocs(q);

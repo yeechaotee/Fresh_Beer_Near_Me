@@ -1,13 +1,5 @@
 {
   "expo": {
-    "plugins": [
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "The app accesses your photos to let you share them with your friends."
-        }
-      ]
-    ],
     "name": "FreshBeer",
     "slug": "FreshBeer",
     "version": "1.0.0",
@@ -33,12 +25,6 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "extra": {
-      "eas": {
-
-        "projectId": "e8e6d84c-21a0-433c-acfc-4c1e40ae9d2c"
-      }
     }
   }
 }

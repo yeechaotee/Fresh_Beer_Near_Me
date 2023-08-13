@@ -54,7 +54,7 @@ export default function MapsScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [mapInfoModalVisible, setMapInfoModalVisible] = useState(false);
   const [selectedLocationTitle, setSelectedLocationTitle] = useState("");
-  const [markerPressCount, setMarkerPressCount] = useState(0);
+  //const [markerPressCount, setMarkerPressCount] = useState(0);
   const [lastPressedMarkerIndex, setLastPressedMarkerIndex] = useState(-1); // Initialize with an invalid index
   const [searchString, setSearchString] = useState("");
   const [suggestion, setSuggestion] = useState([]);

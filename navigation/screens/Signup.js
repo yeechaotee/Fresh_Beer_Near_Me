@@ -52,7 +52,7 @@ export default function Signup({ navigation }) {
   const [selectedRole, setSelectedRole] = useState("user");
 
   //  this will also add to FIREBASE DB collection 'users' with profile pic
-  const onSignup = async (email, password, username, selectedRole) => {
+  const onSignup = async (email, password, username, selectedRole, businessUEN) => {
     setLoading(true);
     try {
       const authUser = await createUserWithEmailAndPassword(
@@ -60,7 +60,17 @@ export default function Signup({ navigation }) {
         email,
         password
       );
-      console.log(authUser);
+
+      // send out email verification for new sign up user after created For email verification process before they can logon to our mobile (security enhancement)
+      await sendEmailVerification(authUser.user);
+
+      // Sign out the user after email verification is sent
+      await signOut(auth);
+
+      // Show an alert to the user indicating that an email has been sent
+      alert("Email verification sent. Please check your inbox.");
+
+      navigation.push("Login");
 
       // add to 'users' database firebase
       const doc = await addDoc(collection(FIRESTORE_DB, "users"), {
@@ -79,6 +89,7 @@ export default function Signup({ navigation }) {
       });
 
       console.log("document saved correctly", doc.id);
+
     } catch (error) {
       console.log(error);
       alert("Sign up failed: " + error.message);
@@ -115,14 +126,15 @@ export default function Signup({ navigation }) {
       </View>
       <View>
         <Formik
-          initialValues={{ email: "", password: "", username: "" }}
-          onSubmit={(values) => {
+          initialValues={{ email: "", password: "", username: "", businessUEN: "" }}
+          onSubmit={(values, { resetForm }) => {
             onSignup(
               values.email,
               values.password,
               values.username,
               selectedRole
             );
+            // resetForm({ values: { email: '', password: '', username: '' } });
           }}
           validationSchema={SignupFormSchema}
           validateOnMount={true}

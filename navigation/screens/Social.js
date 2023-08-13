@@ -189,6 +189,7 @@ export default function SocialScreen({ navigation }) {
         options={{
           title: "News Feed",
           headerStyle: {
+<<<<<<<<< Temporary merge branch 1
             backgroundColor: '#ffa31a',
           },
           headerTitleAlign: "center",
@@ -223,6 +224,9 @@ export default function SocialScreen({ navigation }) {
           title: "Create Group",
           headerStyle: {
             backgroundColor: '#ffa31a',
+=========
+            backgroundColor: "#ffa31a",
+>>>>>>>>> Temporary merge branch 2
           },
           headerTitleAlign: "center",
         }}

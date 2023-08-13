@@ -40,12 +40,20 @@ const TabNotif = ({ userRole }) => {
 
     try {
       const notificationsRef = collection(FIRESTORE_DB, 'notifications');
-      const q = query(
+      const q = tabName="News Feed"?
+      query(
         notificationsRef,
         where('owner_uid', '==', userId),
         where('type', '==', tabName),
         orderBy('timestamp', 'desc')
-      );
+      )
+      :
+      query(
+        notificationsRef,
+        where('owner_uid', '==', userId),
+        orderBy('timestamp', 'desc')
+      )
+      ;
 
       const querySnapshot = await getDocs(q);
       const notifications = [];
@@ -74,9 +82,10 @@ const TabNotif = ({ userRole }) => {
   }, []);
 
   const tabsBD = [
-    //{ id: '1', name: 'Activity' },
+    /*{ id: '1', name: 'Activity' },
     { id: '2', name: 'Promotion' },
     { id: '3', name: 'Event' },
+    */
     { id: '4', name: 'News Feed' },
     // Add more tabs as needed
   ];

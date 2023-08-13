@@ -278,8 +278,7 @@ function CreateFeed() {
             // later...
             await setDoc(newRef, data);
             alert("Create Feed Success");
-
-            //sendCustomPushNotification(title, description, type?"Promotion":"Event");
+            sendCustomPushNotification(title, description, type="userpost");
             
           }}/>
         </ScrollView>

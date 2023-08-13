@@ -178,7 +178,7 @@ useEffect(() => {
     .then(async (token) => {
       setExpoPushToken(token);
       console.log('expoPushToken token is', token);
-
+      console.log('user id is.', FIREBASE_AUTH.currentUser.uid);
       // Call the function to get the current user's document ID
       const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
       if (userId) {
@@ -229,7 +229,7 @@ useEffect(() => {
                 <View
                     style={{ backgroundColor: 'white', padding: 10 }}>
                     <Text>Your expo push token: {expoPushToken}</Text>
-                    
+                    <Text>uid: {FIREBASE_AUTH.currentUser.uid}</Text>
                     <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                       <Text>Title: {notification && notification.request.content.title} </Text>
                       <Text>Body: {notification && notification.request.content.body}</Text>
@@ -256,8 +256,8 @@ useEffect(() => {
                       
                 <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                       <Text>Notification Count: {presentedNotificationCount}</Text>
-                </View>
-                */}
+                </View>*/}
+                
                 {/* Second Section */}
                 <View style={{ backgroundColor: 'white', padding: 10 }}>
                     <TabNotif userRole={currentLoggedInUser ? currentLoggedInUser.userRole : null} />

@@ -5,13 +5,23 @@ import * as Notifications from 'expo-notifications';
 
 const projectId = 'e8e6d84c-21a0-433c-acfc-4c1e40ae9d2c';
 
-export async function sendCustomPushNotification(title, body, type) {
+export async function sendCustomPushNotification(title, body, type, usergroup, userID) {
   try {
 
     // Retrieve a list of user documents from Firestore
     const usersCollection = collection(FIRESTORE_DB, 'users');
-    const roleQuery = query(usersCollection, where('role', '==', 'user'));
+    const roleQuery = query(usersCollection, where('role', '==', usergroup));
+
+    /*
     const usersSnapshot = await getDocs(roleQuery);
+
+    if(userID){
+      const IDQuery = query(usersCollection, where('owner_uid', '==', userID));
+      usersSnapshot = await getDocs(roleQuery);
+    }
+    */
+
+    const usersSnapshot = userID?  await getDocs(query(usersCollection, where('owner_uid', '==', userID))) : await getDocs(roleQuery);
 
      // Loop through each user document
     usersSnapshot.forEach(async (userDoc) => {

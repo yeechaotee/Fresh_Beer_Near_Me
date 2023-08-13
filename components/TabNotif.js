@@ -31,7 +31,7 @@ const TabNotif = ({ userRole }) => {
   
 
    const fetchNotification = async (tabName) => {
-    const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
+  const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
 
     if (!userId) {
       console.log('User not authenticated.');
@@ -40,20 +40,28 @@ const TabNotif = ({ userRole }) => {
 
     try {
       const notificationsRef = collection(FIRESTORE_DB, 'notifications');
-      const q = tabName="News Feed"?
-      query(
-        notificationsRef,
-        where('owner_uid', '==', userId),
-        where('type', '==', tabName),
-        orderBy('timestamp', 'desc')
-      )
-      :
-      query(
-        notificationsRef,
-        where('owner_uid', '==', userId),
-        orderBy('timestamp', 'desc')
-      )
-      ;
+      const q = tabName === "News Feed"?
+        query(
+          notificationsRef,
+          where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
+          where('type', '==', "userpost"),
+          orderBy('timestamp', 'desc')
+        )
+        :
+        tabName === "Activity"?
+          query(
+            notificationsRef,
+            where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
+            where('type', 'in', ['rating', 'verification']),
+            orderBy('timestamp', 'desc')
+          )
+          :
+          query(
+            notificationsRef,
+            where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
+            where('type', '==', tabName),
+            orderBy('timestamp', 'desc')
+          );
 
       const querySnapshot = await getDocs(q);
       const notifications = [];
@@ -83,9 +91,10 @@ const TabNotif = ({ userRole }) => {
 
   const tabsBD = [
     /*{ id: '1', name: 'Activity' },
+     */
     { id: '2', name: 'Promotion' },
     { id: '3', name: 'Event' },
-    */
+   
     { id: '4', name: 'News Feed' },
     // Add more tabs as needed
   ];
@@ -202,7 +211,7 @@ const TabNotif = ({ userRole }) => {
           renderItem={({ item }) => (
             <View style={styles.rowContainer}>
               <View style={styles.rowIcon} />
-              <View style={styles.rowContent}>
+              <View style={{ ...styles.rowContent, flex: 3 }}>
                 <Text style={styles.rowHead}>{item.title}</Text>
                 <Text style={styles.rowText}>{removeDivTags(item.body)}</Text>
                  <Text style={styles.rowText}>{item.timestamp.toLocaleString()}</Text>

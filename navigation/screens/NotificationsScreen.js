@@ -75,7 +75,7 @@ export default function NotificationsScreen(navigation) {
       const querySnapshot = await getDocs(q);
 
       const updatePromises = [];
-
+      //console.log("are u dismiss?");
       querySnapshot.forEach((doc) => {
         const notificationRef = doc.ref; // Use .ref to get the reference to the document
         // Update the "readstatus" field in each document using updateDoc

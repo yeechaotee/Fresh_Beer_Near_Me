@@ -278,7 +278,7 @@ function CreateFeed() {
             // later...
             await setDoc(newRef, data);
             alert("Create Feed Success");
-            sendCustomPushNotification(title, description, type="userpost");
+            sendCustomPushNotification(title, description, type="userpost", "user", "");
             
           }}/>
         </ScrollView>
@@ -513,7 +513,7 @@ function CreateFeedByAdmin() {
             
             await setDoc(newRef, data);
             alert("Create Feed Success");
-            sendCustomPushNotification(title, description, type?"Promotion":"Event");
+            sendCustomPushNotification(title, description, type?"Promotion":"Event", "user","");
 
           } catch (e) {
             alert("Create Feed Fail");
@@ -573,6 +573,7 @@ function StarRating() {
       message: state.message,
       data: null
     }
+
     const newRef = doc(collection(FIRESTORE_DB, "reviews"));
     await setDoc(newRef, data);
     // reviews & rating
@@ -597,6 +598,14 @@ function StarRating() {
           reviews: reviews + 1
         }
       })
+      sendCustomPushNotification(
+              "A user has given a rating of "+ state.Default_Rating,
+              state.message,
+              "rating",
+              "businessUser",
+              docSnap.data().owner_uid
+            );
+
     } else {
       // doc.data() will be undefined in this case
       console.log("No such document!");
@@ -719,7 +728,13 @@ function StarRating() {
         <TextInput style={styles.input} placeholder="leave a comment" onChangeText={(text) => {
           setState({ ...state, message: text})
         }}/>
-        <Button style={{ width: "100%" }} title="Submit" onPress={onSubmitComment} />
+        <Button
+          style={{ width: "100%" }}
+          title="Submit"
+          onPress={() => {
+            onSubmitComment();
+          }}
+        />
       </View>
       </ScrollView>
     </SafeAreaView>

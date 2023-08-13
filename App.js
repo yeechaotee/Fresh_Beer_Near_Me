@@ -74,7 +74,7 @@ function LogonLayout() {
       // console.log('User info ---> ', user);
       if (user) {
         const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
-        // console.log("user id is:: " + user.uid);
+        console.log("user id is:: " + user.uid);
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {
           // doc.data() is never undefined for query doc snapshots
@@ -137,7 +137,7 @@ function LogonLayout() {
     getPresentedNotifications();
 
     // Set up an interval to update the notification count every 5 seconds
-    const interval = setInterval(getPresentedNotifications, 5000);
+    const interval = setInterval(getPresentedNotifications, 1000);
 
     return () => {
       unsubscribe();

@@ -213,7 +213,7 @@ async function uploadImageAsync(uri) {
   return await getDownloadURL(fileRef);
 }
 
-function CreateFeed() {
+function CreateFeed({ navigation }) {
   const richText = React.useRef();
   const [state, setState] = React.useState({
     uploading: false,
@@ -331,7 +331,7 @@ function CreateFeed() {
             await setDoc(newRef, data);
             alert("Create Feed Success");
             sendCustomPushNotification(title, description, type="userpost", "user", "");
-            
+            navigation.navigate("News Feed");
           }}/>
         </ScrollView>
       </ScrollView>
@@ -339,7 +339,7 @@ function CreateFeed() {
   );
 }
 
-function CreateFeedByAdmin() {
+function CreateFeedByAdmin({ navigation }) {
   const [state, setState] = React.useState({
     uploading: false,
     image: null,
@@ -369,9 +369,14 @@ function CreateFeedByAdmin() {
     setShow(false);
     // set date
     if (dateTimeType) {
+      if (currentDate)
       setStartDateTime(currentDate)
     } else {
-      setEntDateTime(currentDate)
+      if (currentDate < startDateTime) {
+        alert("Please a valid end date")
+      } else {
+        setEntDateTime(currentDate)
+      }
     }
     setShow(false);
   }, [startDateTime, endDatTime]);
@@ -491,6 +496,7 @@ function CreateFeedByAdmin() {
             mode={mode}
             display="spinner"
             is24Hour={true}
+            minimumDate={new Date()}
             onChange={onChange}
           />
         )}
@@ -566,7 +572,7 @@ function CreateFeedByAdmin() {
             await setDoc(newRef, data);
             alert("Create Feed Success");
             sendCustomPushNotification(title, description, type?"Promotion":"Event", "user","");
-
+            navigation.navigate("News Feed");
           } catch (e) {
             alert("Create Feed Fail");
           }

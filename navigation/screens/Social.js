@@ -297,9 +297,14 @@ function CreateFeedByAdmin({ navigation }) {
     setShow(false);
     // set date
     if (dateTimeType) {
+      if (currentDate)
       setStartDateTime(currentDate)
     } else {
-      setEntDateTime(currentDate)
+      if (currentDate < startDateTime) {
+        alert("Please a valid end date")
+      } else {
+        setEntDateTime(currentDate)
+      }
     }
     setShow(false);
   }, [startDateTime, endDatTime]);
@@ -419,6 +424,7 @@ function CreateFeedByAdmin({ navigation }) {
             mode={mode}
             display="spinner"
             is24Hour={true}
+            minimumDate={new Date()}
             onChange={onChange}
           />
         )}

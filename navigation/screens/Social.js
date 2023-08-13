@@ -24,6 +24,8 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import uuid from "uuid";
 import { VenueInfo, VenueImage } from "../../components/home/VenueItems";
 import { sendCustomPushNotification } from './NotificationUtils';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 
 const Drawer = createDrawerNavigator();
 const Stack = createNativeStackNavigator();

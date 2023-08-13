@@ -64,14 +64,35 @@ export default function NotificationsScreen(navigation) {
   const dismissAllNotifications = async () => {
     try {
       await dismissAllNotificationsAsync();
-      //console.log('All notifications dismissed successfully.');
+      
+      const notificationsRef = collection(FIRESTORE_DB, 'notifications');
+      const q = query(
+        notificationsRef,
+        where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
+        where('readstatus', '==', false)
+      );
+      
+      const querySnapshot = await getDocs(q);
+
+      const updatePromises = [];
+
+      querySnapshot.forEach((doc) => {
+        const notificationRef = doc.ref; // Use .ref to get the reference to the document
+        // Update the "readstatus" field in each document using updateDoc
+        updatePromises.push(updateDoc(notificationRef, { readstatus: true }));
+      });
+
+      // Execute the update promises using Promise.all
+      await Promise.all(updatePromises);
     } catch (error) {
       console.log('Error dismissing notifications:', error);
     }
   };
 
+
+
   //To be uncomment after integration
-  dismissAllNotificationsAsync();
+  //dismissAllNotificationsAsync();
 
   //for manual trigger
   const [presentedNotificationCount, setPresentedNotificationCount] = useState(0);
@@ -88,6 +109,10 @@ export default function NotificationsScreen(navigation) {
   };
 
   useEffect(() => {
+
+    //clear all notification
+    dismissAllNotifications();
+
     // Call the function to get the initial count
     getPresentedNotifications();
 

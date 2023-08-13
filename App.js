@@ -18,7 +18,7 @@ import NotificationsScreen from './navigation/screens/NotificationsScreen';
 import EditProfileScreen from './navigation/screens/EditProfileScreen';
 import NewPostScreen from './navigation/screens/NewPostScreen';
 import 'react-native-gesture-handler';
-import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where } from 'firebase/firestore';
+import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where, updateDoc } from 'firebase/firestore';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from "expo-constants";
@@ -26,6 +26,7 @@ import { Image, Text, View, Button, Platform } from 'react-native';
 import { dismissAllNotificationsAsync, getPresentedNotificationsAsync } from 'expo-notifications';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { createDrawerNavigator } from '@react-navigation/drawer'; import ManagePost from './components/NewPost/ManagePost';
+import { useNavigation } from '@react-navigation/native';
 
 const Drawer = createDrawerNavigator();
 
@@ -64,6 +65,7 @@ const ProfileStack = ({ navigation, route }) => (
 function LogonLayout() {
 
   const [userProfile, setUserProfile] = useState(null);
+  const navigation = useNavigation();
 
   // get current user and user role from firebase
   useEffect(() =>
@@ -105,9 +107,26 @@ function LogonLayout() {
     // Function to get the presented notifications count
     const getPresentedNotifications = async () => {
       try {
+
+        /*
         const presentedNotifications = await getPresentedNotificationsAsync();
         const notificationCount = presentedNotifications.length;
-        setPresentedNotificationCount(notificationCount);
+        const firestoreNotificationCount = 0;
+        setPresentedNotificationCount(notificationCount)
+        */
+       
+        const notificationsRef = collection(FIRESTORE_DB, 'notifications');
+        const q = query(
+          notificationsRef,
+          where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
+          where('readstatus', '==', false)
+        );
+        // Execute the query and get the query snapshot
+        const querySnapshot = await getDocs(q);
+        // Get the count of notifications that match the criteria
+        firestoreNotificationCount = querySnapshot.size; // Use a different variable name
+        setPresentedNotificationCount(firestoreNotificationCount); 
+        
       } catch (error) {
         console.log('Error getting presented notifications:', error);
       }
@@ -195,11 +214,10 @@ function LogonLayout() {
       <Tab.Screen
         name="Notification"
         component={NotificationsScreen}
-        options={{  tabBarBadge: presentedNotificationCount > 0 ? presentedNotificationCount : null,
-         }}>
-
-           
-         </Tab.Screen>
+        options={{
+          tabBarBadge: presentedNotificationCount > 0 ? presentedNotificationCount : null,
+        }}
+      />
       {userProfile && userProfile.profile_picture != null ?
         <Tab.Screen
           name="Profile"

@@ -15,17 +15,18 @@ export async function sendCustomPushNotification(title, body, type) {
 
      // Loop through each user document
     usersSnapshot.forEach(async (userDoc) => {
-      const expoPushToken = userDoc.data().expoPushToken;
+      const usertoken = userDoc.data().expoPushToken;
 
       // Check if the user has an Expo push token
-      if (expoPushToken) {
-        console.log('Test who get notification, docid is:', userDoc.id,  'uid is:', userDoc.data().owner_uid, 'expo push token is:', expoPushToken);
+      if (usertoken) {
+        console.log('user receiving notif docid is:', userDoc.id,  'uid is:', userDoc.data().owner_uid, 'expo push token is:', usertoken);
 
         const notification = await Notifications.scheduleNotificationAsync({
           content: {
             title: title,
             body: body,
           },
+          to: usertoken,
           trigger: { seconds: 2, repeats: false },
         });
 
@@ -37,6 +38,7 @@ export async function sendCustomPushNotification(title, body, type) {
             timestamp: new Date().toISOString(),
             type: type,
             createdby: FIREBASE_AUTH.currentUser.uid,
+            readstatus: false,
           };
 
           await addDoc(collection(FIRESTORE_DB, 'notifications'), notificationData);

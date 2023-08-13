@@ -16,7 +16,8 @@ import {
   setDoc,
   doc,
   orderBy,
-  where
+  where,
+  limit,
 } from "firebase/firestore";
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -48,6 +49,7 @@ function NewsFeed() {
     isAdmin();
   }, [])
 
+/*
   React.useEffect(() => {
     async function getNewsFeed() {
       const feedsRef = collection(FIRESTORE_DB, "newsfeed");
@@ -55,17 +57,63 @@ function NewsFeed() {
       const querySnapshot = await getDocs(q);
       const feeds = new Array();
       querySnapshot.forEach((doc) => {
+        
         feeds.push({
           id: doc.id,
           ...doc.data(),
           createTime: doc.data().createTime.toDate().toDateString(),
         });
       });
+      
+      //const userRef = doc(FIRESTORE_DB,8 'users', docId);
+
+      
       setActiveData(feeds);
     }
     console.log("render list")
     getNewsFeed();
   }, []);
+*/
+
+ React.useEffect(() => {
+    async function getNewsFeed() {
+      const feedsRef = collection(FIRESTORE_DB, "newsfeed");
+      const q = query(feedsRef, orderBy("createTime", "desc"));
+      const querySnapshot = await getDocs(q);
+
+      const feedPromises = querySnapshot.docs.map(async (doc) => {
+        if(doc.data().creater){
+          const userRef = collection(FIRESTORE_DB, "users");
+        
+          const userQuerySnapshot = await getDocs(
+            query(userRef, where("email", "==", doc.data().creater), limit(1))
+          );
+
+          if (!userQuerySnapshot.empty) {
+            const userDoc = userQuerySnapshot.docs[0];
+            const userData = userDoc.data();
+            const profilePicture = userData.profile_picture;
+
+            return {
+              id: doc.id,
+              ...doc.data(),
+              createTime: doc.data().createTime.toDate().toDateString(),
+              profile_picture: profilePicture, // Include the user's profile picture
+            };
+          }
+
+        }
+        
+      });
+
+      const feeds = await Promise.all(feedPromises);
+      setActiveData(feeds.filter(feed => feed)); // Remove any undefined feed items
+    }
+
+    console.log("render list");
+    getNewsFeed();
+  }, []);
+
 
   return (
     <View style={styles.container}>
@@ -76,7 +124,11 @@ function NewsFeed() {
                       <View style={styles.rowHeader}>
                           <View style={styles.rowIcon} >
                             {
-                              item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
+                              //item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
+                              <Image
+                                style={{ width: 50, height: 50, borderRadius: 15, marginTop: -3 }}
+                                source={{ uri: item.profile_picture }}
+                              />
                             }
                           </View>
                           <View style={styles.rowContent}>

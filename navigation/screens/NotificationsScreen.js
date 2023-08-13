@@ -225,6 +225,7 @@ useEffect(() => {
                 <View className="flex-row px-6 mt-8 items-center space-x-2">
                     <Text className="text-[#2A2B4B] text-3xl font-semibold">Notification</Text>
                 </View>
+                
                 {/* Test send Section 
                 <View
                     style={{ backgroundColor: 'white', padding: 10 }}>

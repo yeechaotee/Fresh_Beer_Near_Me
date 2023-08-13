@@ -205,7 +205,11 @@ const TabNotif = ({ userRole }) => {
         ))}
       </View>
       <View style={styles.container}>
-        {/*<Text>{activeTab}</Text>*/}
+        {activeData.length === 0 ? ( // Check if there are no notifications
+          <View style={styles.noNotificationContainer}>
+            <Text style={styles.noNotificationText}>No notifications</Text>
+          </View>
+        ) : (
         <FlatList
           data={activeData}
           renderItem={({ item }) => (
@@ -220,6 +224,7 @@ const TabNotif = ({ userRole }) => {
           )}
           keyExtractor={(item) => item.id.toString()}
         />
+        )}
       </View>
     </View>
   );
@@ -265,6 +270,15 @@ const styles = StyleSheet.create({
   rowTime: {
     fontSize: 14,
     color: '#808080',
+  },
+   noNotificationContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noNotificationText: {
+    fontSize: 18,
+    color: 'gray',
   },
 });
 

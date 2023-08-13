@@ -21,7 +21,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import uuid from "uuid";
-import { VenueInfo, VenueImage } from "../../components/home/VenueItems";
+import { VenueInfo } from "../../components/home/VenueItems";
 
 const Drawer = createDrawerNavigator();
 
@@ -523,6 +523,7 @@ function StarRating() {
     Default_Rating: 2.5,
     message: "",
     Max_Rating: 5,
+    data: null
   })
 
   const Star = 'https://raw.githubusercontent.com/AboutReact/sampleresource/master/star_filled.png';
@@ -581,6 +582,7 @@ function StarRating() {
               ...state,
               data: null
             })
+            return;
           }
           const feedsRef = collection(FIRESTORE_DB, "venues");
           const q = query(feedsRef, where("name", "==", text));
@@ -588,6 +590,7 @@ function StarRating() {
           querySnapshot.forEach((doc) => {
             console.log(doc.id)
             const data = doc.data();
+            console.log(data)
             setState({
               ...state,
               id: doc.id,

@@ -90,7 +90,7 @@ const VenueImage = (props) => (
   </>
 );
 
-const VenueInfo = (props) => (
+export const VenueInfo = (props) => (
   <View
     style={{
       flexDirection: "row",

@@ -3,7 +3,7 @@ import { Image, Button, Modal, StyleSheet, View, Text } from "react-native";
 import Constants from "expo-constants";
 import DropDownPicker from "react-native-dropdown-picker";
 
-const userName = "put username here dynamically"; // make dynamic later on.
+
 
 const surveyModal = ({
   modalVisible,
@@ -13,6 +13,7 @@ const surveyModal = ({
   setBeerProfile,
   setFavBeer,
   setRegion,
+  username,
 }) => {
   //submit button needs
   const handleModalSubmit = (beerProfileValue, favBeerValue, regionValue) => {
@@ -98,6 +99,10 @@ const surveyModal = ({
     { label: "West", value: "West" },
   ];
 
+  //dynamic username
+  //const userName = "put username here dynamically"; // make dynamic later on.
+  const userName = useState(username);
+
   return (
     <Modal
       visible={modalVisible}
@@ -107,16 +112,16 @@ const surveyModal = ({
       <View style={styles.modalContainer}>
         <Text style={styles.Header1}>Quick Survey</Text>
 
-        <Image style={styles.image} source={require("../../assets/icon.png")} />
+        <Image style={styles.image} source={require("../../assets/images/beer.png")} />
 
         <Text style={styles.Header2}>Hi {userName}</Text>
 
-        <View style={styles.container}>
-          <Text style={styles.message1}>Let's get to know you better.</Text>
-        </View>
+        <Text style={styles.Header2}>    </Text>
+          <Text style={styles.Header2}>Set your preferences!</Text>
+        
 
         <View style={{ padding: 10, zIndex: 3 }}>
-          <Text style={styles.Header3}>Whats your beer profile?</Text>
+          <Text style={styles.Header3}>Whats your beer taste profile?</Text>
           {/* <Text>beer types</Text> */}
 
           <DropDownPicker
@@ -148,7 +153,7 @@ const surveyModal = ({
         </View>
 
         <View style={{ padding: 10, zIndex: 2 }}>
-          <Text style={styles.Header3}>whats your favourite beers?</Text>
+          <Text style={styles.Header3}>whats the best beers?</Text>
           {/* <Text>beer types</Text> */}
 
           <DropDownPicker
@@ -211,7 +216,7 @@ const surveyModal = ({
           />
         </View>
 
-        <Text style={styles.Header3}>any more question to add on??</Text>
+        
 
         <View style={styles.button}>
           <Button
@@ -240,9 +245,7 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    borderColor: "red",
-    borderWidth: 5,
-    height: 100,
+    height: 200,
     width: 200,
   },
   container: {

@@ -371,6 +371,7 @@ const FormikPostUploader = ({ navigation }) => {
                             setBeerProfile={setBeerProfile}
                             setFavBeer={setFavBeer}
                             setRegion={setRegion}
+                            username={values.resName}
                         />
                         {/* <Button style={{ maxWidth: 280, borderRadius: 10 }} onPress={handleSubmit} title='Post' disabled={!isValid} /> */}
                         {loading ?

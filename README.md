@@ -48,6 +48,10 @@ npm install patch-package
 npm install deprecated-react-native-prop-types
 npm install react-native-swipe-list-view --save
 npm install react-native-action-button
+npm i react-native-keyboard-aware-scroll-view
+npm i react-native-image-picker
+npm install firebase @firebase/storage
+npx expo install expo-image-picker
 ```
 
 ## 📝 Firebase Database:

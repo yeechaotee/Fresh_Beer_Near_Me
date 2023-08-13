@@ -1,21 +1,21 @@
 import { View, Text, SafeAreaView, StyleSheet, TouchableOpacity, Image } from 'react-native'
 import React from 'react'
-import EditItemsUploader from '../../components/NewPost/EditItemsUploader'
+import EditExistingMenuItemUploader from '../../components/NewPost/EditExistingMenuItemUploader'
 
-export default function EditMenuItemScreen({ navigation, route }) {
+export default function EditExistingMenuItemScreen({ navigation, route }) {
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <View style={styles.headerContainer}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Image
                         source={require('../../assets/arrowback.png')}
-                        style={{ width: 20, height: 20, marginLeft: -100 }}
+                        style={{ width: 20, height: 20 }}
                     />
                 </TouchableOpacity>
-                <Text style={styles.headerText}>Add New Menu Item</Text>
+                <Text style={styles.headerText}>Edit Menu Item</Text>
 
             </View>
-            <EditItemsUploader navigation={navigation} route={route} />
+            <EditExistingMenuItemUploader navigation={navigation} route={route} />
         </SafeAreaView>
     )
 }
@@ -29,8 +29,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        alignSelf: 'center',
         marginTop: 30,
+        marginRight: 120,
     },
 
     headerText: {

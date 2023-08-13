@@ -66,10 +66,10 @@ function Home({ navigation }) {
         const unsubcribe = onSnapshot(querySnapshot, (snapshot) => {
             snapshot.docChanges().forEach((change) => {
                 if (change.type === "added") {
-                    console.log("New Venue", change.doc.data());
+                    // console.log("New Venue", change.doc.data());
                     const venueData = change.doc.data();
                     const venueId = change.doc.id; // Get the document ID
-                    console.log('New Venue ID: ', venueId);
+                    // console.log('New Venue ID: ', venueId);
                     // console.log("New Venue uid: ", change.id);
                     // Check if initial posts have been set
                     setPosts((prevVenues) => [...prevVenues, { venueId: venueId, ...venueData }]);
@@ -91,6 +91,7 @@ function Home({ navigation }) {
             // console.log('User info ---> ', user);
             if (user) {
                 setUser(user);
+                console.log("User info: => " + user);
                 const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
                 // console.log("user id is:: " + user.uid);
                 const querySnapshot = await getDocs(q);
@@ -410,48 +411,137 @@ function Home({ navigation }) {
 }
 
 
+
+const screenConfigs = [
+    {
+        name: 'Discovery Home',
+        component: Home,
+        options: {
+            headerStyle: {
+                backgroundColor: '#ffa31a',
+            },
+            headerTitleAlign: 'center',
+            drawerIcon: ({ color }) => (
+                <Ionicons name="md-home" size={17} color={color} />
+            ),
+        },
+    },
+    {
+        name: 'Add New Venue',
+        component: NewPostScreen,
+        options: {
+            headerTitleAlign: 'center',
+            headerStyle: {
+                backgroundColor: '#ffa31a',
+            },
+            drawerIcon: ({ color }) => (
+                <Ionicons name="add-circle-outline" size={17} color={color} />
+            ),
+        },
+    },
+    {
+        name: 'Manage Venue',
+        component: ManagePost,
+        options: {
+            headerTitleAlign: 'center',
+            headerStyle: {
+                backgroundColor: '#ffa31a',
+            },
+            drawerIcon: ({ color }) => (
+                <Ionicons name="cog-outline" size={17} color={color} />
+            ),
+        },
+    },
+];
+
+const GuessscreenConfigs = [
+    {
+        name: 'Discovery Home',
+        component: Home,
+        options: {
+            headerStyle: {
+                backgroundColor: '#ffa31a',
+            },
+            headerTitleAlign: 'center',
+            drawerIcon: ({ color }) => (
+                <Ionicons name="md-home" size={17} color={color} />
+            ),
+        },
+    },
+];
+
+
 // DiscoverScreen wrapped up inside navigation.js's NavigationContainer component
 // Destructure way
 export default function DiscoverScreen({ navigation }) {
-    return (
-        <Drawer.Navigator initialRouteName="Social Home" screenOptions={{
-            headerShown: true,
-            drawerActiveBackgroundColor: '#ffa31a',
-            drawerActiveTintColor: '#fff',
-            drawerInactiveTintColor: '#333',
-            drawerLabelStyle: {
-                fontSize: 15,
+
+    const [user, setUser] = useState(null);
+    const [queryRole, setQueryRole] = useState(null);
+
+    // get current user and user role from firebase
+    useEffect(() =>
+        onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+            // console.log('User info ---> ', user);
+            if (user) {
+                setUser(user);
+                console.log("User info: => " + user);
+                const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
+                // console.log("user id is:: " + user.uid);
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach((doc) => {
+                    // doc.data() is never undefined for query doc snapshots
+                    setQueryRole(doc.data().role);
+                    // console.log(doc.id, " => ", doc.data());
+                    console.log(doc.id, " => User Role: ", doc.data().role);
+                });
             }
-        }}>
-            <Drawer.Screen
-                name="Discovery Home"
-                component={Home}
-                options={{
-                    headerStyle: {
-                        backgroundColor: '#ffa31a',
-                    },
-                    headerTitleAlign: "center",
-                }}
-            />
-            <Drawer.Screen name="Add New Venue" component={NewPostScreen} options={{
-                headerTitleAlign: "center",
-                headerStyle: {
-                    backgroundColor: '#ffa31a',
+            else {
+                setUser(null);
+            }
+        })
+        , []);
+
+
+    return (
+        user && queryRole === "businessUser" ? (
+            <Drawer.Navigator initialRouteName="Discovery Home" screenOptions={{
+                headerShown: true,
+                drawerActiveBackgroundColor: '#ffa31a',
+                drawerActiveTintColor: '#fff',
+                drawerInactiveTintColor: '#333',
+                drawerLabelStyle: {
+                    fontSize: 15,
                 },
-                drawerIcon: ({ color }) => {
-                    <Ionicons name="md-home" size={12} />
-                }
-            }} />
-            <Drawer.Screen name="Manage Venue" component={ManagePost} options={{
-                headerTitleAlign: "center",
-                headerStyle: {
-                    backgroundColor: '#ffa31a',
+            }}>
+                {screenConfigs.map((screenConfig) => (
+                    <Drawer.Screen
+                        key={screenConfig.name}
+                        name={screenConfig.name}
+                        component={screenConfig.component}
+                        options={screenConfig.options}
+                    />
+                ))}
+            </Drawer.Navigator>
+        ) : (
+            <Drawer.Navigator initialRouteName="Discovery Home" screenOptions={{
+                headerShown: true,
+                drawerActiveBackgroundColor: '#ffa31a',
+                drawerActiveTintColor: '#fff',
+                drawerInactiveTintColor: '#333',
+                drawerLabelStyle: {
+                    fontSize: 15,
                 },
-                drawerIcon: ({ color }) => {
-                    <Ionicons name="setting-outline" size={12} color={color} />
-                }
-            }} />
-        </Drawer.Navigator>
+            }}>
+                {GuessscreenConfigs.map((screenConfig) => (
+                    <Drawer.Screen
+                        key={screenConfig.name}
+                        name={screenConfig.name}
+                        component={screenConfig.component}
+                        options={screenConfig.options}
+                    />
+                ))}
+            </Drawer.Navigator>
+        )
     );
 
 }

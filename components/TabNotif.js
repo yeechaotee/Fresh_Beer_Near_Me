@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../firebase';
-import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where } from 'firebase/firestore';
+import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where, orderBy  } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 const generateRandomTime = () => {
@@ -49,7 +49,7 @@ const TabNotif = () => {
   
 
    const fetchNotification = async (tabName) => {
-    const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
+  const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
 
     if (!userId) {
       console.log('User not authenticated.');
@@ -58,12 +58,28 @@ const TabNotif = () => {
 
     try {
       const notificationsRef = collection(FIRESTORE_DB, 'notifications');
-      const q = query(
-        notificationsRef,
-        where('owner_uid', '==', userId),
-        where('type', '==', tabName)
-        
-      );
+      const q = tabName === "News Feed"?
+        query(
+          notificationsRef,
+          where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
+          where('type', '==', "userpost"),
+          orderBy('timestamp', 'desc')
+        )
+        :
+        tabName === "Activity"?
+          query(
+            notificationsRef,
+            where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
+            where('type', 'in', ['rating', 'verification']),
+            orderBy('timestamp', 'desc')
+          )
+          :
+          query(
+            notificationsRef,
+            where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
+            where('type', '==', tabName),
+            orderBy('timestamp', 'desc')
+          );
 
       const querySnapshot = await getDocs(q);
       const notifications = [];
@@ -91,10 +107,12 @@ const TabNotif = () => {
     handleTabClick(activeTab);
   }, []);
 
-  const tabs = [
-    { id: '1', name: 'Activity' },
+  const tabsBD = [
+    /*{ id: '1', name: 'Activity' },
+     */
     { id: '2', name: 'Promotion' },
     { id: '3', name: 'Event' },
+   
     { id: '4', name: 'News Feed' },
     // Add more tabs as needed
   ];
@@ -151,6 +169,14 @@ const TabNotif = () => {
   }
   */
 
+  function removeDivTags(text) {
+    // Replace <div> and </div> tags with an empty string
+    const cleanedText = text.replace(/<\/?div>/g, '');
+
+    return cleanedText;
+  }
+
+
   return (
     
     <View style={{ alignSelf: 'center' }}>
@@ -168,21 +194,26 @@ const TabNotif = () => {
         ))}
       </View>
       <View style={styles.container}>
-        {/*<Text>{activeTab}</Text>*/}
+        {activeData.length === 0 ? ( // Check if there are no notifications
+          <View style={styles.noNotificationContainer}>
+            <Text style={styles.noNotificationText}>No notifications</Text>
+          </View>
+        ) : (
         <FlatList
           data={activeData}
           renderItem={({ item }) => (
             <View style={styles.rowContainer}>
               <View style={styles.rowIcon} />
-              <View style={styles.rowContent}>
+              <View style={{ ...styles.rowContent, flex: 3 }}>
                 <Text style={styles.rowHead}>{item.title}</Text>
-                <Text style={styles.rowText}>{item.body}</Text>
+                <Text style={styles.rowText}>{removeDivTags(item.body)}</Text>
                  <Text style={styles.rowText}>{item.timestamp.toLocaleString()}</Text>
               </View>
             </View>
           )}
           keyExtractor={(item) => item.id.toString()}
         />
+        )}
       </View>
     </View>
   );
@@ -228,6 +259,15 @@ const styles = StyleSheet.create({
   rowTime: {
     fontSize: 14,
     color: '#808080',
+  },
+   noNotificationContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noNotificationText: {
+    fontSize: 18,
+    color: 'gray',
   },
 });
 

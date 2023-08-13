@@ -31,6 +31,20 @@
 
         "projectId": "e8e6d84c-21a0-433c-acfc-4c1e40ae9d2c"
       }
-    }
+    },
+    
+    "notification": {
+      "androidMode": "default",
+      "androidUseChannel": false
+    },
+    
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
+      ]
+    ]
   }
 }

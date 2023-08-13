@@ -15,6 +15,8 @@ import { ActivityIndicator } from "react-native-paper";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendEmailVerification,
+  signOut,
 } from "firebase/auth";
 import { validate, validator } from "email-validator";
 import * as Yup from "yup";

@@ -156,7 +156,7 @@ async function uploadImageAsync(uri) {
   return await getDownloadURL(fileRef);
 }
 
-function CreateFeed() {
+function CreateFeed({ navigation }) {
   const richText = React.useRef();
   const [state, setState] = React.useState({
     uploading: false,
@@ -259,7 +259,8 @@ function CreateFeed() {
             const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
             // later...
             await setDoc(newRef, data);
-            alert("Create Feed Success")
+            alert("Create Feed Success");
+            navigation.navigate("News Feed");
           }}/>
         </ScrollView>
       </ScrollView>
@@ -267,7 +268,7 @@ function CreateFeed() {
   );
 }
 
-function CreateFeedByAdmin() {
+function CreateFeedByAdmin({ navigation }) {
   const [state, setState] = React.useState({
     uploading: false,
     image: null,
@@ -475,6 +476,7 @@ function CreateFeedByAdmin() {
             
             await setDoc(newRef, data);
             alert("Create Feed Success");
+            navigation.navigate("News Feed");
           } catch (e) {
             alert("Create Feed Fail");
           }

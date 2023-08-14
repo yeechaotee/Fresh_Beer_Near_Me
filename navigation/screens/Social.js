@@ -59,21 +59,34 @@ function NewsFeed() {
   async function getNewsFeed() {
     const feedsRef = collection(FIRESTORE_DB, "newsfeed");
     console.log(page)
-    const q1 = query(feedsRef, orderBy("createTime"));
-    const querySnapshot1 = await getDocs(q1);
-    if (querySnapshot1.size >= activeData.length) {
-      return;
-    }
-    const q = query(feedsRef, orderBy("createTime", "desc"));
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach((doc) => {
-      activeData.push({
-        id: doc.id,
-        ...doc.data(),
-        createTime: doc.data().createTime.toDate().toDateString(),
+    if (page === 0) {
+      const q = query(feedsRef, orderBy("createTime", "desc"), limit(PAGE_SIZE * (page + 1)));
+      const querySnapshot = await getDocs(q);
+      next = querySnapshot.docs[querySnapshot.docs.length - 1];
+      console.log("aaa", next)
+      querySnapshot.forEach((doc) => {
+        activeData.push({
+          id: doc.id,
+          ...doc.data(),
+          createTime: doc.data().createTime.toDate().toDateString(),
+        });
       });
-    });
-    console.log(activeData)
+    } else {
+      const q1 = query(feedsRef, orderBy("createTime", "desc"), limit(PAGE_SIZE * page));
+      const querySnapshot1 = await getDocs(q1);
+      const next = querySnapshot1.docs[querySnapshot1.docs.length - 1];
+      if (next) {
+        const q = query(feedsRef, orderBy("createTime", "desc"), startAfter(next), limit(PAGE_SIZE));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          activeData.push({
+            id: doc.id,
+            ...doc.data(),
+            createTime: doc.data().createTime.toDate().toDateString(),
+          });
+        });
+      }
+    }
     setActiveData([...activeData]);
     setIsRefresh(false);
   }
@@ -82,6 +95,7 @@ function NewsFeed() {
     if (isRefresh) {
       page++;
       getNewsFeed();
+      console.log()
     }
   }
 

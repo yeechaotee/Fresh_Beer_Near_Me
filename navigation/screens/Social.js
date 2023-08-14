@@ -18,7 +18,10 @@ import {
   orderBy,
   where,
   limit,
-  limitToLast
+  limitToLast,
+  startAt,
+  startAfter,
+  endBefore
 } from "firebase/firestore";
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -30,12 +33,12 @@ const Drawer = createDrawerNavigator();
 const handleHead = ({tintColor}) => <Text style={{color: tintColor}}>H1</Text>
 
 function NewsFeed() {
+  let page = 0;
   const PAGE_SIZE = 5;
 
   const [activeData, setActiveData] = React.useState([]);
   const auth = FIREBASE_AUTH;
   const [isAdmin, setIsAdmin] = React.useState(false);
-  const [page, setPage] = React.useState(1);
   const [showFoot, setShowFoot] = React.useState(0)
   const [isRefresh, setIsRefresh] = React.useState(false)
 
@@ -49,37 +52,35 @@ function NewsFeed() {
         setIsAdmin(data.role === "businessUser");
       })
     }
+    getNewsFeed();
     isAdmin();
   }, [])
 
   async function getNewsFeed() {
     const feedsRef = collection(FIRESTORE_DB, "newsfeed");
-    const q = query(feedsRef, orderBy("createTime", "desc"), limit(page * PAGE_SIZE));
+    console.log(page)
+    const q1 = query(feedsRef, orderBy("createTime"));
+    const querySnapshot1 = await getDocs(q1);
+    if (querySnapshot1.size >= activeData.length) {
+      return;
+    }
+    const q = query(feedsRef, orderBy("createTime", "desc"), limit(PAGE_SIZE));
     const querySnapshot = await getDocs(q);
-    const feeds = new Array();
     querySnapshot.forEach((doc) => {
-      feeds.push({
+      activeData.push({
         id: doc.id,
         ...doc.data(),
         createTime: doc.data().createTime.toDate().toDateString(),
       });
     });
-    setActiveData(feeds);
+    console.log(activeData)
+    setActiveData([...activeData]);
+    setIsRefresh(false);
   }
 
-  function _onEndReached() {
-    if (showFoot !== 0) {
-      return
-    } else {
-      console.log('aaaa')
-      setShowFoot(2)
-      setPage(page + 1);
-      getNewsFeed();
-    }
-  }
-
-  function _onRefresh() {
-    if (!isRefresh) {
+  function _onEndReached({ distanceFromEnd }) {
+    if (isRefresh) {
+      page++;
       getNewsFeed();
     }
   }
@@ -167,10 +168,10 @@ function NewsFeed() {
               </View>
           )}
           keyExtractor={(item) => item.id.toString()}
-          onEndReached={_onEndReached()}
-          onEndReachedThreshold={0.2}
-          onRefresh={_onRefresh()}
+          onEndReached={_onEndReached}
+          onEndReachedThreshold={0.5}
           ListFooterComponent={_renderFooter()}
+          onMomentumScrollBegin={() => { setIsRefresh(true); }}
       />
     </View>
   );
@@ -343,9 +344,13 @@ function CreateFeedByAdmin({ navigation }) {
     setShow(false);
     // set date
     if (dateTimeType) {
-      if (currentDate)
-      setStartDateTime(currentDate)
+      if (currentDate < new Date()) {
+        alert("Please a valid start date")
+      } else {
+        setStartDateTime(currentDate)
+      }
     } else {
+      console.log(currentDate, startDateTime);
       if (currentDate < startDateTime) {
         alert("Please a valid end date")
       } else {
@@ -539,28 +544,28 @@ function CreateFeedByAdmin({ navigation }) {
   );
 }
 
-function AddFriends() {
-  return (
-    <SafeAreaView style={{ flex: 1, padding: 10 }}>
-      <View style={{ alignItems: "center"}}>
-        <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
-          Add Via User Name
-        </Text>
-      </View>
-        <TextInput style={styles.input} value="username"/>
-        <View  style={{ marginBottom: 10 }}>
-          <Button title="Send friend Request" />
-        </View>
-        <View style={{alignItems: "center"}}>
-          <Text style={{marginTop: 40, fontWeight: "bold"}}>OR</Text>
-        </View>
-        <View style={{ marginBottom: 10, marginTop: 60}}>
-          <Button title="Add Via Your Phone Contact" />
-        </View>
-        <Button style={{ marginTop: 10 }} title="Nearby Scan" />
-    </SafeAreaView>
-  );
-}
+// function AddFriends() {
+//   return (
+//     <SafeAreaView style={{ flex: 1, padding: 10 }}>
+//       <View style={{ alignItems: "center"}}>
+//         <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
+//           Add Via User Name
+//         </Text>
+//       </View>
+//         <TextInput style={styles.input} value="username"/>
+//         <View  style={{ marginBottom: 10 }}>
+//           <Button title="Send friend Request" />
+//         </View>
+//         <View style={{alignItems: "center"}}>
+//           <Text style={{marginTop: 40, fontWeight: "bold"}}>OR</Text>
+//         </View>
+//         <View style={{ marginBottom: 10, marginTop: 60}}>
+//           <Button title="Add Via Your Phone Contact" />
+//         </View>
+//         <Button style={{ marginTop: 10 }} title="Nearby Scan" />
+//     </SafeAreaView>
+//   );
+// }
 
 function StarRating() {
 
@@ -743,17 +748,17 @@ function StarRating() {
   )
 }
 
-function Report() {
-  return (
-    <SafeAreaView style={{ flex: 1, padding: 10 }}>
-      <View style={{ alignItems: "center"}}>
-        <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
-          TODO: Report Page
-        </Text>
-      </View>
-    </SafeAreaView>
-  )
-}
+// function Report() {
+//   return (
+//     <SafeAreaView style={{ flex: 1, padding: 10 }}>
+//       <View style={{ alignItems: "center"}}>
+//         <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
+//           TODO: Report Page
+//         </Text>
+//       </View>
+//     </SafeAreaView>
+//   )
+// }
 
 export default function SocialScreen({ navigation }) {
   const auth = FIREBASE_AUTH;

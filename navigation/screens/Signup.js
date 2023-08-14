@@ -304,6 +304,7 @@ export default function Signup({ navigation }) {
                       setBeerProfile={setBeerProfile}
                       setFavBeer={setFavBeer}
                       setRegion={setRegion}
+                      username={values.username}
                     />
                     <View style={styles.signupContainer}>
                       <Text>Already have an account? </Text>

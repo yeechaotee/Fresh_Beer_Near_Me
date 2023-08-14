@@ -30,7 +30,7 @@ import {
 // import PostCard from '../components/PostCard';
 import * as ImagePicker from "expo-image-picker";
 import { getStorage, getDownloadURL, ref, uploadBytes } from "firebase/storage";
-
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const storage = getStorage();
 const ProfileScreen = ({ navigation, route }) => {
@@ -227,6 +227,7 @@ const ProfileScreen = ({ navigation, route }) => {
         showsVerticalScrollIndicator={false}
       >
         <TouchableOpacity onPress={selectImage}>
+        <View style={styles.userImgWrapper}>
           <Image
             style={styles.userImg}
             source={{
@@ -236,6 +237,8 @@ const ProfileScreen = ({ navigation, route }) => {
                 : "https://static.thenounproject.com/png/5034901-200.png",
             }}
           />
+          <Ionicons name="add-circle-outline" color="#ffa31a" size={50} style={styles.addIcon}/>
+        </View>
         </TouchableOpacity>
 
         {/* <Text style={styles.userName}>{userData ? userData.fname || 'Test' : 'Test'} {userData ? userData.lname || 'User' : 'User'}</Text> */}
@@ -307,10 +310,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 20,
   },
+  userImgWrapper: {
+    position: "relative", // Required for absolute positioning
+  },
   userImg: {
     height: 150,
     width: 150,
     borderRadius: 75,
+  },
+  addIcon: {
+    position: "absolute",
+    bottom: -10,
+    right: 0,
   },
   userName: {
     fontSize: 18,

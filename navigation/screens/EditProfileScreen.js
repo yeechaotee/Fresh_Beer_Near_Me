@@ -23,19 +23,78 @@ import BottomSheet from 'reanimated-bottom-sheet';
 import { AuthContext } from '../AuthProvider/AuthProvider';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
-import firestore from 'firebase/firestore';
+import { collection, query, getDocs, where, updateDoc, doc } from 'firebase/firestore';
 import storage from 'firebase/storage';
+import DropDownPicker from "react-native-dropdown-picker";
+import Constants from "expo-constants";
 
 const EditProfileScreen = ({ navigation, route }) => {
   // const { user, logout } = useContext(AuthContext);
-  const [user, setUser] = useState(User);
+  //const [user, setUser] = useState(User);
 
+  /*
+  useEffect(() => {
+    // Fetch the user data from Firebase Auth
+    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (authUser) => {
+      if (authUser) {
+        setUser(authUser); // Set the user state with the authenticated user object
+      } else {
+        setUser(null); // If not authenticated, set user state to null
+      }
+    });
+
+    // Clean up the subscription when the component unmounts
+    return () => unsubscribe();
+  }, []);
+  */
 
   const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [transferred, setTransferred] = useState(0);
   const [userData, setUserData] = useState(null);
 
+  const [beerProfileIsOpen, setBeerProfileIsOpen] = useState(false);
+  const [beerProfileValue, setBeerProfileValue] = useState([]);
+  const beerProfiles = [
+    { label: "Crisp", value: "Crisp" },
+    { label: "Hop", value: "Hop" },
+    { label: "Malt", value: "Malt" },
+    { label: "Roast", value: "Roast" },
+    { label: "Stout", value: "medium" },
+    { label: "Fruit & Spice", value: "Fruit & Spice" },
+    { label: "Tart & Funky", value: "Tart & Funky" },
+  ];
+
+  const [favBeerIsOpen, setfavBeerIsOpen] = useState(false);
+  const [favBeerValue, setfavBeerValue] = useState([]);
+  const favBeers = [
+    { label: "Brown Ale", value: "Brown Ale" },
+    { label: "Pale Ale", value: "Pale Ale" },
+    { label: "Lager", value: "Lager" },
+    { label: "Malt", value: "Malt" },
+    { label: "Stout", value: "medium" },
+    { label: "Amber", value: "Amber" },
+    { label: "Blonde", value: "Blonde" },
+    { label: "Brown", value: "Brown" },
+    { label: "Cream", value: "Cream" },
+    { label: "Dark", value: "Dark" },
+    { label: "Caramel", value: "Caramel" },
+    { label: "Red", value: "Red" },
+    { label: "Honey", value: "Honey" },
+    { label: "Lime", value: "Lime" },
+    { label: "Black", value: "Black" },
+  ];
+  
+  const [regionIsOpen, setregionIsOpen] = useState(false);
+  const [regionValue, setregionValue] = useState([]);
+  const regions = [
+    { label: "North", value: "North" },
+    { label: "South", value: "South" },
+    { label: "East", value: "East" },
+    { label: "West", value: "West" },
+  ];
+
+  /*
   const getUser = async () => {
     const currentUser = await firestore()
       .collection('users')
@@ -48,9 +107,53 @@ const EditProfileScreen = ({ navigation, route }) => {
         }
       })
   }
+  */
+  
+  //get current user's docid
+  const getUser = async () => {
+    try {
+      const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
+      const userCollectionRef = collection(FIRESTORE_DB, 'users');
+      const q = query(userCollectionRef, where('owner_uid', '==', userId));
+      const querySnapshot = await getDocs(q);
 
-  console.log("user is:" + User)
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        // Get the docID of the user's document
+        //const docId = userDoc.id;
+        console.log("what is favBeer", userDoc.data().favBeer);
+        setUserData(userDoc.data());
+        //return { docId, userRole };
+        //return docId;
+      } else {
+        console.log('User document not found');
+        return null;
+      }
+    } catch (error) {
+      console.log('Error getting current user document ID:', error);
+      return null;
+    }
+  };
+/*
+const updateUser = async (docId, expoPushToken) => {
+  try {
+    // Assuming you have a collection called "users" in Firestore
+    //const userRef = doc(FIRESTORE_DB, 'users', FIREBASE_AUTH.currentUser.uid);
+    const userRef = doc(FIRESTORE_DB, 'users', docId);
 
+    // Update the "expoPushToken" field in the user's document
+    await setDoc(userRef, { expoPushToken: expoPushToken }, { merge: true });
+
+    console.log('User expoPushToken updated successfully.');
+  } catch (error) {
+    console.log('Error updating user expoPushToken:', error);
+  }
+};
+*/
+
+  //console.log("user is:" + User)
+
+  /*
   const handleUpdate = async () => {
     // let imgUrl = await uploadImage();
     let imgUrl = null;
@@ -64,10 +167,12 @@ const EditProfileScreen = ({ navigation, route }) => {
       .update({
         fname: userData.fname,
         lname: userData.lname,
+        
         about: userData.about,
         phone: userData.phone,
         country: userData.country,
         city: userData.city,
+        
         // userImg: imgUrl,
       })
       .then(() => {
@@ -78,6 +183,46 @@ const EditProfileScreen = ({ navigation, route }) => {
         );
       })
   }
+*/
+const handleUpdate = async () => {
+  const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
+  
+  const userCollectionRef = collection(FIRESTORE_DB, 'users');
+  const q = query(userCollectionRef, where('owner_uid', '==', userId));
+  const querySnapshot = await getDocs(q);
+
+  if (!querySnapshot.empty) {
+    const userDoc = querySnapshot.docs[0]; // Assuming you want to update the first matching user document
+    const userRef = doc(FIRESTORE_DB, 'users', userDoc.id);
+
+    try {
+      await updateDoc(userRef, {
+        profile_picture: userData.profile_picture,
+        fname: userData.fname,
+        lname: userData.lname,
+        username: userData.username,
+        UpdatedAt: new Date().toISOString(),
+        region: userData.region,
+        beerPofile: userData.beerPofile,
+        favBeer: userData.favBeer,
+        // other fields...
+      });
+
+      console.log('User Updated!');
+      Alert.alert(
+        'Profile Updated!',
+        'Your profile has been updated successfully.'
+      );
+    } catch (error) {
+      console.error('Error updating user:', error);
+      Alert.alert('Error', 'An error occurred while updating your profile.');
+    }
+  } else {
+    console.log('User not found or unauthorized');
+    // Handle the case where the user document was not found or the user is unauthorized
+  }
+};
+
 
   const uploadImage = async () => {
     if (image == null) {
@@ -203,6 +348,8 @@ const EditProfileScreen = ({ navigation, route }) => {
   bs = React.createRef();
   fall = new Animated.Value(1);
 
+  
+
   return (
     <View style={styles.container}>
       <BottomSheet
@@ -218,7 +365,8 @@ const EditProfileScreen = ({ navigation, route }) => {
         style={{
           margin: 20,
           opacity: Animated.add(0.1, Animated.multiply(this.fall, 1.0)),
-        }}>
+        }}
+      >
         <SafeAreaView>
           <View style={{ alignItems: 'center' }}>
             <TouchableOpacity onPress={() => this.bs.current.snapTo(0)}>
@@ -298,53 +446,111 @@ const EditProfileScreen = ({ navigation, route }) => {
             <TextInput
               multiline
               numberOfLines={3}
-              placeholder="About Me"
+              placeholder="username"
               placeholderTextColor="#666666"
-              value={userData ? userData.about : ''}
-              onChangeText={(txt) => setUserData({ ...userData, about: txt })}
+              value={userData ? userData.username : ''}
+              onChangeText={(txt) => setUserData({ ...userData, username: txt })}
               autoCorrect={true}
               style={[styles.textInput, { height: 40 }]}
             />
           </View>
-          <View style={styles.action}>
-            <Feather name="phone" color="#333333" size={20} />
-            <TextInput
-              placeholder="Phone"
-              placeholderTextColor="#666666"
-              keyboardType="number-pad"
-              autoCorrect={false}
-              value={userData ? userData.phone : ''}
-              onChangeText={(txt) => setUserData({ ...userData, phone: txt })}
-              style={styles.textInput}
-            />
-          </View>
+          <View style={{ padding: 10, zIndex: 1 }}>
+          <Text style={styles.Header3}>select your region</Text>
+              {/* <Text>drop down region</Text> */}
 
-          <View style={styles.action}>
-            <FontAwesome name="globe" color="#333333" size={20} />
-            <TextInput
-              placeholder="Country"
-              placeholderTextColor="#666666"
-              autoCorrect={false}
-              value={userData ? userData.country : ''}
-              onChangeText={(txt) => setUserData({ ...userData, country: txt })}
-              style={styles.textInput}
+              <DropDownPicker
+                items={regions}
+                open={regionIsOpen}
+                setOpen={() => {
+                  setregionIsOpen(!regionIsOpen),
+                    setBeerProfileIsOpen(false),
+                    setfavBeerIsOpen(false);
+                }}
+                value={userData ? userData.region : ''}
+                setValue={(txt) => setUserData({ ...userData, username: txt })}
+                maxHeight={200}
+                autoScroll
+                placeholder="Select your region"
+                showTickIcon={false}
+                disableBorderRadius={false}
+                theme="LIGHT"
+                multiple={false}
+                mode="BADGE"
+                badgeColors={"white"}
+                badgeDotColors={"#ffa31a"}
+                badgeTextStyle={{ color: "black" }}
+                containerStyle={{ backgroundColor: "#fafafa" }}
+                dropDownContainerStyle={{ backgroundColor: "#fafafa" }}
+                closeAfterSelecting={true}
+                dropDownDirection="BOTTOM"
+              />
+            </View>
+
+          <View style={{ padding: 10, zIndex: 3 }}>
+            <Text style={styles.Header3}>Whats your beer profile?</Text>
+            {/* <Text>beer types</Text> */}
+
+            <DropDownPicker
+              items={beerProfiles}
+              open={beerProfileIsOpen}
+              setOpen={() => {
+                setBeerProfileIsOpen(!beerProfileIsOpen),
+                  setfavBeerIsOpen(false),
+                  setregionIsOpen(false);
+              }}
+              value={userData?.beerProfile || []}
+              setValue={(val) => {
+                  // Update the selected beer profile value
+                  setUserData({ ...userData, beerProfile: val });
+              }}
+              maxHeight={200}
+              autoScroll={true}
+              placeholder="Select your beer profile"
+              showTickIcon={false}
+              disableBorderRadius={false}
+              theme="LIGHT"
+              multiple={true}
+              min={0}
+              max={7}
+              mode="BADGE"
+              badgeColors={"white"}
+              badgeDotColors={"#ffa31a"}
+              badgeTextStyle={{ color: "black" }}
+              containerStyle={{ backgroundColor: "#fafafa" }}
+              dropDownContainerStyle={{ backgroundColor: "#fafafa" }}
             />
           </View>
-          <View style={styles.action}>
-            <MaterialCommunityIcons
-              name="map-marker-outline"
-              color="#333333"
-              size={20}
-            />
-            <TextInput
-              placeholder="City"
-              placeholderTextColor="#666666"
-              autoCorrect={false}
-              value={userData ? userData.city : ''}
-              onChangeText={(txt) => setUserData({ ...userData, city: txt })}
-              style={styles.textInput}
-            />
-          </View>
+          <View style={{ padding: 10, zIndex: 2 }}>
+          <Text style={styles.Header3}>whats your favourite beers?</Text>
+            {/* <Text>beer types</Text> */}
+            <DropDownPicker
+              items={beerProfiles}
+              open={beerProfileIsOpen}
+              setOpen={() => {
+                setBeerProfileIsOpen(!beerProfileIsOpen);
+                setfavBeerIsOpen(false);
+                setregionIsOpen(false);
+              }}
+              value={userData?.favBeer || []} // Use optional chaining and provide a default empty array
+              setValue={(val) => setUserData({ ...userData, favBeer: val })}
+              maxHeight={200}
+              autoScroll={true}
+              placeholder="Select your beer profile"
+              showTickIcon={false}
+              disableBorderRadius={false}
+              theme="LIGHT"
+              multiple={true}
+              min={0}
+              max={7}
+              mode="BADGE"
+              badgeColors={"white"}
+              badgeDotColors={"#ffa31a"}
+              badgeTextStyle={{ color: "black" }}
+              containerStyle={{ backgroundColor: "#fafafa" }}
+              dropDownContainerStyle={{ backgroundColor: "#fafafa" }}
+              />
+
+            </View>
           <FormButton buttonTitle="Update" onPress={handleUpdate} />
         </SafeAreaView>
       </Animated.View>
@@ -420,7 +626,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#f2f2f2',
-    paddingBottom: 5,
+    padding: 10,
   },
   actionError: {
     flexDirection: 'row',

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image } from 'react-native';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../firebase';
 import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where, orderBy  } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -63,7 +63,9 @@ const TabNotif = ({ userRole }) => {
             orderBy('timestamp', 'desc')
           );
 
+      
       const querySnapshot = await getDocs(q);
+      /*
       const notifications = [];
 
       querySnapshot.forEach((doc) => {
@@ -72,6 +74,39 @@ const TabNotif = ({ userRole }) => {
         const timestamp = new Date(timestampString); 
         notifications.push({ id: doc.id, ...notificationData, timestamp  });
       });
+      */
+
+      
+      const notificationPromises = querySnapshot.docs.map(async (doc) => {
+        const notificationData = doc.data();
+        const timestampString = notificationData.timestamp;
+        const timestamp = new Date(timestampString);
+        console.log("Cindyyyyy");
+        if (notificationData.owner_uid) {
+          const userRef = collection(FIRESTORE_DB, "users");
+          const userQuerySnapshot = await getDocs(
+            query(userRef, where("owner_uid", "==", notificationData.owner_uid), limit(1))
+          );
+
+          if (!userQuerySnapshot.empty) {
+            const userDoc = userQuerySnapshot.docs[0];
+            const userData = userDoc.data();
+            const profilePicture = userData.profile_picture;
+            console.log("can u see meeee", profilePicture);
+            return {
+              id: doc.id,
+              ...notificationData,
+              timestamp,
+              profile_picture: profilePicture, // Include the user's profile picture
+            };
+          }
+        }
+
+        return null;
+      });
+
+      const notifications = await Promise.all(notificationPromises);
+      
 
       setActiveData(notifications);
     } catch (error) {
@@ -214,7 +249,16 @@ const TabNotif = ({ userRole }) => {
           data={activeData}
           renderItem={({ item }) => (
             <View style={styles.rowContainer}>
-              <View style={styles.rowIcon} />
+              
+              <View style={styles.rowIcon} >
+                            {
+                              //item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
+                              <Image
+                                style={{ width: 50, height: 50, borderRadius: 25, marginTop: -3}}
+                                source={{ uri: item.profile_picture }}
+                              />
+                            }
+                          </View>
               <View style={{ ...styles.rowContent, flex: 3 }}>
                 <Text style={styles.rowHead}>{item.title}</Text>
                 <Text style={styles.rowText}>{removeDivTags(item.body)}</Text>

@@ -237,7 +237,7 @@ const ProfileScreen = ({ navigation, route }) => {
                 : "https://static.thenounproject.com/png/5034901-200.png",
             }}
           />
-          <Ionicons name="add-circle-outline" color="#ffa31a" size={50} style={styles.addIcon}/>
+          <Ionicons name="add-circle-sharp" color="#ffa31a" size={50} style={styles.addIcon}/>
         </View>
         </TouchableOpacity>
 
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
   addIcon: {
     position: "absolute",
     bottom: -10,
-    right: 0,
+    right: -10,
   },
   userName: {
     fontSize: 18,

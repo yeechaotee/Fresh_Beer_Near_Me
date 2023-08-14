@@ -1,6 +1,6 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 // import ActionButton from 'react-native-action-button';
 
@@ -46,7 +46,20 @@ export default function About(props) {
             </TouchableOpacity>
             {manageable &&
                 <>
-                    <TouchableOpacity
+                    {/* Manage current Venue button */}
+                    <TouchableOpacity onPress={() => navigation.push('EditVenueScreen', {
+                        venueId: venueId,
+                        name: name,
+                        image: image,
+                        price: price,
+                        reviews: reviews,
+                        rating: rating,
+                        categories: categories,
+                        caption: caption,
+                        operating_hour: operating_hour,
+                        location: location,
+                        manageable: manageable,
+                    })}
                         style={{
                             marginLeft: 20,
                             top: 30,
@@ -56,9 +69,10 @@ export default function About(props) {
                             paddingVerticle: 9,
                             borderRadius: 20,
                         }}>
-                        {/* <Text style={{ fontSize: 17, color: '#fff' }}>◀Back</Text> */}
                         <FontAwesome5 name={'cogs'} color={'orange'} size={30} />
                     </TouchableOpacity>
+
+                    {/* Add New Menu Item button */}
                     <TouchableOpacity onPress={() => navigation.push('EditMenuItemScreen', {
                         venueId: venueId,
                     })}

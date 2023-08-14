@@ -108,7 +108,7 @@ const ProfileScreen = ({ navigation, route }) => {
           source={{
             uri: userProfile
               ? userProfile.profile_picture ||
-                "https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg"
+              "https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg"
               : "https://static.thenounproject.com/png/5034901-200.png",
           }}
         />

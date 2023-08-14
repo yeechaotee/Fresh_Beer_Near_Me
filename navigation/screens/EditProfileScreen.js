@@ -21,7 +21,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FormButton from '../../components/FormButton';
 
-import Animated from 'react-native-reanimated';
+import Animated, { set } from 'react-native-reanimated';
 import BottomSheet from 'reanimated-bottom-sheet';
 // import ImagePicker from 'react-native-image-crop-picker';
 
@@ -33,6 +33,7 @@ import storage from 'firebase/storage';
 import { Picker } from '@react-native-picker/picker';
 import Constants from "expo-constants";
 import Modal from 'react-native-modal';
+import EditProfModal from "../../components/signup/EditProfModal";
 
 const EditProfileScreen = ({ navigation, route }) => {
   // const { user, logout } = useContext(AuthContext);
@@ -59,46 +60,23 @@ const EditProfileScreen = ({ navigation, route }) => {
   const [transferred, setTransferred] = useState(0);
   const [userData, setUserData] = useState({ gender: '', birthday: null });
 
-  const [beerProfileIsOpen, setBeerProfileIsOpen] = useState(false);
-  const [beerProfileValue, setBeerProfileValue] = useState([]);
-  const beerProfiles = [
-    { label: "Crisp", value: "Crisp" },
-    { label: "Hop", value: "Hop" },
-    { label: "Malt", value: "Malt" },
-    { label: "Roast", value: "Roast" },
-    { label: "Stout", value: "medium" },
-    { label: "Fruit & Spice", value: "Fruit & Spice" },
-    { label: "Tart & Funky", value: "Tart & Funky" },
-  ];
+  //modal needs
+  const [modalVisible, setModalVisible] = useState(false);
+  const handleOpenModal = () => {
+    setModalVisible(true);
+  };
 
-  const [favBeerIsOpen, setfavBeerIsOpen] = useState(false);
-  const [favBeerValue, setfavBeerValue] = useState([]);
-  const favBeers = [
-    { label: "Brown Ale", value: "Brown Ale" },
-    { label: "Pale Ale", value: "Pale Ale" },
-    { label: "Lager", value: "Lager" },
-    { label: "Malt", value: "Malt" },
-    { label: "Stout", value: "medium" },
-    { label: "Amber", value: "Amber" },
-    { label: "Blonde", value: "Blonde" },
-    { label: "Brown", value: "Brown" },
-    { label: "Cream", value: "Cream" },
-    { label: "Dark", value: "Dark" },
-    { label: "Caramel", value: "Caramel" },
-    { label: "Red", value: "Red" },
-    { label: "Honey", value: "Honey" },
-    { label: "Lime", value: "Lime" },
-    { label: "Black", value: "Black" },
-  ];
 
-  const [regionIsOpen, setregionIsOpen] = useState(false);
-  const [regionValue, setregionValue] = useState([]);
-  const regions = [
-    { label: "North", value: "North" },
-    { label: "South", value: "South" },
-    { label: "East", value: "East" },
-    { label: "West", value: "West" },
-  ];
+  //modal return contents
+  const [beerProfile, setBeerProfile] = useState([]);
+  const [favBeer, setFavBeer] = useState([]);
+  const [region, setRegion] = useState([]);
+
+const finishModal=()=>{
+    // setUserData({ ...userData, beerProfile: beerProfile })
+    // setUserData({ ...userData, favBeer: favBeer })
+    // setUserData({ ...userData, region: region })
+}
 
   /*
   const getUser = async () => {
@@ -114,10 +92,7 @@ const EditProfileScreen = ({ navigation, route }) => {
       })
   }
   */
-  const [isModalVisible, setModalVisible] = useState(false);
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
-  };
+ 
 
 
 
@@ -134,7 +109,12 @@ const EditProfileScreen = ({ navigation, route }) => {
         // Get the docID of the user's document
         //const docId = userDoc.id;
         console.log("what is favBeer", userDoc.data().favBeer);
+        console.log("what is region", userDoc.data().region);
+        console.log("what is beerProfile", userDoc.data().beerProfile);
         setUserData(userDoc.data());
+        setBeerProfile(userDoc.data().beerProfile);
+        setFavBeer(userDoc.data().favBeer);
+        setRegion(userDoc.data().region);
         //return { docId, userRole };
         //return docId;
       } else {
@@ -217,11 +197,15 @@ const EditProfileScreen = ({ navigation, route }) => {
           ...(userData.gender !== undefined && { gender: userData.gender }),
           ...(userData.birthday !== undefined && { birthday: userData.birthday }),
 
-          ...(userData.region !== undefined && { region: userData.region }), // Add region
-          ...(userData.beerProfile !== undefined && { beerProfile: userData.beerProfile }), // Add beerProfile
-          ...(userData.favBeer !== undefined && { favBeer: userData.favBeer }), // Add favBeer
+          // ...(userData.region !== undefined && { region: userData.region }), // Add region
+          // ...(userData.beerProfile !== undefined && { beerProfile: userData.beerProfile }), // Add beerProfile
+          // ...(userData.favBeer !== undefined && { favBeer: userData.favBeer }), // Add favBeer
+          
+          ...(userData.region !== undefined && { region: region }), // Add region
+          ...(userData.beerProfile !== undefined && { beerProfile: beerProfile }), // Add beerProfile
+          ...(userData.favBeer !== undefined && { favBeer: favBeer }), // Add favBeer
 
-
+       
           // other fields...
         });
 
@@ -415,7 +399,7 @@ const EditProfileScreen = ({ navigation, route }) => {
             />
           </View>
           <View style={styles.action}>
-            <Ionicons name="ios-clipboard-outline" color="#333333" size={20} />
+          <FontAwesome name="user-o" color="#333333" size={20} />
             <TextInput
               multiline
               numberOfLines={3}
@@ -429,13 +413,14 @@ const EditProfileScreen = ({ navigation, route }) => {
           </View>
 
           <View style={styles.action}>
-            <Ionicons name="ios-clipboard-outline" color="#333333" size={20} />
+            <Ionicons name="male-female-outline" color="#333333" size={20} />
             <Picker
               selectedValue={userData ? userData.gender : ''}
               onValueChange={(itemValue) => setUserData({ ...userData, gender: itemValue })}
               style={[styles.textInput, { height: 40 }]}
             >
-              <Picker.Item label="Select Gender" value="" />
+              {/* <Picker.Item label="Select Gender" value="" /> */}
+              <Picker.Prompt label="Select Gender" value="" />
               <Picker.Item label="Male" value="male" />
               <Picker.Item label="Female" value="female" />
 
@@ -455,7 +440,6 @@ const EditProfileScreen = ({ navigation, route }) => {
               }}
             />
           )}
-
           <TouchableOpacity onPress={showDatePicker}>
             <View style={styles.action}>
               <FontAwesome name="calendar" color="#333333" size={20} />
@@ -474,41 +458,31 @@ const EditProfileScreen = ({ navigation, route }) => {
               />
             </View>
           </TouchableOpacity>
+          
+          
           <View style={styles.action}>
-            <Ionicons name="ios-clipboard-outline" color="#333333" size={20} />
-            <Picker
-              selectedValue={userData ? userData.region : ''}
-              onValueChange={(itemValue) => setUserData({ ...userData, region: itemValue })}
-              style={[styles.textInput, { height: 40 }]}
-            >
-              <Picker.Item label="Select region" value="" />
-              <Picker.Item label="North" value="North" />
-              <Picker.Item label="South" value="South" />
-              <Picker.Item label="East" value="East" />
-              <Picker.Item label="West" value="West" />
-            </Picker>
+          <Text style={styles.Header1}>Your Preferences</Text>
           </View>
-          <Modal isVisible={isModalVisible}>
-            {/* Modal content */}
-            <View style={styles.modalContent}>
-              {/* Your modal content goes here */}
-              <Text>This is a modal!</Text>
-              <Button title="Close" onPress={toggleModal} />
-            </View>
-          </Modal>
-          <TouchableOpacity onPress={toggleModal}>
-            <Text>Edit Beer Profile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={toggleModal}>
-            <Text>Edit Fav Beer</Text>
-          </TouchableOpacity>
-
-
-
-
-
-
+          <View style={styles.action}>
+          <Text>your fav. beers: {favBeer}</Text>
+          </View>
+          <View style={styles.action}>
+          <Text>your beer profile: {beerProfile}</Text>
+          </View>
+          <View style={styles.action}>
+          <Text>your current region: {region}</Text>
+          </View>
+          
+          <FormButton buttonTitle="Change Preferences" onPress={handleOpenModal} />
           <FormButton buttonTitle="Update" onPress={handleUpdate} />
+          <EditProfModal
+                      modalVisible={modalVisible}
+                      setModalVisible={setModalVisible}
+                      setBeerProfile={setBeerProfile}
+                      setFavBeer={setFavBeer}
+                      setRegion={setRegion}
+                      finishModal={finishModal}
+                    />
         </SafeAreaView>
       </Animated.View>
     </View>
@@ -579,11 +553,11 @@ const styles = StyleSheet.create({
   },
   action: {
     flexDirection: 'row',
-    marginTop: 10,
-    marginBottom: 10,
+    marginTop: 5,
+    marginBottom: 5,
     borderBottomWidth: 1,
     borderBottomColor: '#f2f2f2',
-    padding: 10,
+    padding: 7,
   },
   actionError: {
     flexDirection: 'row',
@@ -597,5 +571,12 @@ const styles = StyleSheet.create({
     marginTop: Platform.OS === 'ios' ? 0 : -12,
     paddingLeft: 10,
     color: '#333333',
+  },
+  Header1: {
+    color: "#000",
+    fontSize: 20,
+    fontStyle: "normal",
+    fontWeight: "700",
+    alignSelf: "center",
   },
 });

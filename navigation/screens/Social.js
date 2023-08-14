@@ -16,7 +16,9 @@ import {
   setDoc,
   doc,
   orderBy,
-  where
+  where,
+  limit,
+  limitToLast
 } from "firebase/firestore";
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -28,10 +30,14 @@ const Drawer = createDrawerNavigator();
 const handleHead = ({tintColor}) => <Text style={{color: tintColor}}>H1</Text>
 
 function NewsFeed() {
+  const PAGE_SIZE = 5;
+
   const [activeData, setActiveData] = React.useState([]);
   const auth = FIREBASE_AUTH;
-
   const [isAdmin, setIsAdmin] = React.useState(false);
+  const [page, setPage] = React.useState(1);
+  const [showFoot, setShowFoot] = React.useState(0)
+  const [isRefresh, setIsRefresh] = React.useState(false)
 
   React.useEffect(() => {
     async function isAdmin() {
@@ -40,92 +46,132 @@ function NewsFeed() {
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        console.log(data.role)
         setIsAdmin(data.role === "businessUser");
       })
     }
     isAdmin();
   }, [])
 
-  React.useEffect(() => {
-    async function getNewsFeed() {
-      const feedsRef = collection(FIRESTORE_DB, "newsfeed");
-      const q = query(feedsRef, orderBy("createTime", "desc"));
-      const querySnapshot = await getDocs(q);
-      const feeds = new Array();
-      querySnapshot.forEach((doc) => {
-        feeds.push({
-          id: doc.id,
-          ...doc.data(),
-          createTime: doc.data().createTime.toDate().toDateString(),
-        });
+  async function getNewsFeed() {
+    const feedsRef = collection(FIRESTORE_DB, "newsfeed");
+    const q = query(feedsRef, orderBy("createTime", "desc"), limit(page * PAGE_SIZE));
+    const querySnapshot = await getDocs(q);
+    const feeds = new Array();
+    querySnapshot.forEach((doc) => {
+      feeds.push({
+        id: doc.id,
+        ...doc.data(),
+        createTime: doc.data().createTime.toDate().toDateString(),
       });
-      setActiveData(feeds);
+    });
+    setActiveData(feeds);
+  }
+
+  function _onEndReached() {
+    if (showFoot !== 0) {
+      return
+    } else {
+      console.log('aaaa')
+      setShowFoot(2)
+      setPage(page + 1);
+      getNewsFeed();
     }
-    console.log("render list")
-    getNewsFeed();
-  }, []);
+  }
+
+  function _onRefresh() {
+    if (!isRefresh) {
+      getNewsFeed();
+    }
+  }
+
+  function _renderFooter() {
+    if (showFoot === 1) {
+      return (
+        <View style={{ height: 30, alignItems: 'center', justifyContent: 'flex-start', }}>
+            <Text style={{ color: '#999999', fontSize: 14, marginTop: 5, marginBottom: 5, }}>
+                Nothing
+            </Text>
+        </View>
+      )
+    } else if (showFoot === 2) {
+      return (
+          <View style={{ height: 30, alignItems: 'center', justifyContent: 'flex-start', }}>
+              <Text style={{ color: '#999999', fontSize: 14, marginTop: 5, marginBottom: 5, }}>Loading...</Text>
+          </View>
+      );
+  } else if (showFoot === 0) {
+      return (
+          <View style={{ height: 30, alignItems: 'center', justifyContent: 'flex-start', }}>
+              <Text style={{ color: '#999999', fontSize: 14, marginTop: 5, marginBottom: 5, }}>welcome</Text>
+          </View>
+      );
+  }
+  }
 
   return (
     <View style={styles.container}>
-          <FlatList
-              data={activeData}
-              renderItem={({ item }) => (
-                  <View>
-                      <View style={styles.rowHeader}>
-                          <View style={styles.rowIcon} >
-                            {
-                              item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
-                            }
-                          </View>
-                          <View style={styles.rowContent}>
-                              <Text style={styles.rowHead}>{item.creater}</Text>
-                              <Text style={styles.rowText}>{item.createTime}</Text>
-                          </View>
+      <FlatList
+          data={activeData}
+          renderItem={({ item }) => (
+              <View>
+                  <View style={styles.rowHeader}>
+                      <View style={styles.rowIcon} >
+                        {
+                          item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
+                        }
                       </View>
                       <View style={styles.rowContent}>
-                          {
-                          item.startDateTime && item.endDatTime ?
-                            item.type ? <Text style={{...styles.rowText, marginRight: 5} }>Type: Promotion</Text> : <Text style={styles.rowText}>Type: Event</Text>
-                          : <></>
-                          }
-                          {
-                            item.startDateTime ? <Text style={{...styles.rowText, marginRight: 5}}>Start Date: {item.startDateTime}</Text> : <></>
-                          }
-                          {
-                            item.endDatTime ? <Text style={styles.rowText}>End Date: {item.endDatTime}</Text> : <></>
-                          }
-                          {
-                            item.numberOfPeople && item.numberOfPeople !== "" && item.numberOfPeople !== "0" ? <Text style={styles.rowText}>Number of people participating: {item.numberOfPeople}</Text> : <></>
-                          }
-                      </View>
-                      <Text style={styles.rowMessage}>{item.description.replace(/<\/?[^>]+(>|$)/g, "")}</Text>
-                      {
-                        item.image ? <Image source={{ uri: item.image }} style={{ width: 250, height: 250 }} /> : <></>
-                      }
-                      <View style={styles.rowContainer}>
-                          <View style={styles.rowContainer}>
-                            {
-                              !isAdmin ? <>
-                                <FontAwesome5
-                                  name={'heart'}
-                                  size={20}
-                                  color={'black'}
-                                />
-                                <FontAwesome5
-                                    name={'comment'}
-                                    size={20}
-                                    color={'black'}
-                                    style={{ paddingLeft: 10 }}
-                                />
-                              </> : <></>
-                            }
-                          </View>
+                          <Text style={styles.rowHead}>{item.creater}</Text>
+                          <Text style={styles.rowText}>{item.createTime}</Text>
                       </View>
                   </View>
-              )}
-              keyExtractor={(item) => item.id.toString()}
-          />
+                  <View style={styles.rowContent}>
+                      {
+                      item.startDateTime && item.endDatTime ?
+                        item.type ? <Text style={{...styles.rowText, marginRight: 5} }>Type: Promotion</Text> : <Text style={styles.rowText}>Type: Event</Text>
+                      : <></>
+                      }
+                      {
+                        item.startDateTime ? <Text style={{...styles.rowText, marginRight: 5}}>Start Date: {item.startDateTime}</Text> : <></>
+                      }
+                      {
+                        item.endDatTime ? <Text style={styles.rowText}>End Date: {item.endDatTime}</Text> : <></>
+                      }
+                      {
+                        item.numberOfPeople && item.numberOfPeople !== "" && item.numberOfPeople !== "0" ? <Text style={styles.rowText}>Number of people participating: {item.numberOfPeople}</Text> : <></>
+                      }
+                  </View>
+                  <Text style={styles.rowMessage}>{item.description.replace(/<\/?[^>]+(>|$)/g, "")}</Text>
+                  {
+                    item.image ? <Image source={{ uri: item.image }} style={{ width: 250, height: 250 }} /> : <></>
+                  }
+                  <View style={styles.rowContainer}>
+                      <View style={styles.rowContainer}>
+                        {
+                          !isAdmin ? <>
+                            <FontAwesome5
+                              name={'heart'}
+                              size={20}
+                              color={'black'}
+                            />
+                            <FontAwesome5
+                                name={'comment'}
+                                size={20}
+                                color={'black'}
+                                style={{ paddingLeft: 10 }}
+                            />
+                          </> : <></>
+                        }
+                      </View>
+                  </View>
+              </View>
+          )}
+          keyExtractor={(item) => item.id.toString()}
+          onEndReached={_onEndReached()}
+          onEndReachedThreshold={0.2}
+          onRefresh={_onRefresh()}
+          ListFooterComponent={_renderFooter()}
+      />
     </View>
   );
 }

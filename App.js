@@ -63,11 +63,12 @@ const ProfileStack = ({ navigation, route }) => (
 );
 
 function LogonLayout() {
-  
+
 
   const [userProfile, setUserProfile] = useState(null);
   const navigation = useNavigation();
 
+  /*
   // get current user and user role from firebase
   useEffect(() =>
     onAuthStateChanged(FIREBASE_AUTH, async (user) => {
@@ -86,9 +87,34 @@ function LogonLayout() {
     })
     , []);
 
+    */
+
+  // Fetch user profile from Firestore
+  const fetchUserProfile = async (user) => {
+    const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+      setUserProfile(doc.data());
+    });
+  };
+
+  // Subscribe to auth state changes and fetch user profile
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+      if (user) {
+        await fetchUserProfile(user);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+
+
   const [presentedNotificationCount, setPresentedNotificationCount] = useState(0);
 
   useEffect(() => {
+
+    /*
     // Fetch user profile from Firestore
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (user) => {
       if (user) {
@@ -96,9 +122,11 @@ function LogonLayout() {
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {
           setUserProfile(doc.data());
+          console.log("showing?");
         });
       }
     });
+    */
 
     // Subscribe to notification events and update the count when a new notification is presented
     const notificationSubscription = Notifications.addNotificationResponseReceivedListener(() => {
@@ -115,7 +143,7 @@ function LogonLayout() {
         const firestoreNotificationCount = 0;
         setPresentedNotificationCount(notificationCount)
         */
-       
+
         const notificationsRef = collection(FIRESTORE_DB, 'notifications');
         const q = query(
           notificationsRef,
@@ -126,8 +154,8 @@ function LogonLayout() {
         const querySnapshot = await getDocs(q);
         // Get the count of notifications that match the criteria
         firestoreNotificationCount = querySnapshot.size; // Use a different variable name
-        setPresentedNotificationCount(firestoreNotificationCount); 
-        
+        setPresentedNotificationCount(firestoreNotificationCount);
+
       } catch (error) {
         console.log('Error getting presented notifications:', error);
       }
@@ -140,8 +168,9 @@ function LogonLayout() {
     const interval = setInterval(getPresentedNotifications, 1000);
 
     return () => {
-      unsubscribe();
+      //unsubscribe();
       notificationSubscription.remove();
+
       clearInterval(interval); // Clear the interval when the component unmounts
     };
   }, []);

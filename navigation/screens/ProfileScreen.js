@@ -31,6 +31,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { getStorage, getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
+
 const storage = getStorage();
 const ProfileScreen = ({ navigation, route }) => {
   // const { user, logout } = useContext(AuthContext);
@@ -116,6 +117,7 @@ const ProfileScreen = ({ navigation, route }) => {
     if (!result.canceled) { // Use 'canceled' property instead of 'cancelled'
       setImage(result.assets[0].uri); // Access selected asset through the 'assets' array
       setImageUploaded(false);
+      handleFormSubmit(userProfile);
       handleFormSubmit(userProfile);
     }
   };

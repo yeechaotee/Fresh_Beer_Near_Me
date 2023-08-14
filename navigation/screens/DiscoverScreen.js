@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { FlatList, Image, ImageBackground, SafeAreaView } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { FlatList, Image, ImageBackground, RefreshControl, SafeAreaView } from 'react-native';
 import {
     StyleSheet,
     View,
@@ -47,6 +47,10 @@ function Home({ navigation }) {
     // const [activeTab, setActiveTab] = useState("Delivery");
     const [posts, setPosts] = useState([]);
 
+    const [visiblePosts, setVisiblePosts] = useState(5);  //limit contents to 5
+
+    const [showLoadMoreButton, setShowLoadMoreButton] = useState(true);
+
     const [user, setUser] = useState(null);
     const [queryRole, setQueryRole] = useState(null);
 
@@ -57,27 +61,83 @@ function Home({ navigation }) {
     const [bp, setBP] = useState(null);
     const [fb, setFB] = useState(null);
 
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
+
+
+    const fetchDataFromFirebase = async () => {
+        try {
+            setPosts([]); // Clear previous posts
+            const querySnapshot = query(collection(FIRESTORE_DB, 'venues'), orderBy('createdAt', 'desc'));
+            const unsubcribe = onSnapshot(querySnapshot, (snapshot) => {
+                const initialPosts = [];
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        const venueData = change.doc.data();
+                        const venueId = change.doc.id;
+                        initialPosts.push({ venueId: venueId, ...venueData });
+                        // setPosts((prevVenues) => [...prevVenues, { venueId: venueId, ...venueData }]);
+                    }
+                });
+                setPosts(initialPosts);
+                setIsLoading(false); //  hide loading 
+                setRefreshing(false); // hide refreshing 
+            });
+            return () => unsubcribe();
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setIsLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    const handleRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await fetchDataFromFirebase();
+        setVisiblePosts(5);
+        setShowLoadMoreButton(true);
+        setRefreshing(false);
+    }, []);
+
+    const handleLoadMore = () => {
+        const newVisiblePosts = visiblePosts + 5;
+        if (newVisiblePosts >= posts.length) {
+            setShowLoadMoreButton(false);
+        }
+        setVisiblePosts(newVisiblePosts);
+    };
+
+
+    const handleScroll = (event) => {
+        const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+        const isNearEnd = layoutMeasurement.height + contentOffset.y >= contentSize.height - 10;
+
+        if (isNearEnd && !isLoading) {
+            setIsLoading(true);
+            fetchDataFromFirebase();
+        }
+    };
+
 
     // render all venues data and setPosts
-    useEffect(() => {
-        setPosts([]);
-        const querySnapshot = query(collection(FIRESTORE_DB, 'venues'), orderBy('createdAt', "desc"));
-        const unsubcribe = onSnapshot(querySnapshot, (snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                if (change.type === "added") {
-                    // console.log("New Venue", change.doc.data());
-                    const venueData = change.doc.data();
-                    const venueId = change.doc.id; // Get the document ID
-                    // console.log('New Venue ID: ', venueId);
-                    // console.log("New Venue uid: ", change.id);
-                    // Check if initial posts have been set
-                    setPosts((prevVenues) => [...prevVenues, { venueId: venueId, ...venueData }]);
-                }
-            })
-        });
-        return () => unsubcribe();
-    }, [])
+    // useEffect(() => {
+    //     setPosts([]);
+    //     const querySnapshot = query(collection(FIRESTORE_DB, 'venues'), orderBy('createdAt', "desc"));
+    //     const unsubcribe = onSnapshot(querySnapshot, (snapshot) => {
+    //         snapshot.docChanges().forEach((change) => {
+    //             if (change.type === "added") {
+    //                 // console.log("New Venue", change.doc.data());
+    //                 const venueData = change.doc.data();
+    //                 const venueId = change.doc.id; // Get the document ID
+    //                 // console.log('New Venue ID: ', venueId);
+    //                 // console.log("New Venue uid: ", change.id);
+    //                 // Check if initial posts have been set
+    //                 setPosts((prevVenues) => [...prevVenues, { venueId: venueId, ...venueData }]);
+    //             }
+    //         })
+    //     });
+    //     return () => unsubcribe();
+    // }, [])
 
     // const sfRef = db.collection('cities').doc('SF');
     // const collections = await sfRef.listCollections();
@@ -101,17 +161,17 @@ function Home({ navigation }) {
                     setQueryRole(doc.data().role);
                     // console.log(doc.id, " => ", doc.data());
                     console.log(doc.id, " => User Role: ", doc.data().role,
-                    " => User Region: ", doc.data().region,
-                    " => User BP: ", doc.data().beerProfile,
-                    " => User FB: ", doc.data().favBeer,
+                        " => User Region: ", doc.data().region,
+                        " => User BP: ", doc.data().beerProfile,
+                        " => User FB: ", doc.data().favBeer,
                     );
-                    
+
                     setR(doc.data().region);
-                    
+
                     setBP(doc.data().beerProfile);
-                    
+
                     setFB(doc.data().favBeer);
-                   
+
                 });
                 await Promise.all(promises);
             }
@@ -123,43 +183,9 @@ function Home({ navigation }) {
         , []);
 
     useEffect(() => {
-    // This effect runs whenever r, bp, or fb changes
+        // This effect runs whenever r, bp, or fb changes
         updateUserPreferences(r, bp, fb);
     }, [r, bp, fb]);
-
-    // render all venues data and setPosts
-    // useEffect(() => {
-    //     setPosts([]);
-    //     const unsubcribe = onSnapshot(collection(FIRESTORE_DB, 'venues'), (snapshot) => {
-    //         snapshot.docChanges().forEach((change) => {
-    //             if (change.type === "added") {
-    //                 console.log("New Venue", change.doc.data());
-    //                 setPosts((prevVenues) => [...prevVenues, change.doc.data()])
-    //             }
-    //         })
-    //     })
-
-    //     return () => unsubcribe();
-    // }, [])
-
-
-    // can just change the location city to what we wanna render
-    // const getVenueFromYelp = () => {
-    //     const yelpUrl = `https://api.yelp.com/v3/businesses/search?term=restaurants&location=${city}`
-
-    //     // credential of YELP
-    //     const apiOptions = {
-    //         headers: {
-    //             Authorization: `Bearer ${YELP_API_KEY}`,
-    //         }
-    //     };
-
-    //     // get YELP Api, get json , hold json, set venuedata to all retrieved json data
-    //     return fetch(yelpUrl, apiOptions)
-    //         .then((res) => res.json())
-    //         .then((json) => setVenueData(json.businesses))
-    //         .catch(error => console.error('Error:', error));
-    // };
 
     const handleSearchInput = async (text) => {
         setSearchString(text);
@@ -174,7 +200,7 @@ function Home({ navigation }) {
 
     // ------------------------- Cindy changes from here----------------
 
-    const updateUserPreferences = async (r,bp,fb) => {
+    const updateUserPreferences = async (r, bp, fb) => {
         try {
             // Initialize updated preferences
             let matchedRegion = [];
@@ -191,7 +217,7 @@ function Home({ navigation }) {
                 matchedRegion = await getVenueData("region", r, "string");
                 //console.log("Region matched:", matchedRegion);
             }
-            if (bp !== undefined && bp!== null) {
+            if (bp !== undefined && bp !== null) {
                 matchedBeerProfile = await getVenueData("beerProfile", bp, "array");
                 //console.log("beer profile matched:", matchedBeerProfile);
             }
@@ -203,7 +229,7 @@ function Home({ navigation }) {
             // Combine arrays with matching preference
             const combinedArray = [...matchedRegion, ...matchedBeerProfile, ...matchedFavBeer, ...fullVenue];
             //console.log("combinedArray isss:", combinedArray);
-        
+
             // Count the occurrences of each venueId
             const venueIdCounts = {};
             combinedArray.forEach(item => {
@@ -225,20 +251,20 @@ function Home({ navigation }) {
             const uniqueArray = combinedArray.filter((item, index) => {
                 return combinedArray.findIndex(i => i.venueId === item.venueId) === index;
             });
-           setPosts(uniqueArray);
+            setPosts(uniqueArray);
 
-            
+
         } catch (error) {
             console.log('Error updating user preferences:', error);
         }
     };
-/*
-    useEffect(() => {
-        //getVenueFromYelp();
-        updateUserPreferences();
-    }, []);
-    */
-        
+    /*
+        useEffect(() => {
+            //getVenueFromYelp();
+            updateUserPreferences();
+        }, []);
+        */
+
     const getVenueData = async (fieldName, fieldValue, fieldtype) => {
         try {
             const venueCollectionRef = collection(FIRESTORE_DB, 'venues');
@@ -265,10 +291,10 @@ function Home({ navigation }) {
             });
 
             //console.log(`Fetched venue data by ${fieldName}:`, venueData);
-            
+
             //console.log(`Fetched ${fieldName}:`, fieldValue);
 
-             // Fetch the existing posts
+            // Fetch the existing posts
             //const existingPosts = [...posts];
             //console.log('existingPosts:', existingPosts);
 
@@ -287,7 +313,7 @@ function Home({ navigation }) {
             */
 
             // Merge the filtered prevVenues with the new venueData
-            
+
             //setPosts([...venueData, ...existingPosts]);
             return venueData;
 
@@ -399,12 +425,29 @@ function Home({ navigation }) {
                     }} /> */}
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
-                {/* <Categories /> */}
-                {/* posts state will filter out only searched result if any and pass it to venueData */}
-                <VenueItems venueData={posts} navigation={navigation} manageable={false} />
+            <ScrollView showsVerticalScrollIndicator={false}
+                nestedScrollEnabled={true}
+                // onScroll={handleScroll}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />} >
+
+                <VenueItems venueData={posts.slice(0, visiblePosts)} navigation={navigation} manageable={false} />
+                {/* <VenueItems venueData={posts} navigation={navigation} manageable={false} /> */}
+                {showLoadMoreButton && (
+                    <View style={{ alignItems: 'center', marginTop: 10 }}>
+                        <Button
+                            title="Load More"
+                            onPress={handleLoadMore}
+                            loading={isLoading}
+                            disabled={isLoading}
+                            buttonStyle={styles.loadMoreButton}
+                            titleStyle={styles.loadMoreButtonText}
+                        />
+                    </View>
+                )}
+
             </ScrollView>
-            {/* <Divider width={1} /> */}
+
+
 
         </SafeAreaView>
     )
@@ -560,5 +603,17 @@ const styles = StyleSheet.create({
         marginBottom: 30,
         height: 65,
         resizeMode: 'contain',
-    }
+    },
+    loadingIndicator: {
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    loadMoreButton: {
+        backgroundColor: '#ffa31a',
+        paddingHorizontal: 20,
+    },
+    loadMoreButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
+    },
 })

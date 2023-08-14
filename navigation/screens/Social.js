@@ -23,6 +23,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import uuid from "uuid";
 import { VenueInfo, VenueImage } from "../../components/home/VenueItems";
 
+
 const Drawer = createDrawerNavigator();
 
 const handleHead = ({tintColor}) => <Text style={{color: tintColor}}>H1</Text>

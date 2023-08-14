@@ -7,7 +7,8 @@ import VenueDetail from './navigation/screens/VenueDetail';
 import Signup from './navigation/screens/Signup';
 import EditMenuItemScreen from './navigation/screens/EditMenuItemScreen';
 import EditExistingMenuItemScreen from './navigation/screens/EditExistingMenuItemScreen';
-import MenuItems from './components/VenueDetail/MenuItems';
+import EditVenueScreen from './navigation/screens/EditVenueScreen';
+import ManagePost from './components/NewPost/ManagePost';
 
 export default function RootNavigation() {
     const Stack = createStackNavigator();
@@ -21,8 +22,10 @@ export default function RootNavigation() {
         <Stack.Navigator initialRouteName='DiscoveryScreen' screenOptions={screenOptions}>
             <Stack.Screen name='DiscoveryScreen' component={DiscoverScreen} />
             <Stack.Screen name='EditMenuItemScreen' component={EditMenuItemScreen} />
+            <Stack.Screen name='EditVenueScreen' component={EditVenueScreen} />
             <Stack.Screen name='EditExistingMenuItemScreen' component={EditExistingMenuItemScreen} />
             <Stack.Screen name='VenueDetail' component={VenueDetail} />
+            <Stack.Screen name='ManagePost' component={ManagePost} />
             <Stack.Screen name='Signup' component={Signup} />
         </Stack.Navigator>
 

@@ -19,7 +19,7 @@ export default function MenuItems(props) {
     const [editedItem, setEditedItem] = useState(null);
 
     const navigation = useNavigation();
-    
+
 
     // retrieve all menuitems based on the selected venue
     useEffect(() => {
@@ -131,13 +131,14 @@ export default function MenuItems(props) {
     return (
         <>
             {manageable === true ?
-
-                <SwipeListView
-                    data={nestedData}
-                    renderItem={renderItem}
-                    renderHiddenItem={renderHiddenItem}
-                    rightOpenValue={-150} // adjust here for provide more space for buttons
-                />
+                <View>
+                    <SwipeListView
+                        data={nestedData}
+                        renderItem={renderItem}
+                        renderHiddenItem={renderHiddenItem}
+                        rightOpenValue={-150} // adjust here for provide more space for buttons
+                    />
+                </View>
                 :
                 <View style={{ marginLeft: 5 }}>
                     {nestedData.map((food, index) => (

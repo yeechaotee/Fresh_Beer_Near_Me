@@ -64,6 +64,9 @@ function Home({ navigation }) {
     const [isLoading, setIsLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
+    useEffect(() => {
+        fetchDataFromFirebase();
+    }, []);
 
     const fetchDataFromFirebase = async () => {
         try {
@@ -119,32 +122,6 @@ function Home({ navigation }) {
     };
 
 
-    // render all venues data and setPosts
-    // useEffect(() => {
-    //     setPosts([]);
-    //     const querySnapshot = query(collection(FIRESTORE_DB, 'venues'), orderBy('createdAt', "desc"));
-    //     const unsubcribe = onSnapshot(querySnapshot, (snapshot) => {
-    //         snapshot.docChanges().forEach((change) => {
-    //             if (change.type === "added") {
-    //                 // console.log("New Venue", change.doc.data());
-    //                 const venueData = change.doc.data();
-    //                 const venueId = change.doc.id; // Get the document ID
-    //                 // console.log('New Venue ID: ', venueId);
-    //                 // console.log("New Venue uid: ", change.id);
-    //                 // Check if initial posts have been set
-    //                 setPosts((prevVenues) => [...prevVenues, { venueId: venueId, ...venueData }]);
-    //             }
-    //         })
-    //     });
-    //     return () => unsubcribe();
-    // }, [])
-
-    // const sfRef = db.collection('cities').doc('SF');
-    // const collections = await sfRef.listCollections();
-    // collections.forEach(collection => {
-    //     console.log('Found subcollection with id:', collection.id);
-    // });
-
     // get current user and user role from firebase
     useEffect(() =>
         onAuthStateChanged(FIREBASE_AUTH, async (user) => {
@@ -159,12 +136,6 @@ function Home({ navigation }) {
                 const promises = querySnapshot.docs.map(async (doc) => {
                     // doc.data() is never undefined for query doc snapshots
                     setQueryRole(doc.data().role);
-                    // console.log(doc.id, " => ", doc.data());
-                    console.log(doc.id, " => User Role: ", doc.data().role,
-                        " => User Region: ", doc.data().region,
-                        " => User BP: ", doc.data().beerProfile,
-                        " => User FB: ", doc.data().favBeer,
-                    );
 
                     setR(doc.data().region);
 

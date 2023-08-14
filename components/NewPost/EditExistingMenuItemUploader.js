@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Image, Pressable, StyleSheet, ScrollView, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TextInput, Image, Button, Pressable, StyleSheet, ScrollView, KeyboardAvoidingView } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { Divider } from 'react-native-elements';
@@ -7,13 +7,19 @@ import validUrl from 'valid-url';
 import { doc, collection, firestore, updateDoc } from 'firebase/firestore';
 import LottieView from 'lottie-react-native';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import * as ImagePicker from 'expo-image-picker';
 
+const storage = getStorage();
 
 const PLACEHOLDER_IMG = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg?20200913095930";
 
 const EditExistingMenuItemUploader = ({ navigation, ...props }) => {
     const { venueId, itemData } = props.route.params;
     const [loading, setLoading] = useState(false);
+
+    const [image, setImage] = useState(null);
+    const [imageUploaded, setImageUploaded] = useState(false);
 
     const uploadPostSchema = Yup.object().shape({
         imageUrl: Yup.string().url().required('A URL is required'),
@@ -24,9 +30,75 @@ const EditExistingMenuItemUploader = ({ navigation, ...props }) => {
 
     const [thumbnailUrl, setThumbnailUrl] = useState(itemData?.image || PLACEHOLDER_IMG);
 
+    const handleFormSubmit = async (values, { setSubmitting }) => {
+        if (image && !imageUploaded) {
+            try {
+                const imageUrl = await uploadImageToStorage(image);
+                values.imageUrl = imageUrl;
+                setImageUploaded(true);
+            } catch (error) {
+                console.log('Image upload error:', error);
+                setSubmitting(false);
+                return;
+            }
+        } else {
+            values.imageUrl = PLACEHOLDER_IMG;
+        }
+
+        // Update the existing menu item in Firebase
+        updateMenuItemInFirebase(values.title, values.imageUrl, values.description, values.price);
+    };
+
+    // Function to handle image selection using expo-image-picker
+    const selectImage = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            alert('Permission to access the camera roll is required!');
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        // if (!result.cancelled) {
+        //     setImage(result.uri);
+        // }
+
+        if (!result.canceled && result.assets.length > 0) {
+            setImage(result.assets[0].uri);
+            setImageUploaded(false);
+        }
+    };
+
+    // Function to upload the selected image to Firebase Storage
+    const uploadImageToStorage = async (uri) => {
+        const imageName = 'venue_img_' + new Date().getTime();
+        const uploadUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
+
+        try {
+            const response = await fetch(uploadUri);
+            const blob = await response.blob();
+
+            // Upload the image to Firebase Storage
+            const storageRef = ref(storage, 'venues_restaur_images/' + imageName);
+            await uploadBytes(storageRef, blob);
+
+            // Get the image URL from Firebase Storage
+            const imageUrl = await getDownloadURL(storageRef);
+            return imageUrl;
+        } catch (error) {
+            console.log('Image upload error:', error);
+            throw error;
+        }
+    };
+
+
     const updateMenuItemInFirebase = async (title, imageUrl, description, price) => {
         setLoading(true);
-
         try {
             // Get a reference to the existing venue document
             const venueDocRef = doc(FIRESTORE_DB, 'venues', venueId);
@@ -67,9 +139,7 @@ const EditExistingMenuItemUploader = ({ navigation, ...props }) => {
                         title: itemData?.title || '',
                         price: itemData?.price || '',
                     }}
-                    onSubmit={values => {
-                        updateMenuItemInFirebase(values.title, values.imageUrl, values.description, values.price)
-                    }}
+                    onSubmit={handleFormSubmit}
                     validationSchema={uploadPostSchema}
                     validateOnMount={true}
                 >
@@ -82,10 +152,13 @@ const EditExistingMenuItemUploader = ({ navigation, ...props }) => {
                                     flexDirection: 'row',
                                 }}
                             >
-                                <Image
-                                    source={{ uri: validUrl.isUri(thumbnailUrl) ? thumbnailUrl : PLACEHOLDER_IMG }}
-                                    style={{ width: 100, height: 100 }}
-                                />
+                                {image && <Image source={{ uri: image }} style={{ width: 100, height: 100 }} />}
+                                {!image && (
+                                    <Image
+                                        source={{ uri: validUrl.isUri(thumbnailUrl) ? thumbnailUrl : PLACEHOLDER_IMG }}
+                                        style={{ width: 100, height: 100 }}
+                                    />
+                                )}
                                 <View style={{ flex: 1, marginLeft: 15 }} >
                                     <TextInput
                                         style={{ fontSize: 20 }}
@@ -138,7 +211,8 @@ const EditExistingMenuItemUploader = ({ navigation, ...props }) => {
                             </View>
 
                             <Divider width={0.2} orientation='vertical' />
-                            <View style={{ marginBottom: 5, marginLeft: 10 }} >
+                            <Button title="Upload Image" onPress={selectImage} />
+                            {/* <View style={{ marginBottom: 5, marginLeft: 10 }} >
                                 <TextInput
                                     onChange={(e) => setThumbnailUrl(e.nativeEvent.text)}
                                     style={{ fontSize: 17 }}
@@ -153,7 +227,7 @@ const EditExistingMenuItemUploader = ({ navigation, ...props }) => {
                                         {errors.imageUrl}
                                     </Text>
                                 )}
-                            </View>
+                            </View> */}
 
                             <Pressable titleSize={20}
                                 style={styles.button(isValid)}

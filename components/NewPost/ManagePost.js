@@ -1,12 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { FlatList, Image, ImageBackground, SafeAreaView } from 'react-native';
-import {
-    StyleSheet,
-    View,
-    Text,
-    Pressable,
-    TouchableOpacity
-} from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { FlatList, Image, ImageBackground, RefreshControl, SafeAreaView, StyleSheet, View, Text, Pressable, TouchableOpacity, Button } from 'react-native';
 
 import { ScrollView } from 'react-native';
 import VenueItems, { localRestaurants } from '../../components/home/VenueItems';
@@ -27,42 +20,121 @@ export default function ManagePost({ navigation }) {
     const [searchString, setSearchString] = useState("");
     const [suggestion, setSuggestion] = useState([]);
 
+    const [visiblePosts, setVisiblePosts] = useState(5);  //limit contents to 5
+    const [showLoadMoreButton, setShowLoadMoreButton] = useState(true);
+
+    const [isLoading, setIsLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
+
+    useEffect(() => {
+        fetchDataFromFirebase();
+    }, []);
+
+
+    const fetchDataFromFirebase = async () => {
+        try {
+
+            onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+                // console.log('User info ---> ', user);
+
+                // get all venues created by this current logon user
+                if (user) {
+                    setUser(user);
+                    const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
+                    // console.log("user id is:: " + user.uid);
+                    const querySnapshot = await getDocs(q);
+                    querySnapshot.forEach((doc) => {
+                        // doc.data() is never undefined for query doc snapshots
+                        setQueryRole(doc.data().role);
+                        // console.log(doc.id, " => ", doc.data());
+                        console.log(doc.id, " => User Role: ", doc.data().role);
+                    });
+
+                    setPosts([]); // Clear previous posts
+                    const subquerySnapshot = query(collection(FIRESTORE_DB, 'venues'), orderBy('createdAt', "desc"));
+                    const unsubcribe = onSnapshot(subquerySnapshot, (snapshot) => {
+                        const initialPosts = [];
+                        snapshot.docChanges().forEach((change) => {
+                            if (change.type === "added" && change.doc.data().owner_uid === user.uid) {
+                                console.log("New Venue", change.doc.data());
+                                const venueData = change.doc.data();
+                                const venueId = change.doc.id; // Get the document ID
+                                initialPosts.push({ venueId: venueId, ...venueData });
+                                // setPosts((prevVenues) => [...prevVenues, { venueId: venueId, ...venueData }])
+                            }
+                        });
+
+                        setPosts(initialPosts);
+                        setIsLoading(false); //  hide loading 
+                        setRefreshing(false); // hide refreshing 
+                    });
+                    return () => unsubcribe();
+                }
+                else {
+                    setUser(null);
+                    setPosts([]);
+                }
+            })
+
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setIsLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    const handleRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await fetchDataFromFirebase();
+        setVisiblePosts(5);
+        setShowLoadMoreButton(true);
+        setRefreshing(false);
+    }, []);
+
+    const handleLoadMore = () => {
+        const newVisiblePosts = visiblePosts + 5;
+        if (newVisiblePosts >= posts.length) {
+            setShowLoadMoreButton(false);
+        }
+        setVisiblePosts(newVisiblePosts);
+    };
+
     // get current user and user role from firebase
-    useEffect(() =>
-        onAuthStateChanged(FIREBASE_AUTH, async (user) => {
-            // console.log('User info ---> ', user);
-            if (user) {
-                setUser(user);
-                const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
-                // console.log("user id is:: " + user.uid);
-                const querySnapshot = await getDocs(q);
-                querySnapshot.forEach((doc) => {
-                    // doc.data() is never undefined for query doc snapshots
-                    setQueryRole(doc.data().role);
-                    // console.log(doc.id, " => ", doc.data());
-                    console.log(doc.id, " => User Role: ", doc.data().role);
-                });
+    // useEffect(() =>
+    //     onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+    //         // console.log('User info ---> ', user);
+    //         if (user) {
+    //             setUser(user);
+    //             const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
+    //             // console.log("user id is:: " + user.uid);
+    //             const querySnapshot = await getDocs(q);
+    //             querySnapshot.forEach((doc) => {
+    //                 // doc.data() is never undefined for query doc snapshots
+    //                 setQueryRole(doc.data().role);
+    //                 // console.log(doc.id, " => ", doc.data());
+    //                 console.log(doc.id, " => User Role: ", doc.data().role);
+    //             });
 
-                setPosts([]);
+    //             setPosts([]);
 
-                const subquerySnapshot = query(collection(FIRESTORE_DB, 'venues'), orderBy('createdAt', "desc"));
-                const unsubcribe = onSnapshot(subquerySnapshot, (snapshot) => {
-                    snapshot.docChanges().forEach((change) => {
-                        if (change.type === "added" && change.doc.data().owner_uid === user.uid) {
-                            console.log("New Venue", change.doc.data());
-                            const venueData = change.doc.data();
-                            const venueId = change.doc.id; // Get the document ID
-                            setPosts((prevVenues) => [...prevVenues, { venueId: venueId, ...venueData }])
-                        }
-                    })
-                })
-            }
-            else {
-                setUser(null);
-                setPosts([]);
-            }
-        })
-        , []);
+    //             const subquerySnapshot = query(collection(FIRESTORE_DB, 'venues'), orderBy('createdAt', "desc"));
+    //             const unsubcribe = onSnapshot(subquerySnapshot, (snapshot) => {
+    //                 snapshot.docChanges().forEach((change) => {
+    //                     if (change.type === "added" && change.doc.data().owner_uid === user.uid) {
+    //                         console.log("New Venue", change.doc.data());
+    //                         const venueData = change.doc.data();
+    //                         const venueId = change.doc.id; // Get the document ID
+    //                         setPosts((prevVenues) => [...prevVenues, { venueId: venueId, ...venueData }])
+    //                     }
+    //                 })
+    //             })
+    //         }
+    //         else {
+    //             setUser(null);
+    //             setPosts([]);
+    //         }
+    //     })
+    //     , []);
 
 
     // render all venues data and setPosts
@@ -134,12 +206,28 @@ export default function ManagePost({ navigation }) {
                 </View>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
-                {/* <Categories /> */}
+            <ScrollView showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+            >
+                {/* <VenueItems venueData={posts} navigation={navigation} manageable={true} /> */}
+                <VenueItems venueData={posts.slice(0, visiblePosts)} navigation={navigation} manageable={true} />
 
-                {/* posts state will filter out only searched result if any and pass it to venueData */}
-                <VenueItems venueData={posts} navigation={navigation} manageable={true} />
+                {showLoadMoreButton && (
+                    <View style={{ alignItems: 'center', marginTop: 10 }}>
+                        <Button
+                            title="Load More"
+                            onPress={handleLoadMore}
+                            loading={isLoading}
+                            disabled={isLoading}
+                            buttonStyle={styles.loadMoreButton}
+                            titleStyle={styles.loadMoreButtonText}
+                        />
+                    </View>
+                )}
             </ScrollView>
+
+            {/* <ScrollView showsVerticalScrollIndicator={false}>
+                <VenueItems venueData={posts} navigation={navigation} manageable={true} />
+            </ScrollView> */}
             {/* <Divider width={1} /> */}
 
         </SafeAreaView>

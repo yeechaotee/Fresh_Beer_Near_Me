@@ -8,7 +8,12 @@ import {
   StyleSheet,
   Alert,
   SafeAreaView,
+  KeyboardAvoidingView,
+  Keyboard,
+  ScrollView,
+  Button,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -25,8 +30,9 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
 import { collection, query, getDocs, where, updateDoc, doc } from 'firebase/firestore';
 import storage from 'firebase/storage';
-import DropDownPicker from "react-native-dropdown-picker";
+import { Picker } from '@react-native-picker/picker';
 import Constants from "expo-constants";
+import Modal from 'react-native-modal';
 
 const EditProfileScreen = ({ navigation, route }) => {
   // const { user, logout } = useContext(AuthContext);
@@ -51,7 +57,7 @@ const EditProfileScreen = ({ navigation, route }) => {
   const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [transferred, setTransferred] = useState(0);
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState({ gender: '', birthday: null });
 
   const [beerProfileIsOpen, setBeerProfileIsOpen] = useState(false);
   const [beerProfileValue, setBeerProfileValue] = useState([]);
@@ -84,7 +90,7 @@ const EditProfileScreen = ({ navigation, route }) => {
     { label: "Lime", value: "Lime" },
     { label: "Black", value: "Black" },
   ];
-  
+
   const [regionIsOpen, setregionIsOpen] = useState(false);
   const [regionValue, setregionValue] = useState([]);
   const regions = [
@@ -108,7 +114,13 @@ const EditProfileScreen = ({ navigation, route }) => {
       })
   }
   */
-  
+  const [isModalVisible, setModalVisible] = useState(false);
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
+  };
+
+
+
   //get current user's docid
   const getUser = async () => {
     try {
@@ -134,22 +146,22 @@ const EditProfileScreen = ({ navigation, route }) => {
       return null;
     }
   };
-/*
-const updateUser = async (docId, expoPushToken) => {
-  try {
-    // Assuming you have a collection called "users" in Firestore
-    //const userRef = doc(FIRESTORE_DB, 'users', FIREBASE_AUTH.currentUser.uid);
-    const userRef = doc(FIRESTORE_DB, 'users', docId);
-
-    // Update the "expoPushToken" field in the user's document
-    await setDoc(userRef, { expoPushToken: expoPushToken }, { merge: true });
-
-    console.log('User expoPushToken updated successfully.');
-  } catch (error) {
-    console.log('Error updating user expoPushToken:', error);
-  }
-};
-*/
+  /*
+  const updateUser = async (docId, expoPushToken) => {
+    try {
+      // Assuming you have a collection called "users" in Firestore
+      //const userRef = doc(FIRESTORE_DB, 'users', FIREBASE_AUTH.currentUser.uid);
+      const userRef = doc(FIRESTORE_DB, 'users', docId);
+  
+      // Update the "expoPushToken" field in the user's document
+      await setDoc(userRef, { expoPushToken: expoPushToken }, { merge: true });
+  
+      console.log('User expoPushToken updated successfully.');
+    } catch (error) {
+      console.log('Error updating user expoPushToken:', error);
+    }
+  };
+  */
 
   //console.log("user is:" + User)
 
@@ -184,44 +196,49 @@ const updateUser = async (docId, expoPushToken) => {
       })
   }
 */
-const handleUpdate = async () => {
-  const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
-  
-  const userCollectionRef = collection(FIRESTORE_DB, 'users');
-  const q = query(userCollectionRef, where('owner_uid', '==', userId));
-  const querySnapshot = await getDocs(q);
+  const handleUpdate = async () => {
+    const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
 
-  if (!querySnapshot.empty) {
-    const userDoc = querySnapshot.docs[0]; // Assuming you want to update the first matching user document
-    const userRef = doc(FIRESTORE_DB, 'users', userDoc.id);
+    const userCollectionRef = collection(FIRESTORE_DB, 'users');
+    const q = query(userCollectionRef, where('owner_uid', '==', userId));
+    const querySnapshot = await getDocs(q);
 
-    try {
-      await updateDoc(userRef, {
-        profile_picture: userData.profile_picture,
-        fname: userData.fname,
-        lname: userData.lname,
-        username: userData.username,
-        UpdatedAt: new Date().toISOString(),
-        region: userData.region,
-        beerPofile: userData.beerPofile,
-        favBeer: userData.favBeer,
-        // other fields...
-      });
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0]; // Assuming you want to update the first matching user document
+      const userRef = doc(FIRESTORE_DB, 'users', userDoc.id);
 
-      console.log('User Updated!');
-      Alert.alert(
-        'Profile Updated!',
-        'Your profile has been updated successfully.'
-      );
-    } catch (error) {
-      console.error('Error updating user:', error);
-      Alert.alert('Error', 'An error occurred while updating your profile.');
+      try {
+        await updateDoc(userRef, {
+          profile_picture: userData.profile_picture,
+          fname: userData.fname,
+          lname: userData.lname,
+          username: userData.username,
+          UpdatedAt: new Date().toISOString(),
+          ...(userData.gender !== undefined && { gender: userData.gender }),
+          ...(userData.birthday !== undefined && { birthday: userData.birthday }),
+
+          ...(userData.region !== undefined && { region: userData.region }), // Add region
+          ...(userData.beerProfile !== undefined && { beerProfile: userData.beerProfile }), // Add beerProfile
+          ...(userData.favBeer !== undefined && { favBeer: userData.favBeer }), // Add favBeer
+
+
+          // other fields...
+        });
+
+        console.log('User Updated!');
+        Alert.alert(
+          'Profile Updated!',
+          'Your profile has been updated successfully.'
+        );
+      } catch (error) {
+        console.error('Error updating user:', error);
+        Alert.alert('Error', 'An error occurred while updating your profile.');
+      }
+    } else {
+      console.log('User not found or unauthorized');
+      // Handle the case where the user document was not found or the user is unauthorized
     }
-  } else {
-    console.log('User not found or unauthorized');
-    // Handle the case where the user document was not found or the user is unauthorized
-  }
-};
+  };
 
 
   const uploadImage = async () => {
@@ -348,7 +365,14 @@ const handleUpdate = async () => {
   bs = React.createRef();
   fall = new Animated.Value(1);
 
-  
+
+  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null); // New state for selected date
+
+  const showDatePicker = () => {
+    setDatePickerVisible(true);
+  };
+
 
   return (
     <View style={styles.container}>
@@ -368,57 +392,6 @@ const handleUpdate = async () => {
         }}
       >
         <SafeAreaView>
-          <View style={{ alignItems: 'center' }}>
-            <TouchableOpacity onPress={() => this.bs.current.snapTo(0)}>
-              <View
-                style={{
-                  height: 100,
-                  width: 100,
-                  borderRadius: 15,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <ImageBackground
-                  source={{
-                    uri: image
-                      ? image
-                      : userData
-                        ? userData.userImg ||
-                        'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg'
-                        : 'https://static.thenounproject.com/png/5034901-200.png',
-                  }}
-                  style={{ height: 100, width: 100 }}
-                  imageStyle={{ borderRadius: 15 }}>
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <MaterialCommunityIcons
-                      name="camera"
-                      size={35}
-                      color="#fff"
-                      style={{
-                        opacity: 0.7,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderWidth: 1,
-                        borderColor: '#fff',
-                        borderRadius: 10,
-                      }}
-                    />
-                  </View>
-                </ImageBackground>
-              </View>
-            </TouchableOpacity>
-            <Text style={{ marginTop: 10, fontSize: 18, fontWeight: 'bold' }}>
-              {userData ? userData.fname : ''} {userData ? userData.lname : ''}
-            </Text>
-            <Text>{route.params ? ("UserID:" + route.params.userId) : 'No USER'}</Text>
-            {/* <Text>{user.uid}</Text> */}
-          </View>
-
           <View style={styles.action}>
             <FontAwesome name="user-o" color="#333333" size={20} />
             <TextInput
@@ -454,103 +427,87 @@ const handleUpdate = async () => {
               style={[styles.textInput, { height: 40 }]}
             />
           </View>
-          <View style={{ padding: 10, zIndex: 1 }}>
-          <Text style={styles.Header3}>select your region</Text>
-              {/* <Text>drop down region</Text> */}
 
-              <DropDownPicker
-                items={regions}
-                open={regionIsOpen}
-                setOpen={() => {
-                  setregionIsOpen(!regionIsOpen),
-                    setBeerProfileIsOpen(false),
-                    setfavBeerIsOpen(false);
-                }}
-                value={userData ? userData.region : ''}
-                setValue={(txt) => setUserData({ ...userData, username: txt })}
-                maxHeight={200}
-                autoScroll
-                placeholder="Select your region"
-                showTickIcon={false}
-                disableBorderRadius={false}
-                theme="LIGHT"
-                multiple={false}
-                mode="BADGE"
-                badgeColors={"white"}
-                badgeDotColors={"#ffa31a"}
-                badgeTextStyle={{ color: "black" }}
-                containerStyle={{ backgroundColor: "#fafafa" }}
-                dropDownContainerStyle={{ backgroundColor: "#fafafa" }}
-                closeAfterSelecting={true}
-                dropDownDirection="BOTTOM"
-              />
-            </View>
+          <View style={styles.action}>
+            <Ionicons name="ios-clipboard-outline" color="#333333" size={20} />
+            <Picker
+              selectedValue={userData ? userData.gender : ''}
+              onValueChange={(itemValue) => setUserData({ ...userData, gender: itemValue })}
+              style={[styles.textInput, { height: 40 }]}
+            >
+              <Picker.Item label="Select Gender" value="" />
+              <Picker.Item label="Male" value="male" />
+              <Picker.Item label="Female" value="female" />
 
-          <View style={{ padding: 10, zIndex: 3 }}>
-            <Text style={styles.Header3}>Whats your beer profile?</Text>
-            {/* <Text>beer types</Text> */}
-
-            <DropDownPicker
-              items={beerProfiles}
-              open={beerProfileIsOpen}
-              setOpen={() => {
-                setBeerProfileIsOpen(!beerProfileIsOpen),
-                  setfavBeerIsOpen(false),
-                  setregionIsOpen(false);
-              }}
-              value={userData?.beerProfile || []}
-              setValue={(val) => {
-                  // Update the selected beer profile value
-                  setUserData({ ...userData, beerProfile: val });
-              }}
-              maxHeight={200}
-              autoScroll={true}
-              placeholder="Select your beer profile"
-              showTickIcon={false}
-              disableBorderRadius={false}
-              theme="LIGHT"
-              multiple={true}
-              min={0}
-              max={7}
-              mode="BADGE"
-              badgeColors={"white"}
-              badgeDotColors={"#ffa31a"}
-              badgeTextStyle={{ color: "black" }}
-              containerStyle={{ backgroundColor: "#fafafa" }}
-              dropDownContainerStyle={{ backgroundColor: "#fafafa" }}
-            />
+            </Picker>
           </View>
-          <View style={{ padding: 10, zIndex: 2 }}>
-          <Text style={styles.Header3}>whats your favourite beers?</Text>
-            {/* <Text>beer types</Text> */}
-            <DropDownPicker
-              items={beerProfiles}
-              open={beerProfileIsOpen}
-              setOpen={() => {
-                setBeerProfileIsOpen(!beerProfileIsOpen);
-                setfavBeerIsOpen(false);
-                setregionIsOpen(false);
+          {isDatePickerVisible && (
+            <DateTimePicker
+              value={selectedDate || new Date()}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                if (selectedDate) {
+                  setSelectedDate(selectedDate); // Set the selected date
+                  setUserData({ ...userData, birthday: selectedDate.toISOString() });
+                }
+                setDatePickerVisible(false); // Hide the date picker
               }}
-              value={userData?.favBeer || []} // Use optional chaining and provide a default empty array
-              setValue={(val) => setUserData({ ...userData, favBeer: val })}
-              maxHeight={200}
-              autoScroll={true}
-              placeholder="Select your beer profile"
-              showTickIcon={false}
-              disableBorderRadius={false}
-              theme="LIGHT"
-              multiple={true}
-              min={0}
-              max={7}
-              mode="BADGE"
-              badgeColors={"white"}
-              badgeDotColors={"#ffa31a"}
-              badgeTextStyle={{ color: "black" }}
-              containerStyle={{ backgroundColor: "#fafafa" }}
-              dropDownContainerStyle={{ backgroundColor: "#fafafa" }}
-              />
+            />
+          )}
 
+          <TouchableOpacity onPress={showDatePicker}>
+            <View style={styles.action}>
+              <FontAwesome name="calendar" color="#333333" size={20} />
+              <TextInput
+                placeholder="Birthday"
+                placeholderTextColor="#666666"
+                editable={false}
+                value={
+                  selectedDate
+                    ? selectedDate.toDateString()
+                    : userData.birthday
+                      ? new Date(userData.birthday).toDateString()
+                      : ''
+                }
+                style={styles.textInput}
+              />
             </View>
+          </TouchableOpacity>
+          <View style={styles.action}>
+            <Ionicons name="ios-clipboard-outline" color="#333333" size={20} />
+            <Picker
+              selectedValue={userData ? userData.region : ''}
+              onValueChange={(itemValue) => setUserData({ ...userData, region: itemValue })}
+              style={[styles.textInput, { height: 40 }]}
+            >
+              <Picker.Item label="Select region" value="" />
+              <Picker.Item label="North" value="North" />
+              <Picker.Item label="South" value="South" />
+              <Picker.Item label="East" value="East" />
+              <Picker.Item label="West" value="West" />
+            </Picker>
+          </View>
+          <Modal isVisible={isModalVisible}>
+            {/* Modal content */}
+            <View style={styles.modalContent}>
+              {/* Your modal content goes here */}
+              <Text>This is a modal!</Text>
+              <Button title="Close" onPress={toggleModal} />
+            </View>
+          </Modal>
+          <TouchableOpacity onPress={toggleModal}>
+            <Text>Edit Beer Profile</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={toggleModal}>
+            <Text>Edit Fav Beer</Text>
+          </TouchableOpacity>
+
+
+
+
+
+
           <FormButton buttonTitle="Update" onPress={handleUpdate} />
         </SafeAreaView>
       </Animated.View>

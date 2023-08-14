@@ -464,10 +464,10 @@ const finishModal=()=>{
           <Text style={styles.Header1}>Your Preferences</Text>
           </View>
           <View style={styles.action}>
-          <Text>your fav. beers: {favBeer}</Text>
+          <Text>your fav. beers: {favBeer.join(', ')}</Text>
           </View>
           <View style={styles.action}>
-          <Text>your beer profile: {beerProfile}</Text>
+          <Text>your beer profile: {beerProfile.join(', ')}</Text>
           </View>
           <View style={styles.action}>
           <Text>your current region: {region}</Text>

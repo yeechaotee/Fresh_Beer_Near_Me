@@ -64,7 +64,7 @@ function NewsFeed() {
     if (querySnapshot1.size >= activeData.length) {
       return;
     }
-    const q = query(feedsRef, orderBy("createTime", "desc"), limit(PAGE_SIZE));
+    const q = query(feedsRef, orderBy("createTime", "desc"));
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
       activeData.push({

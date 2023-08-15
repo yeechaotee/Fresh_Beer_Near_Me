@@ -86,8 +86,8 @@ export default function Signup({ navigation }) {
 
       // add to 'users' database firebase
       const doc = await addDoc(collection(FIRESTORE_DB, "users"), {
-        fname: "testfname",
-        lname: "testfname",
+        fname: "",
+        lname: "",
         owner_uid: authUser.user.uid,
         username: username,
         role: selectedRole,
@@ -292,7 +292,9 @@ export default function Signup({ navigation }) {
                       titleSize={20}
                       style={styles.button(isValid)}
                       //onPress={handleSubmit}
-                      onPress={surveyIsDone ? handleSubmit : handleOpenModal}
+                      //onPress={surveyIsDone ? handleSubmit : handleOpenModal}
+                      //if business user, no need to do survey
+                      onPress={selectedRole === "businessUser" ? handleSubmit : (surveyIsDone ? handleSubmit : handleOpenModal)}
                     >
                       <Text style={styles.buttonText}>Sign Up</Text>
                     </Pressable>

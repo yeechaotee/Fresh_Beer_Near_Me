@@ -108,9 +108,8 @@ const finishModal=()=>{
         const userDoc = querySnapshot.docs[0];
         // Get the docID of the user's document
         //const docId = userDoc.id;
-        console.log("what is favBeer", userDoc.data().favBeer);
-        console.log("what is region", userDoc.data().region);
-        console.log("what is beerProfile", userDoc.data().beerProfile);
+
+        console.log('User role:', userDoc.data().role);
         setUserData(userDoc.data());
         setBeerProfile(userDoc.data().beerProfile);
         setFavBeer(userDoc.data().favBeer);

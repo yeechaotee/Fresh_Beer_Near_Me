@@ -292,7 +292,9 @@ export default function Signup({ navigation }) {
                       titleSize={20}
                       style={styles.button(isValid)}
                       //onPress={handleSubmit}
-                      onPress={surveyIsDone ? handleSubmit : handleOpenModal}
+                      //onPress={surveyIsDone ? handleSubmit : handleOpenModal}
+                      //if business user, no need to do survey
+                      onPress={selectedRole === "businessUser" ? handleSubmit : (surveyIsDone ? handleSubmit : handleOpenModal)}
                     >
                       <Text style={styles.buttonText}>Sign Up</Text>
                     </Pressable>

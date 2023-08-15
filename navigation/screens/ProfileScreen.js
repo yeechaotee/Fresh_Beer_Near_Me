@@ -31,6 +31,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { getStorage, getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import GetNewsFeed from '../../components/profile/getNewsFeed';
 
 const storage = getStorage();
 const ProfileScreen = ({ navigation, route }) => {
@@ -114,7 +115,7 @@ const ProfileScreen = ({ navigation, route }) => {
       quality: 1,
     });
 
-    if (!result.canceled) { // Use 'canceled' property instead of 'cancelled'
+    if (!result.canceled) {
       setImage(result.assets[0].uri); // Access selected asset through the 'assets' array
       setImageUploaded(false);
       handleFormSubmit(userProfile);
@@ -227,18 +228,18 @@ const ProfileScreen = ({ navigation, route }) => {
         showsVerticalScrollIndicator={false}
       >
         <TouchableOpacity onPress={selectImage}>
-        <View style={styles.userImgWrapper}>
-          <Image
-            style={styles.userImg}
-            source={{
-              uri: userProfile
-                ? userProfile.profile_picture ||
-                "https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg"
-                : "https://static.thenounproject.com/png/5034901-200.png",
-            }}
-          />
-          <Ionicons name="add-circle-sharp" color="#ffa31a" size={50} style={styles.addIcon}/>
-        </View>
+          <View style={styles.userImgWrapper}>
+            <Image
+              style={styles.userImg}
+              source={{
+                uri: userProfile
+                  ? userProfile.profile_picture ||
+                  "https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg"
+                  : "https://static.thenounproject.com/png/5034901-200.png",
+              }}
+            />
+            <Ionicons name="add-circle-sharp" color="#ffa31a" size={50} style={styles.addIcon} />
+          </View>
         </TouchableOpacity>
 
         {/* <Text style={styles.userName}>{userData ? userData.fname || 'Test' : 'Test'} {userData ? userData.lname || 'User' : 'User'}</Text> */}
@@ -278,9 +279,17 @@ const ProfileScreen = ({ navigation, route }) => {
             </>
           }
         </View>
+        <View style={styles.container}>
+          <Text>
+            <GetNewsFeed />
+          </Text>
+        </View>
 
         <View style={styles.userInfoWrapper}>
           <View style={styles.userInfoItem}>
+
+
+            {/* Use the GetNewsFeed component */}
             {/* <Text style={styles.userInfoTitle}>{posts.length}</Text>
                         <Text style={styles.userInfoSubTitle}>Posts</Text> */}
           </View>

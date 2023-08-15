@@ -55,6 +55,13 @@ const EditProfileScreen = ({ navigation, route }) => {
   }, []);
   */
 
+  //user role
+  const [userRole, setUserRole] = useState(null);
+
+  //business UEN
+  const [businessUEN, setBusinessUEN] = useState(null);
+  const [bizInfo, setBizInfo] = useState("");
+
   const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [transferred, setTransferred] = useState(0);
@@ -108,8 +115,11 @@ const finishModal=()=>{
         const userDoc = querySnapshot.docs[0];
         // Get the docID of the user's document
         //const docId = userDoc.id;
-
+        setBizInfo(userDoc.data().bizInfo);
         console.log('User role:', userDoc.data().role);
+        setUserRole(userDoc.data().role);
+        console.log('User businessUEN:', userDoc.data().businessUEN);
+        setBusinessUEN(userDoc.data().businessUEN);
         setUserData(userDoc.data());
         setBeerProfile(userDoc.data().beerProfile);
         setFavBeer(userDoc.data().favBeer);
@@ -189,8 +199,8 @@ const finishModal=()=>{
       try {
         await updateDoc(userRef, {
           profile_picture: userData.profile_picture,
-          fname: userData.fname,
-          lname: userData.lname,
+          ...(userData.fname !== undefined && { fname: userData.fname }),
+          ...(userData.lname !== undefined && { lname: userData.lname }),
           username: userData.username,
           UpdatedAt: new Date().toISOString(),
           ...(userData.gender !== undefined && { gender: userData.gender }),
@@ -204,7 +214,7 @@ const finishModal=()=>{
           ...(userData.beerProfile !== undefined && { beerProfile: beerProfile }), // Add beerProfile
           ...(userData.favBeer !== undefined && { favBeer: favBeer }), // Add favBeer
 
-       
+          ...(userData.bizInfo !== undefined && { bizInfo: bizInfo }), // Add business info
           // other fields...
         });
 
@@ -375,6 +385,19 @@ const finishModal=()=>{
         }}
       >
         <SafeAreaView>
+
+          {/*show biz user*/}
+          {userRole === "businessUser" && (
+            <React.Fragment>
+          <View style={styles.action}>
+            <Ionicons name="document-text-outline" color="#333333" size={20} />
+            <Text>  {businessUEN}</Text>
+          </View>
+          </React.Fragment>)}
+
+          {/*if userRole = user*/}
+          {userRole === "user" && (
+            <React.Fragment>
           <View style={styles.action}>
             <FontAwesome name="user-o" color="#333333" size={20} />
             <TextInput
@@ -386,6 +409,7 @@ const finishModal=()=>{
               style={styles.textInput}
             />
           </View>
+          
           <View style={styles.action}>
             <FontAwesome name="user-o" color="#333333" size={20} />
             <TextInput
@@ -397,6 +421,9 @@ const finishModal=()=>{
               style={styles.textInput}
             />
           </View>
+          </React.Fragment>)}
+
+          {/*show regardless*/}
           <View style={styles.action}>
           <FontAwesome name="user-o" color="#333333" size={20} />
             <TextInput
@@ -411,6 +438,9 @@ const finishModal=()=>{
             />
           </View>
 
+          {/*if userRole = user*/}
+          {userRole === "user" && (
+            <React.Fragment>
           <View style={styles.action}>
             <Ionicons name="male-female-outline" color="#333333" size={20} />
             <Picker
@@ -422,9 +452,13 @@ const finishModal=()=>{
               <Picker.Prompt label="Select Gender" value="" />
               <Picker.Item label="Male" value="male" />
               <Picker.Item label="Female" value="female" />
-
             </Picker>
           </View>
+          </React.Fragment>)}
+          
+          {/*if userRole = user*/}
+          {userRole === 'user' && (
+        <>
           {isDatePickerVisible && (
             <DateTimePicker
               value={selectedDate || new Date()}
@@ -450,15 +484,20 @@ const finishModal=()=>{
                   selectedDate
                     ? selectedDate.toDateString()
                     : userData.birthday
-                      ? new Date(userData.birthday).toDateString()
-                      : ''
+                    ? new Date(userData.birthday).toDateString()
+                    : ''
                 }
                 style={styles.textInput}
               />
             </View>
           </TouchableOpacity>
+        </>
+      )}
           
           
+          {/*if userRole = user*/}
+          {userRole === "user" && (
+            <React.Fragment>
           <View style={styles.action}>
           <Text style={styles.Header1}>Your Preferences</Text>
           </View>
@@ -471,8 +510,33 @@ const finishModal=()=>{
           <View style={styles.action}>
           <Text>your current region: {region}</Text>
           </View>
-          
           <FormButton buttonTitle="Change Preferences" onPress={handleOpenModal} />
+          </React.Fragment>)}
+
+            {/*business user editable fields here*/}
+            {userRole === "businessUser" && (
+            <React.Fragment>
+            <View style={styles.action}>
+            <Ionicons name="document-text-outline" color="#333333" size={20} />
+            <Text>  business Information</Text>
+          </View>
+          <View style={styles.action2}>
+          
+          <TextInput
+              placeholder="Tell us about your business: "
+              placeholderTextColor="#666666"
+              autoCorrect={false}
+              multiline={true}
+              value={bizInfo}
+              onChangeText={(txt) => setBizInfo(txt)}
+              style={styles.textInput2}
+            />
+            
+             
+              </View>
+
+          </React.Fragment>)}
+
           <FormButton buttonTitle="Update" onPress={handleUpdate} />
           <EditProfModal
                       modalVisible={modalVisible}
@@ -558,6 +622,14 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f2f2f2',
     padding: 7,
   },
+  action2: {
+    flexDirection: 'row',
+    marginTop: 5,
+    marginBottom: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f2f2f2',
+    padding: 7,
+  },
   actionError: {
     flexDirection: 'row',
     marginTop: 10,
@@ -570,6 +642,13 @@ const styles = StyleSheet.create({
     marginTop: Platform.OS === 'ios' ? 0 : -12,
     paddingLeft: 10,
     color: '#333333',
+  },
+  textInput2: {
+    flex: 1,
+    marginTop: Platform.OS === 'ios' ? 0 : -12,
+    paddingLeft: 10,
+    color: '#333333',
+    height: 300,
   },
   Header1: {
     color: "#000",

@@ -86,8 +86,8 @@ export default function Signup({ navigation }) {
 
       // add to 'users' database firebase
       const doc = await addDoc(collection(FIRESTORE_DB, "users"), {
-        fname: "testfname",
-        lname: "testfname",
+        fname: "",
+        lname: "",
         owner_uid: authUser.user.uid,
         username: username,
         role: selectedRole,

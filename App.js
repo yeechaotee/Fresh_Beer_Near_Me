@@ -424,7 +424,6 @@ function App() {
   return (
     <>
       {user && getEmailVerificationStatus() ? !loadingInitial && SignedInStack() : !loadingInitial && SignedOutStack()}
-
     </>
     // <NavigationContainer>
     //   <Stack.Navigator initialRouteName="Login">

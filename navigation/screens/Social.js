@@ -620,14 +620,14 @@ function StarRating() {
       const newRating = (rating * reviews + state.Default_Rating) / (reviews + 1);
       await setDoc(docRef, {
         ...data,
-        rating: newRating,
+        rating: newRating.toFixed(1),
         reviews: reviews + 1
       })
       setState({
         ...state,
         data: {
           ...state.data,
-          rating: newRating,
+          rating: newRating.toFixed(1),
           reviews: reviews + 1
         }
       })

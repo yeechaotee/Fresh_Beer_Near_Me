@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, Modal, TextInput } from 'react-native';
+import { collection, query, where, getDocs, limit, updateDoc } from 'firebase/firestore';
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../../firebase";
-import EditNewsFeedItemScreen from '../profile/editNewsFeed';
 import { useNavigation } from '@react-navigation/native';
+import { FontAwesome5 } from 'react-native-vector-icons';
 
 
 const GetNewsFeed = () => {
 
     const [newsFeedData, setNewsFeedData] = useState([]);
-    const navigation = useNavigation();
+    const [selectedItem, setSelectedItem] = useState(null); // To store the selected item for editing
+    const [isModalVisible, setIsModalVisible] = useState(false); // To control modal visibility
+
 
     useEffect(() => {
         async function fetchNewsFeed() {
@@ -55,8 +57,30 @@ const GetNewsFeed = () => {
     }, []);
 
     const handleEditPress = (item) => {
-        // Navigate to EditNewsFeedItemScreen.js when "Edit" is pressed
-        navigation.navigate('EditNewsFeed', { item });
+        setSelectedItem(item); // Set the selected item for editing
+        setIsModalVisible(true); // Open the modal
+    };
+
+    const [user, setUser] = useState(null);
+
+    const closeModal = async () => {
+        if (selectedItem) {
+            // Update the values in Firebase
+            try {
+                const docRef = doc(FIRESTORE_DB, 'newsfeed', selectedItem.id);
+                await updateDoc(docRef, {
+                    title: selectedItem.title,
+                    // Update other fields as needed
+                });
+                // Close the modal and clear the selected item
+                setIsModalVisible(false);
+                setSelectedItem(null);
+            } catch (error) {
+                console.error('Error updating data:', error);
+            }
+        } else {
+            setIsModalVisible(false);
+        }
     };
 
     const renderNewsFeedItem = ({ item }) => (
@@ -127,7 +151,7 @@ const GetNewsFeed = () => {
             </View>
             <View style={styles.rowContainer}>
                 <TouchableOpacity onPress={() => handleEditPress(item)}>
-                    <Text>Edit</Text>
+                    <FontAwesome5 name="edit" size={20} color="black" />
                 </TouchableOpacity>
             </View>
         </TouchableOpacity>
@@ -136,11 +160,38 @@ const GetNewsFeed = () => {
 
     return (
         <View style={styles.container}>
+            {/* FlatList */}
             <FlatList
                 data={newsFeedData}
                 renderItem={renderNewsFeedItem}
                 keyExtractor={(item) => item.id}
             />
+
+            {/* Modal */}
+            <Modal
+                visible={isModalVisible}
+                animationType="slide"
+                transparent={true}
+            >
+                <View style={styles.modalContainer}>
+                    {selectedItem && (
+                        <View style={styles.modalContent}>
+                            {/* Display editable fields */}
+                            <TextInput
+                                style={styles.input}
+                                value={selectedItem.title}
+                                onChangeText={(text) =>
+                                    setSelectedItem((prevItem) => ({ ...prevItem, title: text }))
+                                }
+                            />
+                            {/* ... Other editable fields */}
+                            <TouchableOpacity onPress={closeModal}>
+                                <Text>Close Modal</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -151,11 +202,16 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     newsFeedItem: {
-        // Style your news feed item here
         borderWidth: 1,
         borderColor: 'gray',
         padding: 10,
         marginVertical: 5,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
 });
 

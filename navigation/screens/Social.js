@@ -28,7 +28,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import uuid from "uuid";
 import { VenueInfo, VenueImage } from "../../components/home/VenueItems";
 import { sendCustomPushNotification } from './NotificationUtils';
-import ManagePost from "../../components/NewPost/ManagePost";
+//import ManagePost from "../../components/NewPost/ManagePost";
 import GetNewsFeed from '../../components/profile/getNewsFeed';
 
 

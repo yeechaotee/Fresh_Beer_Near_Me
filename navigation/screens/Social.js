@@ -86,47 +86,47 @@ function NewsFeed() {
       getNewsFeed();
     }, []);
   */
+  /*
+React.useEffect(() => {
+  async function getNewsFeed() {
+    const feedsRef = collection(FIRESTORE_DB, "newsfeed");
+    const q = query(feedsRef, orderBy("createTime", "desc"));
+    const querySnapshot = await getDocs(q);
 
-  React.useEffect(() => {
-    async function getNewsFeed() {
-      const feedsRef = collection(FIRESTORE_DB, "newsfeed");
-      const q = query(feedsRef, orderBy("createTime", "desc"));
-      const querySnapshot = await getDocs(q);
+    const feedPromises = querySnapshot.docs.map(async (doc) => {
+      if (doc.data().creater) {
+        const userRef = collection(FIRESTORE_DB, "users");
 
-      const feedPromises = querySnapshot.docs.map(async (doc) => {
-        if (doc.data().creater) {
-          const userRef = collection(FIRESTORE_DB, "users");
+        const userQuerySnapshot = await getDocs(
+          query(userRef, where("email", "==", doc.data().creater), limit(1))
+        );
 
-          const userQuerySnapshot = await getDocs(
-            query(userRef, where("email", "==", doc.data().creater), limit(1))
-          );
+        if (!userQuerySnapshot.empty) {
+          const userDoc = userQuerySnapshot.docs[0];
+          const userData = userDoc.data();
+          const profilePicture = userData.profile_picture;
 
-          if (!userQuerySnapshot.empty) {
-            const userDoc = userQuerySnapshot.docs[0];
-            const userData = userDoc.data();
-            const profilePicture = userData.profile_picture;
-
-            return {
-              id: doc.id,
-              ...doc.data(),
-              createTime: doc.data().createTime.toDate().toDateString(),
-              profile_picture: profilePicture, // Include the user's profile picture
-            };
-          }
-
+          return {
+            id: doc.id,
+            ...doc.data(),
+            createTime: doc.data().createTime.toDate().toDateString(),
+            profile_picture: profilePicture, // Include the user's profile picture
+          };
         }
 
-      });
+      }
 
-      const feeds = await Promise.all(feedPromises);
-      setActiveData(feeds.filter(feed => feed)); // Remove any undefined feed items
-    }
+    });
 
-    console.log("render list");
-    getNewsFeed();
-  }, []);
+    const feeds = await Promise.all(feedPromises);
+    setActiveData(feeds.filter(feed => feed)); // Remove any undefined feed items
+  }
 
+  console.log("render list");
+  getNewsFeed();
+}, []);
 
+*/
   return (
     <View style={styles.container}>
       <FlatList

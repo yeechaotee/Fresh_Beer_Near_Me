@@ -26,12 +26,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import uuid from "uuid";
-import { VenueInfo, VenueImage } from "../../components/home/VenueItems";
-import { sendCustomPushNotification } from './NotificationUtils';
-//import ManagePost from "../../components/NewPost/ManagePost";
-import GetNewsFeed from '../../components/profile/getNewsFeed';
-
-
+import { VenueInfo } from "../../components/home/VenueItems";
 
 const Drawer = createDrawerNavigator();
 
@@ -47,7 +42,6 @@ function NewsFeed() {
   const [showFoot, setShowFoot] = React.useState(0)
   const [isRefresh, setIsRefresh] = React.useState(false)
 
-  /*
   React.useEffect(() => {
     async function isAdmin() {
       const feedsRef = collection(FIRESTORE_DB, "users");
@@ -61,72 +55,73 @@ function NewsFeed() {
     getNewsFeed();
     isAdmin();
   }, [])
-*/
-  /*
-    React.useEffect(() => {
-      async function getNewsFeed() {
-        const feedsRef = collection(FIRESTORE_DB, "newsfeed");
-        const q = query(feedsRef, orderBy("createTime", "desc"));
+
+  async function getNewsFeed() {
+    const feedsRef = collection(FIRESTORE_DB, "newsfeed");
+    console.log(page)
+    if (page === 0) {
+      const q = query(feedsRef, orderBy("createTime", "desc"), limit(PAGE_SIZE * (page + 1)));
+      const querySnapshot = await getDocs(q);
+      next = querySnapshot.docs[querySnapshot.docs.length - 1];
+      console.log("aaa", next)
+      querySnapshot.forEach((doc) => {
+        activeData.push({
+          id: doc.id,
+          ...doc.data(),
+          createTime: doc.data().createTime.toDate().toDateString(),
+        });
+      });
+    } else {
+      const q1 = query(feedsRef, orderBy("createTime", "desc"), limit(PAGE_SIZE * page));
+      const querySnapshot1 = await getDocs(q1);
+      const next = querySnapshot1.docs[querySnapshot1.docs.length - 1];
+      if (next) {
+        const q = query(feedsRef, orderBy("createTime", "desc"), startAfter(next), limit(PAGE_SIZE));
         const querySnapshot = await getDocs(q);
-        const feeds = new Array();
         querySnapshot.forEach((doc) => {
-          
-          feeds.push({
+          activeData.push({
             id: doc.id,
             ...doc.data(),
             createTime: doc.data().createTime.toDate().toDateString(),
           });
         });
-        
-        //const userRef = doc(FIRESTORE_DB,8 'users', docId);
-  
-        
-        setActiveData(feeds);
       }
-      console.log("render list")
-      getNewsFeed();
-    }, []);
-  */
-
-  React.useEffect(() => {
-    async function getNewsFeed() {
-      const feedsRef = collection(FIRESTORE_DB, "newsfeed");
-      const q = query(feedsRef, orderBy("createTime", "desc"));
-      const querySnapshot = await getDocs(q);
-
-      const feedPromises = querySnapshot.docs.map(async (doc) => {
-        if (doc.data().creater) {
-          const userRef = collection(FIRESTORE_DB, "users");
-
-          const userQuerySnapshot = await getDocs(
-            query(userRef, where("email", "==", doc.data().creater), limit(1))
-          );
-
-          if (!userQuerySnapshot.empty) {
-            const userDoc = userQuerySnapshot.docs[0];
-            const userData = userDoc.data();
-            const profilePicture = userData.profile_picture;
-
-            return {
-              id: doc.id,
-              ...doc.data(),
-              createTime: doc.data().createTime.toDate().toDateString(),
-              profile_picture: profilePicture, // Include the user's profile picture
-            };
-          }
-
-        }
-
-      });
-
-      const feeds = await Promise.all(feedPromises);
-      setActiveData(feeds.filter(feed => feed)); // Remove any undefined feed items
     }
+    setActiveData([...activeData]);
+    setIsRefresh(false);
+  }
 
-    console.log("render list");
-    getNewsFeed();
-  }, []);
+  function _onEndReached({ distanceFromEnd }) {
+    if (isRefresh) {
+      page++;
+      getNewsFeed();
+      console.log()
+    }
+  }
 
+  function _renderFooter() {
+    if (showFoot === 1) {
+      return (
+        <View style={{ height: 30, alignItems: 'center', justifyContent: 'flex-start', }}>
+          <Text style={{ color: '#999999', fontSize: 14, marginTop: 5, marginBottom: 5, }}>
+            Nothing
+          </Text>
+        </View>
+      )
+    } else if (showFoot === 2) {
+      return (
+        <View style={{ height: 30, alignItems: 'center', justifyContent: 'flex-start', }}>
+          <Text style={{ color: '#999999', fontSize: 14, marginTop: 5, marginBottom: 5, }}>Loading...</Text>
+        </View>
+      );
+    } else if (showFoot === 0) {
+      return (
+        <View style={{ height: 30, alignItems: 'center', justifyContent: 'flex-start', }}>
+          <Text style={{ color: '#999999', fontSize: 14, marginTop: 5, marginBottom: 5, }}>welcome</Text>
+        </View>
+      );
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -137,11 +132,7 @@ function NewsFeed() {
             <View style={styles.rowHeader}>
               <View style={styles.rowIcon} >
                 {
-                  //item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
-                  <Image
-                    style={{ width: 50, height: 50, borderRadius: 15, marginTop: -3 }}
-                    source={{ uri: item.profile_picture }}
-                  />
+                  item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
                 }
               </View>
               <View style={styles.rowContent}>
@@ -150,9 +141,6 @@ function NewsFeed() {
               </View>
             </View>
             <View style={styles.rowContent}>
-              {
-                <Text style={{ ...styles.rowText, marginRight: 5 }}>{item.title}</Text>
-              }
               {
                 item.startDateTime && item.endDatTime ?
                   item.type ? <Text style={{ ...styles.rowText, marginRight: 5 }}>Type: Promotion</Text> : <Text style={styles.rowText}>Type: Event</Text>
@@ -167,34 +155,37 @@ function NewsFeed() {
               {
                 item.numberOfPeople && item.numberOfPeople !== "" && item.numberOfPeople !== "0" ? <Text style={styles.rowText}>Number of people participating: {item.numberOfPeople}</Text> : <></>
               }
-
             </View>
             <Text style={styles.rowMessage}>{item.description.replace(/<\/?[^>]+(>|$)/g, "")}</Text>
             {
               item.image ? <Image source={{ uri: item.image }} style={{ width: 250, height: 250 }} /> : <></>
             }
             {/* <View style={styles.rowContainer}>
-              <View style={styles.rowContainer}>
-                {
-                  !isAdmin ? <>
-                    <FontAwesome5
-                      name={'heart'}
-                      size={20}
-                      color={'black'}
-                    />
-                    <FontAwesome5
-                      name={'comment'}
-                      size={20}
-                      color={'black'}
-                      style={{ paddingLeft: 10 }}
-                    />
-                  </> : <></>
-                }
-              </View>
-            </View> */}
+                      <View style={styles.rowContainer}>
+                        {
+                          !isAdmin ? <>
+                            <FontAwesome5
+                              name={'heart'}
+                              size={20}
+                              color={'black'}
+                            />
+                            <FontAwesome5
+                                name={'comment'}
+                                size={20}
+                                color={'black'}
+                                style={{ paddingLeft: 10 }}
+                            />
+                          </> : <></>
+                        }
+                      </View>
+                  </View> */}
           </View>
         )}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => index}
+        onEndReached={_onEndReached}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={_renderFooter()}
+        onMomentumScrollBegin={() => { setIsRefresh(true); }}
       />
     </View>
   );
@@ -232,15 +223,14 @@ function CreateFeed({ navigation }) {
     uploading: false,
   });
   const [image, setImage] = React.useState("");
-  const [title, setTitle] = React.useState("");
   const [description, setDescription] = React.useState("");
 
   const _handleImagePicked = async (pickerResult) => {
     try {
       setState({ uploading: true });
 
-      if (!pickerResult.cancelled) {
-        const uploadUrl = await uploadImageAsync(pickerResult.uri);
+      if (!pickerResult.canceled) {
+        const uploadUrl = await uploadImageAsync(pickerResult.assets[0].uri);
         console.log(uploadUrl)
         setImage(uploadUrl);
       }
@@ -305,17 +295,6 @@ function CreateFeed({ navigation }) {
         <Button title="Pick an image" onPress={pickImage} />
         <ScrollView>
           <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, minHeight: 400 }}>
-            <View style={styles.inputRow}>
-              <Text style={styles.label}>Title:</Text>
-              <TextInput
-                value={title}
-                style={styles.titleInput}
-                placeholder="title"
-                onChange={(event) => {
-                  setTitle(event.nativeEvent.text);
-                }}
-              />
-            </View>
             <Text>Description:</Text>
             <RichEditor
               ref={richText}
@@ -325,7 +304,7 @@ function CreateFeed({ navigation }) {
               }}
             />
           </KeyboardAvoidingView>
-          <Button title="Create Feed" onPress={async () => {
+          <Button title="Creat Feed" onPress={async () => {
             const data = {
               type: false,
               startDateTime: "",
@@ -336,14 +315,12 @@ function CreateFeed({ navigation }) {
               creater: FIREBASE_AUTH.currentUser.email,
               createTime: new Date(),
               avatar: FIREBASE_AUTH.currentUser.photoURL,
-              title: title
             }
             // Add a new document with a generated id
             const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
             // later...
             await setDoc(newRef, data);
             alert("Create Feed Success");
-            sendCustomPushNotification(title, description, type = "userpost", "user", "");
             navigation.navigate("News Feed");
           }} />
         </ScrollView>
@@ -362,7 +339,6 @@ function CreateFeedByAdmin({ navigation }) {
   const [startDateTime, setStartDateTime] = React.useState(new Date());
   const [endDatTime, setEntDateTime] = React.useState(new Date());
   const [numberOfPeople, setNumberOfPeople] = React.useState("");
-  const [title, setTitle] = React.useState("");
   const [mode, setMode] = React.useState('date');
   const [show, setShow] = React.useState(false);
   const [type, setType] = React.useState(true); // promotion: true, event: false
@@ -402,8 +378,8 @@ function CreateFeedByAdmin({ navigation }) {
     try {
       setState({ ...state, uploading: true });
 
-      if (!pickerResult.cancelled) {
-        const uploadUrl = await uploadImageAsync(pickerResult.uri);
+      if (!pickerResult.canceled) {
+        const uploadUrl = await uploadImageAsync(pickerResult.assets[0].uri);
         setImage(uploadUrl);
       }
     } catch (e) {
@@ -532,21 +508,6 @@ function CreateFeedByAdmin({ navigation }) {
             }}
           />
         </View>
-        <View style={{ display: "flex", flexDirection: "row", padding: 10, alignItems: "center" }}>
-          <Text style={{ marginBottom: 5, marginTop: 5, fontWeight: "bold", textAlign: "center" }}>
-            Title:
-          </Text>
-          <TextInput
-            value={title}
-            style={styles.numberInput}
-            placeholder="title"
-            //keyboardType="numeric"
-            onChange={(event) => {
-              setTitle(event.nativeEvent.text);
-            }}
-          />
-        </View>
-
         <RichToolbar
           editor={richText}
           actions={[actions.setBold, actions.setItalic, actions.setUnderline, actions.heading1]}
@@ -566,7 +527,7 @@ function CreateFeedByAdmin({ navigation }) {
               }}
             />
           </KeyboardAvoidingView>
-          <Button title="Create Feed" onPress={async () => {
+          <Button title="Creat Feed" onPress={async () => {
             const data = {
               type: type,
               startDateTime: startDateTime.toDateString(),
@@ -577,9 +538,7 @@ function CreateFeedByAdmin({ navigation }) {
               creater: FIREBASE_AUTH.currentUser.email,
               createTime: new Date(),
               avatar: FIREBASE_AUTH.currentUser.photoURL,
-              title: title,
             }
-
             console.log(data);
             try {
               // Add a new document with a generated id
@@ -588,7 +547,6 @@ function CreateFeedByAdmin({ navigation }) {
 
               await setDoc(newRef, data);
               alert("Create Feed Success");
-              sendCustomPushNotification(title, description, type ? "Promotion" : "Event", "user");
               navigation.navigate("News Feed");
             } catch (e) {
               alert("Create Feed Fail");
@@ -630,6 +588,7 @@ function StarRating() {
     Default_Rating: 2.5,
     message: "",
     Max_Rating: 5,
+    data: null
   })
 
   const Star = 'https://raw.githubusercontent.com/AboutReact/sampleresource/master/star_filled.png';
@@ -648,7 +607,6 @@ function StarRating() {
       message: state.message,
       data: null
     }
-
     const newRef = doc(collection(FIRESTORE_DB, "reviews"));
     await setDoc(newRef, data);
     // reviews & rating
@@ -700,6 +658,7 @@ function StarRating() {
                 ...state,
                 data: null
               })
+              return;
             }
             const feedsRef = collection(FIRESTORE_DB, "venues");
             const q = query(feedsRef, where("name", "==", text));
@@ -707,6 +666,7 @@ function StarRating() {
             querySnapshot.forEach((doc) => {
               console.log(doc.id)
               const data = doc.data();
+              console.log(data)
               setState({
                 ...state,
                 id: doc.id,
@@ -806,33 +766,10 @@ function StarRating() {
           <TextInput style={styles.input} placeholder="leave a comment" onChangeText={(text) => {
             setState({ ...state, message: text })
           }} />
-          <Button
-            style={{ width: "100%" }}
-            title="Submit"
-            onPress={() => {
-              onSubmitComment();
-            }}
-          />
+          <Button style={{ width: "100%" }} title="Submit" onPress={onSubmitComment} />
         </View>
       </ScrollView>
     </SafeAreaView>
-  )
-}
-
-function ManagePost() {
-  return (
-    <SafeAreaView style={{ flex: 1, padding: 10 }}>
-      <ScrollView>
-        <View style={{ alignItems: "center" }}>
-          <Text>
-            <GetNewsFeed />
-          </Text>
-        </View>
-
-      </ScrollView>
-
-    </SafeAreaView>
-
   )
 }
 
@@ -944,19 +881,6 @@ export default function SocialScreen({ navigation }) {
           }}
         />: <></>
       } */}
-      {
-        <Drawer.Screen
-          name="Manage Post"
-          component={ManagePost}
-          options={{
-            title: "Manage Post",
-            headerStyle: {
-              backgroundColor: "#ffa31a",
-            },
-            headerTitleAlign: "center",
-          }}
-        />
-      }
     </Drawer.Navigator>
   );
 }
@@ -1071,20 +995,5 @@ const styles = StyleSheet.create({
     height: 100,
     backgroundColor: '#c3c3c3',
     borderRadius: 50,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  label: {
-    marginRight: 10,
-  },
-  titleInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: 'gray',
-    padding: 5,
-    borderRadius: 5,
   },
 });

@@ -16,22 +16,31 @@ import {
   setDoc,
   doc,
   orderBy,
-  where
+  where,
+  limit,
+  limitToLast,
+  startAt,
+  startAfter,
+  endBefore
 } from "firebase/firestore";
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import uuid from "uuid";
-import { VenueInfo, VenueImage } from "../../components/home/VenueItems";
+import { VenueInfo } from "../../components/home/VenueItems";
 
 const Drawer = createDrawerNavigator();
 
 const handleHead = ({ tintColor }) => <Text style={{ color: tintColor }}>H1</Text>
 
 function NewsFeed() {
+  let page = 0;
+  const PAGE_SIZE = 5;
+
   const [activeData, setActiveData] = React.useState([]);
   const auth = FIREBASE_AUTH;
-
   const [isAdmin, setIsAdmin] = React.useState(false);
+  const [showFoot, setShowFoot] = React.useState(0)
+  const [isRefresh, setIsRefresh] = React.useState(false)
 
   React.useEffect(() => {
     async function isAdmin() {
@@ -40,31 +49,79 @@ function NewsFeed() {
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        console.log(data.role)
         setIsAdmin(data.role === "businessUser");
       })
     }
+    getNewsFeed();
     isAdmin();
   }, [])
 
-  React.useEffect(() => {
-    async function getNewsFeed() {
-      const feedsRef = collection(FIRESTORE_DB, "newsfeed");
-      const q = query(feedsRef, orderBy("createTime", "desc"));
+  async function getNewsFeed() {
+    const feedsRef = collection(FIRESTORE_DB, "newsfeed");
+    console.log(page)
+    if (page === 0) {
+      const q = query(feedsRef, orderBy("createTime", "desc"), limit(PAGE_SIZE * (page + 1)));
       const querySnapshot = await getDocs(q);
-      const feeds = new Array();
+      next = querySnapshot.docs[querySnapshot.docs.length - 1];
+      console.log("aaa", next)
       querySnapshot.forEach((doc) => {
-        feeds.push({
+        activeData.push({
           id: doc.id,
           ...doc.data(),
           createTime: doc.data().createTime.toDate().toDateString(),
         });
       });
-      setActiveData(feeds);
+    } else {
+      const q1 = query(feedsRef, orderBy("createTime", "desc"), limit(PAGE_SIZE * page));
+      const querySnapshot1 = await getDocs(q1);
+      const next = querySnapshot1.docs[querySnapshot1.docs.length - 1];
+      if (next) {
+        const q = query(feedsRef, orderBy("createTime", "desc"), startAfter(next), limit(PAGE_SIZE));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          activeData.push({
+            id: doc.id,
+            ...doc.data(),
+            createTime: doc.data().createTime.toDate().toDateString(),
+          });
+        });
+      }
     }
-    console.log("render list")
-    getNewsFeed();
-  }, []);
+    setActiveData([...activeData]);
+    setIsRefresh(false);
+  }
+
+  function _onEndReached({ distanceFromEnd }) {
+    if (isRefresh) {
+      page++;
+      getNewsFeed();
+      console.log()
+    }
+  }
+
+  function _renderFooter() {
+    if (showFoot === 1) {
+      return (
+        <View style={{ height: 30, alignItems: 'center', justifyContent: 'flex-start', }}>
+          <Text style={{ color: '#999999', fontSize: 14, marginTop: 5, marginBottom: 5, }}>
+            Nothing
+          </Text>
+        </View>
+      )
+    } else if (showFoot === 2) {
+      return (
+        <View style={{ height: 30, alignItems: 'center', justifyContent: 'flex-start', }}>
+          <Text style={{ color: '#999999', fontSize: 14, marginTop: 5, marginBottom: 5, }}>Loading...</Text>
+        </View>
+      );
+    } else if (showFoot === 0) {
+      return (
+        <View style={{ height: 30, alignItems: 'center', justifyContent: 'flex-start', }}>
+          <Text style={{ color: '#999999', fontSize: 14, marginTop: 5, marginBottom: 5, }}>welcome</Text>
+        </View>
+      );
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -103,28 +160,32 @@ function NewsFeed() {
             {
               item.image ? <Image source={{ uri: item.image }} style={{ width: 250, height: 250 }} /> : <></>
             }
-            <View style={styles.rowContainer}>
-              <View style={styles.rowContainer}>
-                {
-                  !isAdmin ? <>
-                    <FontAwesome5
-                      name={'heart'}
-                      size={20}
-                      color={'black'}
-                    />
-                    <FontAwesome5
-                      name={'comment'}
-                      size={20}
-                      color={'black'}
-                      style={{ paddingLeft: 10 }}
-                    />
-                  </> : <></>
-                }
-              </View>
-            </View>
+            {/* <View style={styles.rowContainer}>
+                      <View style={styles.rowContainer}>
+                        {
+                          !isAdmin ? <>
+                            <FontAwesome5
+                              name={'heart'}
+                              size={20}
+                              color={'black'}
+                            />
+                            <FontAwesome5
+                                name={'comment'}
+                                size={20}
+                                color={'black'}
+                                style={{ paddingLeft: 10 }}
+                            />
+                          </> : <></>
+                        }
+                      </View>
+                  </View> */}
           </View>
         )}
         keyExtractor={(item) => item.id.toString()}
+        onEndReached={_onEndReached}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={_renderFooter()}
+        onMomentumScrollBegin={() => { setIsRefresh(true); }}
       />
     </View>
   );
@@ -156,7 +217,7 @@ async function uploadImageAsync(uri) {
   return await getDownloadURL(fileRef);
 }
 
-function CreateFeed() {
+function CreateFeed({ navigation }) {
   const richText = React.useRef();
   const [state, setState] = React.useState({
     uploading: false,
@@ -259,7 +320,8 @@ function CreateFeed() {
             const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
             // later...
             await setDoc(newRef, data);
-            alert("Create Feed Success")
+            alert("Create Feed Success");
+            navigation.navigate("News Feed");
           }} />
         </ScrollView>
       </ScrollView>
@@ -267,7 +329,7 @@ function CreateFeed() {
   );
 }
 
-function CreateFeedByAdmin() {
+function CreateFeedByAdmin({ navigation }) {
   const [state, setState] = React.useState({
     uploading: false,
     image: null,
@@ -296,9 +358,18 @@ function CreateFeedByAdmin() {
     setShow(false);
     // set date
     if (dateTimeType) {
-      setStartDateTime(currentDate)
+      if (currentDate < new Date()) {
+        alert("Please a valid start date")
+      } else {
+        setStartDateTime(currentDate)
+      }
     } else {
-      setEntDateTime(currentDate)
+      console.log(currentDate, startDateTime);
+      if (currentDate < startDateTime) {
+        alert("Please a valid end date")
+      } else {
+        setEntDateTime(currentDate)
+      }
     }
     setShow(false);
   }, [startDateTime, endDatTime]);
@@ -418,6 +489,7 @@ function CreateFeedByAdmin() {
               mode={mode}
               display="spinner"
               is24Hour={true}
+              minimumDate={new Date()}
               onChange={onChange}
             />
           )}
@@ -475,6 +547,7 @@ function CreateFeedByAdmin() {
 
               await setDoc(newRef, data);
               alert("Create Feed Success");
+              navigation.navigate("News Feed");
             } catch (e) {
               alert("Create Feed Fail");
             }
@@ -485,28 +558,28 @@ function CreateFeedByAdmin() {
   );
 }
 
-function AddFriends() {
-  return (
-    <SafeAreaView style={{ flex: 1, padding: 10 }}>
-      <View style={{ alignItems: "center" }}>
-        <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold" }}>
-          Add Via User Name
-        </Text>
-      </View>
-      <TextInput style={styles.input} value="username" />
-      <View style={{ marginBottom: 10 }}>
-        <Button title="Send friend Request" />
-      </View>
-      <View style={{ alignItems: "center" }}>
-        <Text style={{ marginTop: 40, fontWeight: "bold" }}>OR</Text>
-      </View>
-      <View style={{ marginBottom: 10, marginTop: 60 }}>
-        <Button title="Add Via Your Phone Contact" />
-      </View>
-      <Button style={{ marginTop: 10 }} title="Nearby Scan" />
-    </SafeAreaView>
-  );
-}
+// function AddFriends() {
+//   return (
+//     <SafeAreaView style={{ flex: 1, padding: 10 }}>
+//       <View style={{ alignItems: "center"}}>
+//         <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
+//           Add Via User Name
+//         </Text>
+//       </View>
+//         <TextInput style={styles.input} value="username"/>
+//         <View  style={{ marginBottom: 10 }}>
+//           <Button title="Send friend Request" />
+//         </View>
+//         <View style={{alignItems: "center"}}>
+//           <Text style={{marginTop: 40, fontWeight: "bold"}}>OR</Text>
+//         </View>
+//         <View style={{ marginBottom: 10, marginTop: 60}}>
+//           <Button title="Add Via Your Phone Contact" />
+//         </View>
+//         <Button style={{ marginTop: 10 }} title="Nearby Scan" />
+//     </SafeAreaView>
+//   );
+// }
 
 function StarRating() {
 
@@ -515,6 +588,7 @@ function StarRating() {
     Default_Rating: 2.5,
     message: "",
     Max_Rating: 5,
+    data: null
   })
 
   const Star = 'https://raw.githubusercontent.com/AboutReact/sampleresource/master/star_filled.png';
@@ -546,17 +620,28 @@ function StarRating() {
       const newRating = (rating * reviews + state.Default_Rating) / (reviews + 1);
       await setDoc(docRef, {
         ...data,
-        rating: newRating,
+        rating: newRating.toFixed(1),
         reviews: reviews + 1
       })
       setState({
         ...state,
         data: {
           ...state.data,
-          rating: newRating,
+          rating: newRating.toFixed(1),
           reviews: reviews + 1
         }
       })
+      // notification business user
+      const bussinessUserId = data.owner_uid;
+      const data1 = {
+        type: "Rating",
+        title: "You have a new rating",
+        body: `You have a new rating. Venue: [${data.name}] Rating: ${state.Default_Rating.toFixed(1)}, Message: ${state.message}`,
+        timestamp: new Date(),
+        owner_uid: bussinessUserId,
+      }
+      const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
+      await setDoc(newRef1, data1);
     } else {
       // doc.data() will be undefined in this case
       console.log("No such document!");
@@ -573,6 +658,7 @@ function StarRating() {
                 ...state,
                 data: null
               })
+              return;
             }
             const feedsRef = collection(FIRESTORE_DB, "venues");
             const q = query(feedsRef, where("name", "==", text));
@@ -580,6 +666,7 @@ function StarRating() {
             querySnapshot.forEach((doc) => {
               console.log(doc.id)
               const data = doc.data();
+              console.log(data)
               setState({
                 ...state,
                 id: doc.id,
@@ -686,17 +773,17 @@ function StarRating() {
   )
 }
 
-function Report() {
-  return (
-    <SafeAreaView style={{ flex: 1, padding: 10 }}>
-      <View style={{ alignItems: "center" }}>
-        <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold" }}>
-          TODO: Report Page
-        </Text>
-      </View>
-    </SafeAreaView>
-  )
-}
+// function Report() {
+//   return (
+//     <SafeAreaView style={{ flex: 1, padding: 10 }}>
+//       <View style={{ alignItems: "center"}}>
+//         <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
+//           TODO: Report Page
+//         </Text>
+//       </View>
+//     </SafeAreaView>
+//   )
+// }
 
 export default function SocialScreen({ navigation }) {
   const auth = FIREBASE_AUTH;

@@ -31,7 +31,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { getStorage, getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import GetNewsFeed from '../../components/profile/getNewsFeed';
+
 
 const storage = getStorage();
 const ProfileScreen = ({ navigation, route }) => {
@@ -278,11 +278,6 @@ const ProfileScreen = ({ navigation, route }) => {
               </TouchableOpacity>
             </>
           }
-        </View>
-        <View style={styles.container}>
-          <Text>
-            <GetNewsFeed />
-          </Text>
         </View>
 
         <View style={styles.userInfoWrapper}>

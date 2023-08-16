@@ -172,7 +172,7 @@ function NewsFeed() {
             {
               item.image ? <Image source={{ uri: item.image }} style={{ width: 250, height: 250 }} /> : <></>
             }
-            <View style={styles.rowContainer}>
+            {/* <View style={styles.rowContainer}>
               <View style={styles.rowContainer}>
                 {
                   !isAdmin ? <>
@@ -190,7 +190,7 @@ function NewsFeed() {
                   </> : <></>
                 }
               </View>
-            </View>
+            </View> */}
           </View>
         )}
         keyExtractor={(item) => item.id.toString()}

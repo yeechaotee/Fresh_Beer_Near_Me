@@ -409,15 +409,15 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         minHeight: 42,
         borderRadius: 4,
-        marginTop: 5,
+        marginTop: 10,
         marginBottom: 15,
         maxWidth: 280, fontWeight: '600', fontSize: 20, borderRadius: 30,
-        width: 70, justifyContent: 'center', alignSelf: 'center', textAlign: 'center'
+        width: 120, justifyContent: 'center', alignSelf: 'center', textAlign: 'center'
     }),
     buttonText: {
-        fontWeight: '600',
+        fontWeight: '500',
         color: '#fff',
-        fontSize: 18,
+        fontSize: 17,
     },
     signupContainer: {
         flexDirection: 'row',

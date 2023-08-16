@@ -5,45 +5,24 @@ import { onAuthStateChanged } from "firebase/auth";
 import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where, arrayRemove, arrayUnion, updateDoc } from 'firebase/firestore';
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../../firebase";
 
-export const localRestaurants = [
-  {
-    name: "Beachside Bar",
-    image_url:
-      "https://static.onecms.io/wp-content/uploads/sites/9/2020/04/24/ppp-why-wont-anyone-rescue-restaurants-FT-BLOG0420.jpg",
-    categories: ["Cafe", "Bar"],
-    price: "$$",
-    reviews: 1244,
-    rating: 4.5,
-  },
-  {
-    name: "Benihana",
-    image_url:
-      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cmVzdGF1cmFudCUyMGludGVyaW9yfGVufDB8fDB8fA%3D%3D&ixlib=rb-1.2.1&w=1000&q=80",
-    categories: ["Cafe", "Bar"],
-    price: "$$",
-    reviews: 1244,
-    rating: 3.7,
-  },
-  {
-    name: "India's Grill",
-    image_url:
-      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8cmVzdGF1cmFudCUyMGludGVyaW9yfGVufDB8fDB8fA%3D%3D&ixlib=rb-1.2.1&w=1000&q=80",
-    categories: ["Indian", "Bar"],
-    price: "$$",
-    reviews: 700,
-    rating: 4.9,
-  },
-];
 
 export default function VenueItems({ navigation, ...props }) {
 
-
   const [userProfile, setUserProfile] = useState(null);
 
-  // For favourite heart shape icon hook
-  const [isFavorite, setIsFavorite] = useState(false);
+  // ***FIXES: reusable function within this page: for updating the latest changes everytime user toggling favourite icon or pull up loader!**
+  const updateUserProfile = async () => {
+    const user = FIREBASE_AUTH.currentUser;
+    if (user) {
+      const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        setUserProfile(doc.data());
+      });
+    }
+  };
 
-
+  // getting current user info and profile details
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (user) => {
       if (user) {
@@ -56,42 +35,6 @@ export default function VenueItems({ navigation, ...props }) {
     });
     return () => unsubscribe();
   }, []);
-
-  const toggleFavorite = async (venueId) => {
-    if (userProfile) {
-      try {
-        // const userDocRef = doc(FIRESTORE_DB, 'users', userProfile.userId);
-        const userQuery = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", userProfile.owner_uid), limit(1));
-        const userSnapshot = await getDocs(userQuery);
-        let userId = null;
-
-        userSnapshot.forEach((doc) => {
-          userId = doc.id;
-        });
-
-        if (!userId) {
-          console.log('User document not found');
-          return;
-        }
-
-        const userDocRef = doc(FIRESTORE_DB, 'users', userId);
-
-        if (userProfile.favVenues && userProfile.favVenues.includes(venueId)) {
-
-          await updateDoc(userDocRef, {
-            favVenues: arrayRemove(venueId),
-          });
-        }
-        else {
-          await updateDoc(userDocRef, {
-            favVenues: arrayUnion(venueId),
-          });
-        }
-      } catch (error) {
-        console.log('Error toggling favorite:', error);
-      }
-    }
-  };
 
 
   if (props.venueData == null) {
@@ -126,11 +69,10 @@ export default function VenueItems({ navigation, ...props }) {
           }>
 
           <View style={{ marginTop: 10, padding: 15, backgroundColor: "white", }}>
-            {/* Venue Image */}
-            {/* {console.log("Menu item is"+venue.MenuItems)} */}
-            <VenueImage image={venue.image_url} userProfile={userProfile} venueId={venue.venueId} />
-            {/* Venue Info */}
+
+            <VenueImage image={venue.image_url} userProfile={userProfile} venueId={venue.venueId} updateUserProfile={updateUserProfile} />
             <VenueInfo name={venue.name} categories={venue.categories} price={venue.price} reviews={venue.reviews} caption={venue.caption} rating={venue.rating} />
+
           </View>
         </TouchableOpacity>
       ))}
@@ -138,9 +80,10 @@ export default function VenueItems({ navigation, ...props }) {
   );
 }
 
-
+// converted VenueImage component to resuable component directly for other modules usage
 export const VenueImage = (props) => {
 
+  // for tracking whenever user toggle the heart shape icon state hook
   const [isFavorite, setIsFavorite] = useState(false);
 
 
@@ -148,8 +91,10 @@ export const VenueImage = (props) => {
     if (props.userProfile && props.userProfile.favVenues) {
       setIsFavorite(props.userProfile.favVenues.includes(props.venueId));
     }
+
   }, [props.userProfile, props.venueId]);
 
+// will trigger onpress component
   const toggleFavorite = async () => {
     if (props.userProfile) {
       try {
@@ -169,25 +114,37 @@ export const VenueImage = (props) => {
 
         const userDocRef = doc(FIRESTORE_DB, 'users', userId);
 
+        // if the current clicked favorite venue is alr in the favVenues list on firebase  (remove it)
         if (props.userProfile.favVenues && props.userProfile.favVenues.includes(props.venueId)) {
 
           await updateDoc(userDocRef, {
             favVenues: arrayRemove(props.venueId),
           });
 
+          console.log("removing favourite from firebase list....");
 
         }
 
+        // else add into list
         else {
           await updateDoc(userDocRef, {
             favVenues: arrayUnion(props.venueId),
           });
+
+          console.log("adding favourite from firebase list....");
         }
+
+        // ***Fixes for heart favourite not being captured and re-render whenever pull up loader or clicked multiple times on favourite icon!*** 
+        const updatedUserQuerySnapshot = await getDocs(uquery);
+        updatedUserQuerySnapshot.forEach((doc) => {
+          props.updateUserProfile();
+        });
 
         setIsFavorite(!isFavorite);
 
       }
       catch (error) {
+
         console.log('Error toggling favorite:', error);
       }
     }
@@ -202,6 +159,7 @@ export const VenueImage = (props) => {
         style={{ width: '100%', height: 180 }}
       />
 
+        {/* ADDED: Only general user able to see favourite heart shape icon for favouriting their venues and update onto firebase 'users' --> 'favVenue' list */}
       {props.userProfile && props.userProfile.role === 'user' && (
         <TouchableOpacity
           style={{ position: 'absolute', right: 20, top: 20 }} onPress={toggleFavorite}

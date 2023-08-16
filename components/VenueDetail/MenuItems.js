@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, TouchableHighlight, FlatList, TextInput } from 'react-native'
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, TouchableHighlight, FlatList, TextInput, LogBox } from 'react-native'
 import React, { useEffect, useState } from 'react';
 import { Divider } from 'react-native-paper';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
@@ -14,6 +14,10 @@ import { useNavigation } from '@react-navigation/native';
 
 
 export default function MenuItems(props) {
+
+    // temperory workaround for the warning: VirtualizedLists should never be nested inside plain ScrollViews with the same orientation because it can break windowing and other functionality
+    LogBox.ignoreAllLogs(true);
+
     const { venueId, manageable } = props.route.params;
     const [nestedData, setNestedData] = useState([]);
     const [editedItem, setEditedItem] = useState(null);

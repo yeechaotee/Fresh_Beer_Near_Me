@@ -631,6 +631,17 @@ function StarRating() {
           reviews: reviews + 1
         }
       })
+      // notification business user
+      const bussinessUserId = data.owner_uid;
+      const data1 = {
+        type: "Rating",
+        title: "You have a new rating",
+        body: `You have a new rating. Venue: [${data.name}] Rating: ${state.Default_Rating.toFixed(1)}, Message: ${state.message}`,
+        timestamp: new Date(),
+        owner_uid: bussinessUserId,
+      }
+      const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
+      await setDoc(newRef1, data1);
     } else {
       // doc.data() will be undefined in this case
       console.log("No such document!");

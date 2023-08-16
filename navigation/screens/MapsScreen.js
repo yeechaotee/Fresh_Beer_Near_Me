@@ -50,11 +50,10 @@ export default function MapsScreen() {
     longitude: 103.85964151471853,
     longitudeDelta: 0.1941436529159546,
   });
-  const [destination, setDestination] = useState(null);
+  //const [destination, setDestination] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [mapInfoModalVisible, setMapInfoModalVisible] = useState(false);
   const [selectedLocationTitle, setSelectedLocationTitle] = useState("");
-  const [markerPressCount, setMarkerPressCount] = useState(0);
   const [lastPressedMarkerIndex, setLastPressedMarkerIndex] = useState(-1); // Initialize with an invalid index
   const [searchString, setSearchString] = useState("");
   const [suggestion, setSuggestion] = useState([]);
@@ -172,16 +171,86 @@ export default function MapsScreen() {
     }
   };
 
+  // newcode
+  
   const chekInPress = () => {
     console.log("User Location:", userLocation);
+  
+    // Find the nearest venue marker
+    let nearestMarker = null;
+    let minDistance = Number.MAX_SAFE_INTEGER;
+  
+    venueData.forEach((item, index) => {
+      const venuePosition = {
+        latitude: parseFloat(item.latitude),
+        longitude: parseFloat(item.longitude),
+      };
+  
+      const distance = getDistance(userLocation, venuePosition);
+  
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestMarker = item;
+      }
+    });
+  
+    // Focus the map on the nearest marker
+    if (nearestMarker) {
+      const nearestMarkerPosition = {
+        latitude: parseFloat(nearestMarker.latitude),
+        longitude: parseFloat(nearestMarker.longitude),
+      };
+      moveTo(nearestMarkerPosition);
+
+      // Simulate pressing the marker twice (change the delay between presses if needed)
+      setTimeout(() => {
+      handleOpenMapInfoModal(nearestMarker.name);
+      }, 1000); // Delay before the first press
+
+      setTimeout(() => {
+      handleOpenMapInfoModal(nearestMarker.name);
+      }, 2000); // Delay before the second press
+  
+    }
+  
     // Show the checkmark animation
     setIsCheckmarkVisible(true);
-
+  
     // Hide the checkmark animation after the animation completes
     setTimeout(() => {
       setIsCheckmarkVisible(false);
     }, 4000); // Adjust the duration as needed based on the animation duration
   };
+  
+  // Function to calculate the distance between two coordinate points
+  const getDistance = (coord1, coord2) => {
+    const lat1 = coord1.latitude;
+    const lon1 = coord1.longitude;
+    const lat2 = coord2.latitude;
+    const lon2 = coord2.longitude;
+  
+    const R = 6371; // Radius of the earth in km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+  
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(lat1)) *
+      Math.cos(deg2rad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in km
+    return distance;
+  };
+  
+  // Function to convert degrees to radians
+  const deg2rad = (deg) => {
+    return deg * (Math.PI / 180);
+  };
+  
+
+  //end of new code
 
   const handleOpenModal = () => {
     setModalVisible(true);
@@ -425,7 +494,7 @@ export default function MapsScreen() {
             alignSelf: "center",
           }}
         >
-          <Button title="Take me There" onPress={handleOpenModal} />
+          <Button title="Let's take a cab" onPress={handleOpenModal} />
           {/* <Button title="Temp button" onPress={handleOpenMapInfoModal} /> */}
         </View>
       </View>
@@ -461,7 +530,7 @@ export default function MapsScreen() {
               tintColor: "#292929",
             }}
           />
-          <Text style={{ color: "#292929" }}>Check In</Text>
+          <Text style={{ color: "#292929" }}>FBNM!</Text>
         </Pressable>
       </View>
       {/* Checkmark Animation */}

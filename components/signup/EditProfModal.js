@@ -2,18 +2,17 @@ import React, { useState } from "react";
 import { Image, Button, Modal, StyleSheet, View, Text } from "react-native";
 import Constants from "expo-constants";
 import DropDownPicker from "react-native-dropdown-picker";
+import { set } from "react-native-reanimated";
 
 
 
-const surveyModal = ({
+const editProfModal = ({
   modalVisible,
   setModalVisible,
-  setSurveyIsDone,
-  handleSubmit,
   setBeerProfile,
   setFavBeer,
   setRegion,
-  username,
+  finishModal
 }) => {
   //submit button needs
   const handleModalSubmit = (beerProfileValue, favBeerValue, regionValue) => {
@@ -28,9 +27,12 @@ const surveyModal = ({
     setFavBeer(favBeerValue);
     setRegion(regionValue);
 
+    //set user data
+    finishModal();
+
+    //close modal
     setModalVisible(false);
-    setSurveyIsDone(true);
-    handleSubmit();
+
     //clear all the values
     setBeerProfileIsOpen(false);
     setBeerProfileValue([]);
@@ -42,10 +44,11 @@ const surveyModal = ({
 
   //skip button needs
   const handleSkip = () => {
-    setModalVisible(false);
-    setSurveyIsDone(true);
     console.log("skip button pressed");
-    handleSubmit();
+
+    //close modal
+    setModalVisible(false);
+    
     //clear all the values
     setBeerProfileIsOpen(false);
     setBeerProfileValue([]);
@@ -99,9 +102,6 @@ const surveyModal = ({
     { label: "West", value: "West" },
   ];
 
-  //dynamic username
-  //const userName = "put username here dynamically"; // make dynamic later on.
-  const userName = useState(username);
 
   return (
     <Modal
@@ -110,14 +110,13 @@ const surveyModal = ({
       onRequestClose={() => setModalVisible(false)}
     >
       <View style={styles.modalContainer}>
-        <Text style={styles.Header1}>Quick Survey</Text>
+        <Text style={styles.Header1}>Preferences</Text>
 
         <Image style={styles.image} source={require("../../assets/images/beer.png")} />
 
-        <Text style={styles.Header2}>Hi {userName}</Text>
 
         <Text style={styles.Header2}>    </Text>
-          <Text style={styles.Header2}>Set your preferences!</Text>
+          <Text style={styles.Header2}>Update your preferences!</Text>
         
 
         <View style={{ padding: 10, zIndex: 3 }}>
@@ -134,7 +133,7 @@ const surveyModal = ({
             }}
             value={beerProfileValue}
             setValue={(val) => setBeerProfileValue(val)}
-            maxHeight={200}
+            maxHeight={300}
             autoScroll={true}
             placeholder="Select your beer profile"
             showTickIcon={true}
@@ -189,6 +188,7 @@ const surveyModal = ({
           {/* <Text>drop down region</Text> */}
 
           <DropDownPicker
+            selectedItems = {regionValue}
             items={regions}
             open={regionIsOpen}
             setOpen={() => {
@@ -222,11 +222,10 @@ const surveyModal = ({
           <Button
             title="submit"
             onPress={() => (
-              handleModalSubmit(beerProfileValue, favBeerValue, regionValue),
-              setSurveyIsDone(true)
+              handleModalSubmit(beerProfileValue, favBeerValue, regionValue)
             )}
           />
-          {/* <Button title="skip" onPress={() => handleSkip()} /> */}
+          {/* <Button title="cancel" onPress={() => handleSkip()} /> */}
         </View>
       </View>
     </Modal>
@@ -310,4 +309,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default surveyModal;
+export default editProfModal;

@@ -64,11 +64,32 @@ export default function NotificationsScreen(navigation) {
   const dismissAllNotifications = async () => {
     try {
       await dismissAllNotificationsAsync();
-      //console.log('All notifications dismissed successfully.');
+      
+      const notificationsRef = collection(FIRESTORE_DB, 'notifications');
+      const q = query(
+        notificationsRef,
+        where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
+        where('readstatus', '==', false)
+      );
+      
+      const querySnapshot = await getDocs(q);
+
+      const updatePromises = [];
+      //console.log("are u dismiss?");
+      querySnapshot.forEach((doc) => {
+        const notificationRef = doc.ref; // Use .ref to get the reference to the document
+        // Update the "readstatus" field in each document using updateDoc
+        updatePromises.push(updateDoc(notificationRef, { readstatus: true }));
+      });
+
+      // Execute the update promises using Promise.all
+      await Promise.all(updatePromises);
     } catch (error) {
       console.log('Error dismissing notifications:', error);
     }
   };
+
+
 
   //To be uncomment after integration
   //dismissAllNotificationsAsync();
@@ -88,6 +109,10 @@ export default function NotificationsScreen(navigation) {
   };
 
   useEffect(() => {
+
+    //clear all notification
+    dismissAllNotifications();
+
     // Call the function to get the initial count
     getPresentedNotifications();
 
@@ -153,7 +178,7 @@ useEffect(() => {
     .then(async (token) => {
       setExpoPushToken(token);
       console.log('expoPushToken token is', token);
-
+      console.log('user id is.', FIREBASE_AUTH.currentUser.uid);
       // Call the function to get the current user's document ID
       const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
       if (userId) {
@@ -200,11 +225,12 @@ useEffect(() => {
                 <View className="flex-row px-6 mt-8 items-center space-x-2">
                     <Text className="text-[#2A2B4B] text-3xl font-semibold">Notification</Text>
                 </View>
-                {/* Test send Section */}
+                
+                {/* Test send Section 
                 <View
                     style={{ backgroundColor: 'white', padding: 10 }}>
                     <Text>Your expo push token: {expoPushToken}</Text>
-                    
+                    <Text>uid: {FIREBASE_AUTH.currentUser.uid}</Text>
                     <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                       <Text>Title: {notification && notification.request.content.title} </Text>
                       <Text>Body: {notification && notification.request.content.body}</Text>
@@ -231,8 +257,8 @@ useEffect(() => {
                       
                 <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                       <Text>Notification Count: {presentedNotificationCount}</Text>
-                </View>
-
+                </View>*/}
+                
                 {/* Second Section */}
                 <View style={{ backgroundColor: 'white', padding: 10 }}>
                     <TabNotif userRole={currentLoggedInUser ? currentLoggedInUser.userRole : null} />

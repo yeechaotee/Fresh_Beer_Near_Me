@@ -8,7 +8,12 @@ import {
   StyleSheet,
   Alert,
   SafeAreaView,
+  KeyboardAvoidingView,
+  Keyboard,
+  ScrollView,
+  Button,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -16,26 +21,71 @@ import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FormButton from '../../components/FormButton';
 
-import Animated from 'react-native-reanimated';
+import Animated, { set } from 'react-native-reanimated';
 import BottomSheet from 'reanimated-bottom-sheet';
 // import ImagePicker from 'react-native-image-crop-picker';
 
 import { AuthContext } from '../AuthProvider/AuthProvider';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
-import firestore from 'firebase/firestore';
+import { collection, query, getDocs, where, updateDoc, doc } from 'firebase/firestore';
 import storage from 'firebase/storage';
+import { Picker } from '@react-native-picker/picker';
+import Constants from "expo-constants";
+import Modal from 'react-native-modal';
+import EditProfModal from "../../components/signup/EditProfModal";
 
 const EditProfileScreen = ({ navigation, route }) => {
   // const { user, logout } = useContext(AuthContext);
-  const [user, setUser] = useState(User);
+  //const [user, setUser] = useState(User);
 
+  /*
+  useEffect(() => {
+    // Fetch the user data from Firebase Auth
+    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (authUser) => {
+      if (authUser) {
+        setUser(authUser); // Set the user state with the authenticated user object
+      } else {
+        setUser(null); // If not authenticated, set user state to null
+      }
+    });
+
+    // Clean up the subscription when the component unmounts
+    return () => unsubscribe();
+  }, []);
+  */
+
+  //user role
+  const [userRole, setUserRole] = useState(null);
+
+  //business UEN
+  const [businessUEN, setBusinessUEN] = useState(null);
+  const [bizInfo, setBizInfo] = useState("");
 
   const [image, setImage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [transferred, setTransferred] = useState(0);
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState({ gender: '', birthday: null });
 
+  //modal needs
+  const [modalVisible, setModalVisible] = useState(false);
+  const handleOpenModal = () => {
+    setModalVisible(true);
+  };
+
+
+  //modal return contents
+  const [beerProfile, setBeerProfile] = useState([]);
+  const [favBeer, setFavBeer] = useState([]);
+  const [region, setRegion] = useState([]);
+
+const finishModal=()=>{
+    // setUserData({ ...userData, beerProfile: beerProfile })
+    // setUserData({ ...userData, favBeer: favBeer })
+    // setUserData({ ...userData, region: region })
+}
+
+  /*
   const getUser = async () => {
     const currentUser = await firestore()
       .collection('users')
@@ -48,9 +98,63 @@ const EditProfileScreen = ({ navigation, route }) => {
         }
       })
   }
+  */
+ 
 
-  console.log("user is:" + User)
 
+
+  //get current user's docid
+  const getUser = async () => {
+    try {
+      const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
+      const userCollectionRef = collection(FIRESTORE_DB, 'users');
+      const q = query(userCollectionRef, where('owner_uid', '==', userId));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        // Get the docID of the user's document
+        //const docId = userDoc.id;
+        setBizInfo(userDoc.data().bizInfo);
+        console.log('User role:', userDoc.data().role);
+        setUserRole(userDoc.data().role);
+        console.log('User businessUEN:', userDoc.data().businessUEN);
+        setBusinessUEN(userDoc.data().businessUEN);
+        setUserData(userDoc.data());
+        setBeerProfile(userDoc.data().beerProfile);
+        setFavBeer(userDoc.data().favBeer);
+        setRegion(userDoc.data().region);
+        //return { docId, userRole };
+        //return docId;
+      } else {
+        console.log('User document not found');
+        return null;
+      }
+    } catch (error) {
+      console.log('Error getting current user document ID:', error);
+      return null;
+    }
+  };
+  /*
+  const updateUser = async (docId, expoPushToken) => {
+    try {
+      // Assuming you have a collection called "users" in Firestore
+      //const userRef = doc(FIRESTORE_DB, 'users', FIREBASE_AUTH.currentUser.uid);
+      const userRef = doc(FIRESTORE_DB, 'users', docId);
+  
+      // Update the "expoPushToken" field in the user's document
+      await setDoc(userRef, { expoPushToken: expoPushToken }, { merge: true });
+  
+      console.log('User expoPushToken updated successfully.');
+    } catch (error) {
+      console.log('Error updating user expoPushToken:', error);
+    }
+  };
+  */
+
+  //console.log("user is:" + User)
+
+  /*
   const handleUpdate = async () => {
     // let imgUrl = await uploadImage();
     let imgUrl = null;
@@ -64,10 +168,12 @@ const EditProfileScreen = ({ navigation, route }) => {
       .update({
         fname: userData.fname,
         lname: userData.lname,
+        
         about: userData.about,
         phone: userData.phone,
         country: userData.country,
         city: userData.city,
+        
         // userImg: imgUrl,
       })
       .then(() => {
@@ -78,6 +184,55 @@ const EditProfileScreen = ({ navigation, route }) => {
         );
       })
   }
+*/
+  const handleUpdate = async () => {
+    const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
+
+    const userCollectionRef = collection(FIRESTORE_DB, 'users');
+    const q = query(userCollectionRef, where('owner_uid', '==', userId));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0]; // Assuming you want to update the first matching user document
+      const userRef = doc(FIRESTORE_DB, 'users', userDoc.id);
+
+      try {
+        await updateDoc(userRef, {
+          profile_picture: userData.profile_picture,
+          ...(userData.fname !== undefined && { fname: userData.fname }),
+          ...(userData.lname !== undefined && { lname: userData.lname }),
+          username: userData.username,
+          UpdatedAt: new Date().toISOString(),
+          ...(userData.gender !== undefined && { gender: userData.gender }),
+          ...(userData.birthday !== undefined && { birthday: userData.birthday }),
+
+          // ...(userData.region !== undefined && { region: userData.region }), // Add region
+          // ...(userData.beerProfile !== undefined && { beerProfile: userData.beerProfile }), // Add beerProfile
+          // ...(userData.favBeer !== undefined && { favBeer: userData.favBeer }), // Add favBeer
+          
+          ...(userData.region !== undefined && { region: region }), // Add region
+          ...(userData.beerProfile !== undefined && { beerProfile: beerProfile }), // Add beerProfile
+          ...(userData.favBeer !== undefined && { favBeer: favBeer }), // Add favBeer
+
+          ...(userData.bizInfo !== undefined && { bizInfo: bizInfo }), // Add business info
+          // other fields...
+        });
+
+        console.log('User Updated!');
+        Alert.alert(
+          'Profile Updated!',
+          'Your profile has been updated successfully.'
+        );
+      } catch (error) {
+        console.error('Error updating user:', error);
+        Alert.alert('Error', 'An error occurred while updating your profile.');
+      }
+    } else {
+      console.log('User not found or unauthorized');
+      // Handle the case where the user document was not found or the user is unauthorized
+    }
+  };
+
 
   const uploadImage = async () => {
     if (image == null) {
@@ -203,6 +358,15 @@ const EditProfileScreen = ({ navigation, route }) => {
   bs = React.createRef();
   fall = new Animated.Value(1);
 
+
+  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null); // New state for selected date
+
+  const showDatePicker = () => {
+    setDatePickerVisible(true);
+  };
+
+
   return (
     <View style={styles.container}>
       <BottomSheet
@@ -218,59 +382,22 @@ const EditProfileScreen = ({ navigation, route }) => {
         style={{
           margin: 20,
           opacity: Animated.add(0.1, Animated.multiply(this.fall, 1.0)),
-        }}>
+        }}
+      >
         <SafeAreaView>
-          <View style={{ alignItems: 'center' }}>
-            <TouchableOpacity onPress={() => this.bs.current.snapTo(0)}>
-              <View
-                style={{
-                  height: 100,
-                  width: 100,
-                  borderRadius: 15,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <ImageBackground
-                  source={{
-                    uri: image
-                      ? image
-                      : userData
-                        ? userData.userImg ||
-                        'https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg'
-                        : 'https://static.thenounproject.com/png/5034901-200.png',
-                  }}
-                  style={{ height: 100, width: 100 }}
-                  imageStyle={{ borderRadius: 15 }}>
-                  <View
-                    style={{
-                      flex: 1,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    <MaterialCommunityIcons
-                      name="camera"
-                      size={35}
-                      color="#fff"
-                      style={{
-                        opacity: 0.7,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderWidth: 1,
-                        borderColor: '#fff',
-                        borderRadius: 10,
-                      }}
-                    />
-                  </View>
-                </ImageBackground>
-              </View>
-            </TouchableOpacity>
-            <Text style={{ marginTop: 10, fontSize: 18, fontWeight: 'bold' }}>
-              {userData ? userData.fname : ''} {userData ? userData.lname : ''}
-            </Text>
-            <Text>{route.params ? ("UserID:" + route.params.userId) : 'No USER'}</Text>
-            {/* <Text>{user.uid}</Text> */}
-          </View>
 
+          {/*show biz user*/}
+          {userRole === "businessUser" && (
+            <React.Fragment>
+          <View style={styles.action}>
+            <Ionicons name="document-text-outline" color="#333333" size={20} />
+            <Text>  {businessUEN}</Text>
+          </View>
+          </React.Fragment>)}
+
+          {/*if userRole = user*/}
+          {userRole === "user" && (
+            <React.Fragment>
           <View style={styles.action}>
             <FontAwesome name="user-o" color="#333333" size={20} />
             <TextInput
@@ -282,6 +409,7 @@ const EditProfileScreen = ({ navigation, route }) => {
               style={styles.textInput}
             />
           </View>
+          
           <View style={styles.action}>
             <FontAwesome name="user-o" color="#333333" size={20} />
             <TextInput
@@ -293,59 +421,131 @@ const EditProfileScreen = ({ navigation, route }) => {
               style={styles.textInput}
             />
           </View>
+          </React.Fragment>)}
+
+          {/*show regardless*/}
           <View style={styles.action}>
-            <Ionicons name="ios-clipboard-outline" color="#333333" size={20} />
+          <FontAwesome name="user-o" color="#333333" size={20} />
             <TextInput
               multiline
               numberOfLines={3}
-              placeholder="About Me"
+              placeholder="username"
               placeholderTextColor="#666666"
-              value={userData ? userData.about : ''}
-              onChangeText={(txt) => setUserData({ ...userData, about: txt })}
+              value={userData ? userData.username : ''}
+              onChangeText={(txt) => setUserData({ ...userData, username: txt })}
               autoCorrect={true}
               style={[styles.textInput, { height: 40 }]}
             />
           </View>
-          <View style={styles.action}>
-            <Feather name="phone" color="#333333" size={20} />
-            <TextInput
-              placeholder="Phone"
-              placeholderTextColor="#666666"
-              keyboardType="number-pad"
-              autoCorrect={false}
-              value={userData ? userData.phone : ''}
-              onChangeText={(txt) => setUserData({ ...userData, phone: txt })}
-              style={styles.textInput}
-            />
-          </View>
 
+          {/*if userRole = user*/}
+          {userRole === "user" && (
+            <React.Fragment>
           <View style={styles.action}>
-            <FontAwesome name="globe" color="#333333" size={20} />
-            <TextInput
-              placeholder="Country"
-              placeholderTextColor="#666666"
-              autoCorrect={false}
-              value={userData ? userData.country : ''}
-              onChangeText={(txt) => setUserData({ ...userData, country: txt })}
-              style={styles.textInput}
+            <Ionicons name="male-female-outline" color="#333333" size={20} />
+            <Picker
+              selectedValue={userData ? userData.gender : ''}
+              onValueChange={(itemValue) => setUserData({ ...userData, gender: itemValue })}
+              style={[styles.textInput, { height: 40 }]}
+            >
+              {/* <Picker.Item label="Select Gender" value="" /> */}
+              <Picker.Prompt label="Select Gender" value="" />
+              <Picker.Item label="Male" value="male" />
+              <Picker.Item label="Female" value="female" />
+            </Picker>
+          </View>
+          </React.Fragment>)}
+          
+          {/*if userRole = user*/}
+          {userRole === 'user' && (
+        <>
+          {isDatePickerVisible && (
+            <DateTimePicker
+              value={selectedDate || new Date()}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                if (selectedDate) {
+                  setSelectedDate(selectedDate); // Set the selected date
+                  setUserData({ ...userData, birthday: selectedDate.toISOString() });
+                }
+                setDatePickerVisible(false); // Hide the date picker
+              }}
             />
+          )}
+          <TouchableOpacity onPress={showDatePicker}>
+            <View style={styles.action}>
+              <FontAwesome name="calendar" color="#333333" size={20} />
+              <TextInput
+                placeholder="Birthday"
+                placeholderTextColor="#666666"
+                editable={false}
+                value={
+                  selectedDate
+                    ? selectedDate.toDateString()
+                    : userData.birthday
+                    ? new Date(userData.birthday).toDateString()
+                    : ''
+                }
+                style={styles.textInput}
+              />
+            </View>
+          </TouchableOpacity>
+        </>
+      )}
+          
+          
+          {/*if userRole = user*/}
+          {userRole === "user" && (
+            <React.Fragment>
+          <View style={styles.action}>
+          <Text style={styles.Header1}>Your Preferences</Text>
           </View>
           <View style={styles.action}>
-            <MaterialCommunityIcons
-              name="map-marker-outline"
-              color="#333333"
-              size={20}
-            />
-            <TextInput
-              placeholder="City"
+          <Text>your fav. beers: {favBeer.join(', ')}</Text>
+          </View>
+          <View style={styles.action}>
+          <Text>your beer profile: {beerProfile.join(', ')}</Text>
+          </View>
+          <View style={styles.action}>
+          <Text>your current region: {region}</Text>
+          </View>
+          <FormButton buttonTitle="Change Preferences" onPress={handleOpenModal} />
+          </React.Fragment>)}
+
+            {/*business user editable fields here*/}
+            {userRole === "businessUser" && (
+            <React.Fragment>
+            <View style={styles.action}>
+            <Ionicons name="document-text-outline" color="#333333" size={20} />
+            <Text>  business Information</Text>
+          </View>
+          <View style={styles.action2}>
+          
+          <TextInput
+              placeholder="Tell us about your business: "
               placeholderTextColor="#666666"
               autoCorrect={false}
-              value={userData ? userData.city : ''}
-              onChangeText={(txt) => setUserData({ ...userData, city: txt })}
-              style={styles.textInput}
+              multiline={true}
+              value={bizInfo}
+              onChangeText={(txt) => setBizInfo(txt)}
+              style={styles.textInput2}
             />
-          </View>
+            
+             
+              </View>
+
+          </React.Fragment>)}
+
           <FormButton buttonTitle="Update" onPress={handleUpdate} />
+          <EditProfModal
+                      modalVisible={modalVisible}
+                      setModalVisible={setModalVisible}
+                      setBeerProfile={setBeerProfile}
+                      setFavBeer={setFavBeer}
+                      setRegion={setRegion}
+                      finishModal={finishModal}
+                    />
         </SafeAreaView>
       </Animated.View>
     </View>
@@ -416,11 +616,19 @@ const styles = StyleSheet.create({
   },
   action: {
     flexDirection: 'row',
-    marginTop: 10,
-    marginBottom: 10,
+    marginTop: 5,
+    marginBottom: 5,
     borderBottomWidth: 1,
     borderBottomColor: '#f2f2f2',
-    paddingBottom: 5,
+    padding: 7,
+  },
+  action2: {
+    flexDirection: 'row',
+    marginTop: 5,
+    marginBottom: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f2f2f2',
+    padding: 7,
   },
   actionError: {
     flexDirection: 'row',
@@ -434,5 +642,19 @@ const styles = StyleSheet.create({
     marginTop: Platform.OS === 'ios' ? 0 : -12,
     paddingLeft: 10,
     color: '#333333',
+  },
+  textInput2: {
+    flex: 1,
+    marginTop: Platform.OS === 'ios' ? 0 : -12,
+    paddingLeft: 10,
+    color: '#333333',
+    height: 300,
+  },
+  Header1: {
+    color: "#000",
+    fontSize: 20,
+    fontStyle: "normal",
+    fontWeight: "700",
+    alignSelf: "center",
   },
 });

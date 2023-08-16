@@ -25,12 +25,20 @@ import {
   collectionGroup,
   query,
   where,
+  updateDoc,
 } from "firebase/firestore";
 // import PostCard from '../components/PostCard';
+import * as ImagePicker from "expo-image-picker";
+import { getStorage, getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
+
+const storage = getStorage();
 const ProfileScreen = ({ navigation, route }) => {
   // const { user, logout } = useContext(AuthContext);
   // const [posts, setPosts] = useState([]);
+  const [image, setImage] = useState(null);
+  const [imageUploaded, setImageUploaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [deleted, setDeleted] = useState(false);
   // const [userData, setUserData] = useState(null);
@@ -93,6 +101,122 @@ const ProfileScreen = ({ navigation, route }) => {
   //     navigation.addListener("focus", () => setLoading(!loading));
   // }, [navigation, loading]);
 
+  const selectImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('Permission to access the camera roll is required!');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri); // Access selected asset through the 'assets' array
+      setImageUploaded(false);
+      handleFormSubmit(userProfile);
+      handleFormSubmit(userProfile);
+    }
+  };
+
+  const updateProfilePicture = async (profilePictureUrl) => {
+    try {
+
+      const userDocRef = collection(FIRESTORE_DB, 'users');
+      const q = query(
+        userDocRef,
+        where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      const updatePromises = [];
+      //console.log("are u dismiss?");
+      querySnapshot.forEach((doc) => {
+        const userRef = doc.ref; // Use .ref to get the reference to the document
+        // Update the "readstatus" field in each document using updateDoc
+        updatePromises.push(updateDoc(userRef, { profile_picture: profilePictureUrl }));
+
+      });
+
+      // Execute the update promises using Promise.all
+      await Promise.all(updatePromises);
+      console.log("Profile picture updated successfully");
+    } catch (error) {
+      console.log('Error updating profile picture4:', error);
+    }
+  };
+
+  /*
+    const updateProfilePicture = async (profilePictureUrl) => {
+      try {
+        const userDocRef = doc(FIRESTORE_DB, "users", "jYylhcXdmdQZzPMRAwdB4cNXAcf2");
+        console.log(userDocRef.doc);
+        await updateDoc(userDocRef, { profile_picture: profilePictureUrl });
+        console.log("Profile picture updated successfully");
+      } catch (error) {
+        console.log("Error updating profile picture:", error);
+        throw error;
+      }
+    };
+  */
+  const handleFormSubmit = async (values) => {
+    if (image && !imageUploaded) {
+      try {
+        const imageUrl = await uploadImageToStorage(image);
+
+        values.profile_picture = imageUrl;
+        setImageUploaded(true);
+      } catch (error) {
+        console.log('Image upload error 2:', error);
+        return;
+      }
+    } else {
+      values.profile_picture = userProfile?.profile_picture || '';
+    }
+
+    // Update user profile in Firestore
+    try {
+
+      await updateProfilePicture(values.profile_picture);
+      // Rest of the code for updating other profile details...
+    } catch (error) {
+      console.log('Profile picture update error3:', error);
+
+      return;
+    }
+  };
+
+  const uploadImageToStorage = async (uri) => {
+    const imageName = 'profile_picture_' + new Date().getTime();
+    const uploadUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
+
+    try {
+      const response = await fetch(uploadUri);
+      const blob = await response.blob();
+
+      // Dynamically create the storage reference
+      const storageRef = ref(storage, 'profile_pictures/' + imageName);
+
+      // Upload the image to Firebase Storage
+      await uploadBytes(storageRef, blob);
+
+      // Get the image URL from Firebase Storage
+      const imageUrl = await getDownloadURL(storageRef);
+      return imageUrl;
+    } catch (error) {
+      console.log('Image upload error 1:', error);
+      throw error;
+    }
+  };
+
+
+
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <ScrollView
@@ -103,15 +227,21 @@ const ProfileScreen = ({ navigation, route }) => {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <Image
-          style={styles.userImg}
-          source={{
-            uri: userProfile
-              ? userProfile.profile_picture ||
-                "https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg"
-              : "https://static.thenounproject.com/png/5034901-200.png",
-          }}
-        />
+        <TouchableOpacity onPress={selectImage}>
+          <View style={styles.userImgWrapper}>
+            <Image
+              style={styles.userImg}
+              source={{
+                uri: userProfile
+                  ? userProfile.profile_picture ||
+                  "https://lh5.googleusercontent.com/-b0PKyNuQv5s/AAAAAAAAAAI/AAAAAAAAAAA/AMZuuclxAM4M1SCBGAO7Rp-QP6zgBEUkOQ/s96-c/photo.jpg"
+                  : "https://static.thenounproject.com/png/5034901-200.png",
+              }}
+            />
+            <Ionicons name="add-circle-sharp" color="#ffa31a" size={50} style={styles.addIcon} />
+          </View>
+        </TouchableOpacity>
+
         {/* <Text style={styles.userName}>{userData ? userData.fname || 'Test' : 'Test'} {userData ? userData.lname || 'User' : 'User'}</Text> */}
         <Text style={styles.userName}>
           {userProfile ? userProfile.username || "Undefine" : "Undefine"}
@@ -152,6 +282,9 @@ const ProfileScreen = ({ navigation, route }) => {
 
         <View style={styles.userInfoWrapper}>
           <View style={styles.userInfoItem}>
+
+
+            {/* Use the GetNewsFeed component */}
             {/* <Text style={styles.userInfoTitle}>{posts.length}</Text>
                         <Text style={styles.userInfoSubTitle}>Posts</Text> */}
           </View>
@@ -181,10 +314,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 20,
   },
+  userImgWrapper: {
+    position: "relative", // Required for absolute positioning
+  },
   userImg: {
     height: 150,
     width: 150,
     borderRadius: 75,
+  },
+  addIcon: {
+    position: "absolute",
+    bottom: -10,
+    right: -10,
   },
   userName: {
     fontSize: 18,

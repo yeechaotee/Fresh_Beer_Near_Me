@@ -18,7 +18,7 @@ import NotificationsScreen from './navigation/screens/NotificationsScreen';
 import EditProfileScreen from './navigation/screens/EditProfileScreen';
 import NewPostScreen from './navigation/screens/NewPostScreen';
 import 'react-native-gesture-handler';
-import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where } from 'firebase/firestore';
+import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where, updateDoc } from 'firebase/firestore';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from "expo-constants";
@@ -26,6 +26,7 @@ import { Image, Text, View, Button, Platform } from 'react-native';
 import { dismissAllNotificationsAsync, getPresentedNotificationsAsync } from 'expo-notifications';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { createDrawerNavigator } from '@react-navigation/drawer'; import ManagePost from './components/NewPost/ManagePost';
+import { useNavigation } from '@react-navigation/native';
 
 const Drawer = createDrawerNavigator();
 
@@ -62,17 +63,19 @@ const ProfileStack = ({ navigation, route }) => (
 );
 
 function LogonLayout() {
-  
+
 
   const [userProfile, setUserProfile] = useState(null);
+  const navigation = useNavigation();
 
+  /*
   // get current user and user role from firebase
   useEffect(() =>
     onAuthStateChanged(FIREBASE_AUTH, async (user) => {
       // console.log('User info ---> ', user);
       if (user) {
         const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
-        // console.log("user id is:: " + user.uid);
+        console.log("user id is:: " + user.uid);
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {
           // doc.data() is never undefined for query doc snapshots
@@ -84,9 +87,34 @@ function LogonLayout() {
     })
     , []);
 
+    */
+
+  // Fetch user profile from Firestore
+  const fetchUserProfile = async (user) => {
+    const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+      setUserProfile(doc.data());
+    });
+  };
+
+  // Subscribe to auth state changes and fetch user profile
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+      if (user) {
+        await fetchUserProfile(user);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+
+
   const [presentedNotificationCount, setPresentedNotificationCount] = useState(0);
 
   useEffect(() => {
+
+    /*
     // Fetch user profile from Firestore
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (user) => {
       if (user) {
@@ -94,9 +122,11 @@ function LogonLayout() {
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {
           setUserProfile(doc.data());
+          console.log("showing?");
         });
       }
     });
+    */
 
     // Subscribe to notification events and update the count when a new notification is presented
     const notificationSubscription = Notifications.addNotificationResponseReceivedListener(() => {
@@ -106,9 +136,26 @@ function LogonLayout() {
     // Function to get the presented notifications count
     const getPresentedNotifications = async () => {
       try {
+
+        /*
         const presentedNotifications = await getPresentedNotificationsAsync();
         const notificationCount = presentedNotifications.length;
-        setPresentedNotificationCount(notificationCount);
+        const firestoreNotificationCount = 0;
+        setPresentedNotificationCount(notificationCount)
+        */
+
+        const notificationsRef = collection(FIRESTORE_DB, 'notifications');
+        const q = query(
+          notificationsRef,
+          where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
+          where('readstatus', '==', false)
+        );
+        // Execute the query and get the query snapshot
+        const querySnapshot = await getDocs(q);
+        // Get the count of notifications that match the criteria
+        firestoreNotificationCount = querySnapshot.size; // Use a different variable name
+        setPresentedNotificationCount(firestoreNotificationCount);
+
       } catch (error) {
         console.log('Error getting presented notifications:', error);
       }
@@ -118,11 +165,12 @@ function LogonLayout() {
     getPresentedNotifications();
 
     // Set up an interval to update the notification count every 5 seconds
-    const interval = setInterval(getPresentedNotifications, 5000);
+    const interval = setInterval(getPresentedNotifications, 1000);
 
     return () => {
-      unsubscribe();
+      //unsubscribe();
       notificationSubscription.remove();
+
       clearInterval(interval); // Clear the interval when the component unmounts
     };
   }, []);
@@ -376,7 +424,6 @@ function App() {
   return (
     <>
       {user && getEmailVerificationStatus() ? !loadingInitial && SignedInStack() : !loadingInitial && SignedOutStack()}
-
     </>
     // <NavigationContainer>
     //   <Stack.Navigator initialRouteName="Login">

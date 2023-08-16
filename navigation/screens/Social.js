@@ -574,7 +574,7 @@ function CreateFeedByAdmin({ navigation }) {
 
               await setDoc(newRef, data);
               alert("Create Feed Success");
-              sendCustomPushNotification(title, description, type ? "Promotion" : "Event", "user", "");
+              sendCustomPushNotification(title, description, type ? "Promotion" : "Event", "user");
               navigation.navigate("News Feed");
             } catch (e) {
               alert("Create Feed Fail");

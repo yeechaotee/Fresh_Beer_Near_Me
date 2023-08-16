@@ -41,6 +41,7 @@ const GetNewsFeed = () => {
                             id: doc.id,
                             ...doc.data(),
                             createTime: doc.data().createTime.toDate().toDateString(),
+                            precisecreateTime: doc.data().createTime,
                             profile_picture: profilePicture, // Include the user's profile picture
                             userRole: userData.role,
                         };
@@ -64,136 +65,147 @@ const GetNewsFeed = () => {
     const [user, setUser] = useState(null);
 
     const closeModal = async () => {
-        if (selectedItem) {
+    if (selectedItem) {
+        try {
             // Update the values in Firebase
-            try {
-                const docRef = doc(FIRESTORE_DB, 'newsfeed', selectedItem.id);
+            const newsRef = collection(FIRESTORE_DB, 'newsfeed');
+            const querySnapshot = await getDocs(query(newsRef, where('creater', '==', selectedItem.creater), where('createTime', '==', selectedItem.precisecreateTime)));
+
+            if (!querySnapshot.empty) {
+                const docRef = querySnapshot.docs[0].ref;
                 await updateDoc(docRef, {
                     title: selectedItem.title,
                     // Update other fields as needed
                 });
-                // Close the modal and clear the selected item
-                setIsModalVisible(false);
-                setSelectedItem(null);
-            } catch (error) {
-                console.error('Error updating data:', error);
             }
-        } else {
+            // Close the modal and clear the selected item
             setIsModalVisible(false);
+            setSelectedItem(null);
+
+            // Refresh the news feed after updating
+            fetchNewsFeed();
+
+        } catch (error) {
+            console.error('Error updating data:', error);
         }
-    };
+    } else {
+        setIsModalVisible(false);
+    }
+};
 
-    const renderNewsFeedItem = ({ item }) => (
 
 
-        <TouchableOpacity style={styles.newsFeedItem}>
-            {/* Render individual news feed item */}
+const renderNewsFeedItem = ({ item }) => (
 
-            <View>
-                <View style={styles.rowHeader}>
-                    <View style={styles.rowIcon} >
-                        {
-                            //item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
-                            <Image
-                                style={{ width: 50, height: 50, borderRadius: 15, marginTop: -3 }}
-                                source={{ uri: item.profile_picture }}
-                            />
-                        }
-                    </View>
-                    <View style={styles.rowContent}>
-                        <Text style={styles.rowHead}>{item.creater}</Text>
-                        <Text style={styles.rowText}>{item.createTime}</Text>
-                    </View>
+
+    <TouchableOpacity style={styles.newsFeedItem}>
+        {/* Render individual news feed item */}
+
+        <View>
+            <View style={styles.rowHeader}>
+                <View style={styles.rowIcon} >
+                    {
+                        //item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
+                        <Image
+                            style={{ width: 50, height: 50, borderRadius: 15, marginTop: -3 }}
+                            source={{ uri: item.profile_picture }}
+                        />
+                    }
                 </View>
                 <View style={styles.rowContent}>
-                    {
-                        <Text style={{ ...styles.rowText, marginRight: 5 }}>{item.title}</Text>
-                    }
-                    {
-                        item.startDateTime && item.endDatTime ?
-                            item.type ? <Text style={{ ...styles.rowText, marginRight: 5 }}>Type: Promotion</Text> : <Text style={styles.rowText}>Type: Event</Text>
-                            : <></>
-                    }
-                    {
-                        item.startDateTime ? <Text style={{ ...styles.rowText, marginRight: 5 }}>Start Date: {item.startDateTime}</Text> : <></>
-                    }
-                    {
-                        item.endDatTime ? <Text style={styles.rowText}>End Date: {item.endDatTime}</Text> : <></>
-                    }
-                    {
-                        item.numberOfPeople && item.numberOfPeople !== "" && item.numberOfPeople !== "0" ? <Text style={styles.rowText}>Number of people participating: {item.numberOfPeople}</Text> : <></>
-                    }
-
+                    <Text style={styles.rowHead}>{item.creater}</Text>
+                    <Text style={styles.rowText}>{item.createTime}</Text>
                 </View>
-                <Text style={styles.rowMessage}>{item.description.replace(/<\/?[^>]+(>|$)/g, "")}</Text>
+            </View>
+            <View style={styles.rowContent}>
                 {
-                    item.image ? <Image source={{ uri: item.image }} style={{ width: 250, height: 250 }} /> : <></>
+                    <Text style={{ ...styles.rowText, marginRight: 5 }}>{item.title}</Text>
                 }
-                <View style={styles.rowContainer}>
-                    <View style={styles.rowContainer}>
-                        {
-                            !item.userRole ? <>
-                                <FontAwesome5
-                                    name={'heart'}
-                                    size={20}
-                                    color={'black'}
-                                />
-                                <FontAwesome5
-                                    name={'comment'}
-                                    size={20}
-                                    color={'black'}
-                                    style={{ paddingLeft: 10 }}
-                                />
-                            </> : <></>
-                        }
-                    </View>
-                </View>
+                {
+                    item.startDateTime && item.endDatTime ?
+                        item.type ? <Text style={{ ...styles.rowText, marginRight: 5 }}>Type: Promotion</Text> : <Text style={styles.rowText}>Type: Event</Text>
+                        : <></>
+                }
+                {
+                    item.startDateTime ? <Text style={{ ...styles.rowText, marginRight: 5 }}>Start Date: {item.startDateTime}</Text> : <></>
+                }
+                {
+                    item.endDatTime ? <Text style={styles.rowText}>End Date: {item.endDatTime}</Text> : <></>
+                }
+                {
+                    item.numberOfPeople && item.numberOfPeople !== "" && item.numberOfPeople !== "0" ? <Text style={styles.rowText}>Number of people participating: {item.numberOfPeople}</Text> : <></>
+                }
+
             </View>
+            <Text style={styles.rowMessage}>{item.description.replace(/<\/?[^>]+(>|$)/g, "")}</Text>
+            {
+                item.image ? <Image source={{ uri: item.image }} style={{ width: 250, height: 250 }} /> : <></>
+            }
             <View style={styles.rowContainer}>
-                <TouchableOpacity onPress={() => handleEditPress(item)}>
-                    <FontAwesome5 name="edit" size={20} color="black" />
-                </TouchableOpacity>
-            </View>
-        </TouchableOpacity>
-
-    );
-
-    return (
-        <View style={styles.container}>
-            {/* FlatList */}
-            <FlatList
-                data={newsFeedData}
-                renderItem={renderNewsFeedItem}
-                keyExtractor={(item) => item.id}
-            />
-
-            {/* Modal */}
-            <Modal
-                visible={isModalVisible}
-                animationType="slide"
-                transparent={true}
-            >
-                <View style={styles.modalContainer}>
-                    {selectedItem && (
-                        <View style={styles.modalContent}>
-                            {/* Display editable fields */}
-                            <TextInput
-                                style={styles.input}
-                                value={selectedItem.title}
-                                onChangeText={(text) =>
-                                    setSelectedItem((prevItem) => ({ ...prevItem, title: text }))
-                                }
+                <View style={styles.rowContainer}>
+                    {
+                        !item.userRole ? <>
+                            <FontAwesome5
+                                name={'heart'}
+                                size={20}
+                                color={'black'}
                             />
-                            {/* ... Other editable fields */}
-                            <TouchableOpacity onPress={closeModal}>
-                                <Text>Close Modal</Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
+                            <FontAwesome5
+                                name={'comment'}
+                                size={20}
+                                color={'black'}
+                                style={{ paddingLeft: 10 }}
+                            />
+                        </> : <></>
+                    }
                 </View>
-            </Modal>
+            </View>
         </View>
-    );
+        <View style={styles.rowContainer}>
+            <TouchableOpacity onPress={() => handleEditPress(item)}>
+                <FontAwesome5 name="edit" size={20} color="black" />
+            </TouchableOpacity>
+        </View>
+    </TouchableOpacity>
+
+);
+
+return (
+    <View style={styles.container}>
+        {/* FlatList */}
+        <FlatList
+            data={newsFeedData}
+            renderItem={renderNewsFeedItem}
+            keyExtractor={(item) => item.id}
+        />
+
+        {/* Modal */}
+        <Modal
+            visible={isModalVisible}
+            animationType="slide"
+            transparent={true}
+        >
+            <View style={styles.modalContainer}>
+                {selectedItem && (
+                    <View style={styles.modalContent}>
+                        {/* Display editable fields */}
+                        <TextInput
+                            style={styles.input}
+                            value={selectedItem.title}
+                            onChangeText={(text) =>
+                                setSelectedItem((prevItem) => ({ ...prevItem, title: text }))
+                            }
+                        />
+                        {/* ... Other editable fields */}
+                        <TouchableOpacity onPress={closeModal}>
+                            <Text>Close Modal</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+            </View>
+        </Modal>
+    </View>
+);
 };
 
 const styles = StyleSheet.create({

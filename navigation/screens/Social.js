@@ -46,6 +46,7 @@ function NewsFeed() {
   const [showFoot, setShowFoot] = React.useState(0)
   const [isRefresh, setIsRefresh] = React.useState(false)
 
+  /*
   React.useEffect(() => {
     async function isAdmin() {
       const feedsRef = collection(FIRESTORE_DB, "users");
@@ -59,7 +60,7 @@ function NewsFeed() {
     getNewsFeed();
     isAdmin();
   }, [])
-
+*/
   /*
     React.useEffect(() => {
       async function getNewsFeed() {
@@ -620,15 +621,6 @@ function CreateFeedByAdmin({ navigation }) {
 //     </SafeAreaView>
 //   );
 // }
-function ManagePost() {
-  return (
-    <View style={styles.container}>
-      <Text>
-        <GetNewsFeed />
-      </Text>
-    </View>
-  )
-}
 
 function StarRating() {
 

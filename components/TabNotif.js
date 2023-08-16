@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image } from 'react-native';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../firebase';
-import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where, orderBy  } from 'firebase/firestore';
+import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 const HeaderButton = (props) => (
@@ -28,10 +28,10 @@ const HeaderButton = (props) => (
 const TabNotif = ({ userRole }) => {
   const [activeTab, setActiveTab] = useState('Activity');
   const [activeData, setActiveData] = useState([]);
-  
 
-   const fetchNotification = async (tabName) => {
-  const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
+
+  const fetchNotification = async (tabName) => {
+    const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
 
     if (!userId) {
       console.log('User not authenticated.');
@@ -40,7 +40,7 @@ const TabNotif = ({ userRole }) => {
 
     try {
       const notificationsRef = collection(FIRESTORE_DB, 'notifications');
-      const q = tabName === "News Feed"?
+      const q = tabName === "News Feed" ?
         query(
           notificationsRef,
           where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
@@ -48,7 +48,7 @@ const TabNotif = ({ userRole }) => {
           orderBy('timestamp', 'desc')
         )
         :
-        tabName === "Activity"?
+        tabName === "Activity" ?
           query(
             notificationsRef,
             where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
@@ -63,7 +63,7 @@ const TabNotif = ({ userRole }) => {
             orderBy('timestamp', 'desc')
           );
 
-      
+
       const querySnapshot = await getDocs(q);
       /*
       const notifications = [];
@@ -76,12 +76,12 @@ const TabNotif = ({ userRole }) => {
       });
       */
 
-      
+
       const notificationPromises = querySnapshot.docs.map(async (doc) => {
         const notificationData = doc.data();
         const timestampString = notificationData.timestamp;
         const timestamp = new Date(timestampString);
-        console.log("Cindyyyyy");
+        //console.log("Cindyyyyy");
         if (notificationData.owner_uid) {
           const userRef = collection(FIRESTORE_DB, "users");
           const userQuerySnapshot = await getDocs(
@@ -91,8 +91,12 @@ const TabNotif = ({ userRole }) => {
           if (!userQuerySnapshot.empty) {
             const userDoc = userQuerySnapshot.docs[0];
             const userData = userDoc.data();
-            const profilePicture = userData.profile_picture;
-            console.log("can u see meeee", profilePicture);
+
+            const NotifCreaterSnapshot = await getDocs(
+              query(userRef, where("owner_uid", "==", notificationData.createdby), limit(1))
+            );
+            const profilePicture = NotifCreaterSnapshot.docs[0].data().profile_picture;
+            //console.log("can u see meeee", profilePicture);
             return {
               id: doc.id,
               ...notificationData,
@@ -106,7 +110,7 @@ const TabNotif = ({ userRole }) => {
       });
 
       const notifications = await Promise.all(notificationPromises);
-      
+
 
       setActiveData(notifications);
     } catch (error) {
@@ -129,7 +133,7 @@ const TabNotif = ({ userRole }) => {
      */
     { id: '2', name: 'Promotion' },
     { id: '3', name: 'Event' },
-   
+
     { id: '4', name: 'News Feed' },
     // Add more tabs as needed
   ];
@@ -141,7 +145,7 @@ const TabNotif = ({ userRole }) => {
     //{ id: '4', name: 'News Feed' },
     // Add more tabs as needed
   ];
-  const tabs = userRole === "businessUser"? tabsBO:tabsBD;
+  const tabs = userRole === "businessUser" ? tabsBO : tabsBD;
   //console.log('tabs is ',userRole);
 
   /* //hardcoded testing data
@@ -224,13 +228,13 @@ const TabNotif = ({ userRole }) => {
 
 
   return (
-    
+
     <View style={{ alignSelf: 'center' }}>
       <View style={styles.tabContainer}>
-       
+
         {tabs.map((tab) => (
-            
-            
+
+
           <HeaderButton
             key={tab.id}
             text={tab.name}
@@ -245,29 +249,29 @@ const TabNotif = ({ userRole }) => {
             <Text style={styles.noNotificationText}>No notifications</Text>
           </View>
         ) : (
-        <FlatList
-          data={activeData}
-          renderItem={({ item }) => (
-            <View style={styles.rowContainer}>
-              
-              <View style={styles.rowIcon} >
-                            {
-                              //item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
-                              <Image
-                                style={{ width: 50, height: 50, borderRadius: 25, marginTop: -3}}
-                                source={{ uri: item.profile_picture }}
-                              />
-                            }
-                          </View>
-              <View style={{ ...styles.rowContent, flex: 3 }}>
-                <Text style={styles.rowHead}>{item.title}</Text>
-                <Text style={styles.rowText}>{removeDivTags(item.body)}</Text>
-                 <Text style={styles.rowText}>{item.timestamp.toLocaleString()}</Text>
+          <FlatList
+            data={activeData}
+            renderItem={({ item }) => (
+              <View style={styles.rowContainer}>
+
+                <View style={styles.rowIcon} >
+                  {
+                    //item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
+                    <Image
+                      style={{ width: 50, height: 50, borderRadius: 25, marginTop: -3 }}
+                      source={{ uri: item.profile_picture }}
+                    />
+                  }
+                </View>
+                <View style={{ ...styles.rowContent, flex: 3 }}>
+                  <Text style={styles.rowHead}>{item.title}</Text>
+                  <Text style={styles.rowText}>{removeDivTags(item.body)}</Text>
+                  <Text style={styles.rowText}>{item.timestamp.toLocaleString()}</Text>
+                </View>
               </View>
-            </View>
-          )}
-          keyExtractor={(item) => item.id.toString()}
-        />
+            )}
+            keyExtractor={(item) => item.id.toString()}
+          />
         )}
       </View>
     </View>
@@ -282,7 +286,7 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',    
+    justifyContent: 'space-between',
   },
   rowContainer: {
     flexDirection: 'row',
@@ -315,7 +319,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#808080',
   },
-   noNotificationContainer: {
+  noNotificationContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',

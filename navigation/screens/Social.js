@@ -18,6 +18,10 @@ import {
   orderBy,
   where,
   limit,
+  limitToLast,
+  startAt,
+  startAfter,
+  endBefore
 } from "firebase/firestore";
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -33,10 +37,14 @@ const Drawer = createDrawerNavigator();
 const handleHead = ({ tintColor }) => <Text style={{ color: tintColor }}>H1</Text>
 
 function NewsFeed() {
+  let page = 0;
+  const PAGE_SIZE = 5;
+
   const [activeData, setActiveData] = React.useState([]);
   const auth = FIREBASE_AUTH;
-
   const [isAdmin, setIsAdmin] = React.useState(false);
+  const [showFoot, setShowFoot] = React.useState(0)
+  const [isRefresh, setIsRefresh] = React.useState(false)
 
   React.useEffect(() => {
     async function isAdmin() {
@@ -45,10 +53,10 @@ function NewsFeed() {
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        console.log(data.role)
         setIsAdmin(data.role === "businessUser");
       })
     }
+    getNewsFeed();
     isAdmin();
   }, [])
 
@@ -372,9 +380,13 @@ function CreateFeedByAdmin({ navigation }) {
     setShow(false);
     // set date
     if (dateTimeType) {
-      if (currentDate)
+      if (currentDate < new Date()) {
+        alert("Please a valid start date")
+      } else {
         setStartDateTime(currentDate)
+      }
     } else {
+      console.log(currentDate, startDateTime);
       if (currentDate < startDateTime) {
         alert("Please a valid end date")
       } else {
@@ -586,28 +598,28 @@ function CreateFeedByAdmin({ navigation }) {
   );
 }
 
-function AddFriends() {
-  return (
-    <SafeAreaView style={{ flex: 1, padding: 10 }}>
-      <View style={{ alignItems: "center" }}>
-        <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold" }}>
-          Add Via User Name
-        </Text>
-      </View>
-      <TextInput style={styles.input} value="username" />
-      <View style={{ marginBottom: 10 }}>
-        <Button title="Send friend Request" />
-      </View>
-      <View style={{ alignItems: "center" }}>
-        <Text style={{ marginTop: 40, fontWeight: "bold" }}>OR</Text>
-      </View>
-      <View style={{ marginBottom: 10, marginTop: 60 }}>
-        <Button title="Add Via Your Phone Contact" />
-      </View>
-      <Button style={{ marginTop: 10 }} title="Nearby Scan" />
-    </SafeAreaView>
-  );
-}
+// function AddFriends() {
+//   return (
+//     <SafeAreaView style={{ flex: 1, padding: 10 }}>
+//       <View style={{ alignItems: "center"}}>
+//         <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
+//           Add Via User Name
+//         </Text>
+//       </View>
+//         <TextInput style={styles.input} value="username"/>
+//         <View  style={{ marginBottom: 10 }}>
+//           <Button title="Send friend Request" />
+//         </View>
+//         <View style={{alignItems: "center"}}>
+//           <Text style={{marginTop: 40, fontWeight: "bold"}}>OR</Text>
+//         </View>
+//         <View style={{ marginBottom: 10, marginTop: 60}}>
+//           <Button title="Add Via Your Phone Contact" />
+//         </View>
+//         <Button style={{ marginTop: 10 }} title="Nearby Scan" />
+//     </SafeAreaView>
+//   );
+// }
 
 function StarRating() {
 
@@ -648,25 +660,28 @@ function StarRating() {
       const newRating = (rating * reviews + state.Default_Rating) / (reviews + 1);
       await setDoc(docRef, {
         ...data,
-        rating: newRating,
+        rating: newRating.toFixed(1),
         reviews: reviews + 1
       })
       setState({
         ...state,
         data: {
           ...state.data,
-          rating: newRating,
+          rating: newRating.toFixed(1),
           reviews: reviews + 1
         }
       })
-      sendCustomPushNotification(
-        "A user has given a rating of " + state.Default_Rating,
-        state.message,
-        "rating",
-        "businessUser",
-        docSnap.data().owner_uid
-      );
-
+      // notification business user
+      const bussinessUserId = data.owner_uid;
+      const data1 = {
+        type: "Rating",
+        title: "You have a new rating",
+        body: `You have a new rating. Venue: [${data.name}] Rating: ${state.Default_Rating.toFixed(1)}, Message: ${state.message}`,
+        timestamp: new Date(),
+        owner_uid: bussinessUserId,
+      }
+      const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
+      await setDoc(newRef1, data1);
     } else {
       // doc.data() will be undefined in this case
       console.log("No such document!");
@@ -819,17 +834,17 @@ function ManagePost() {
   )
 }
 
-function Report() {
-  return (
-    <SafeAreaView style={{ flex: 1, padding: 10 }}>
-      <View style={{ alignItems: "center" }}>
-        <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold" }}>
-          TODO: Report Page
-        </Text>
-      </View>
-    </SafeAreaView>
-  )
-}
+// function Report() {
+//   return (
+//     <SafeAreaView style={{ flex: 1, padding: 10 }}>
+//       <View style={{ alignItems: "center"}}>
+//         <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
+//           TODO: Report Page
+//         </Text>
+//       </View>
+//     </SafeAreaView>
+//   )
+// }
 
 export default function SocialScreen({ navigation }) {
   const auth = FIREBASE_AUTH;

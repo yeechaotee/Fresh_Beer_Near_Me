@@ -586,7 +586,7 @@ function CreateFeedByAdmin({ navigation }) {
 
               await setDoc(newRef, data);
               alert("Create Feed Success");
-              sendCustomPushNotification(title, description, type ? "Promotion" : "Event", "user", "");
+              sendCustomPushNotification(title, description, type ? "Promotion" : "Event", "user");
               navigation.navigate("News Feed");
             } catch (e) {
               alert("Create Feed Fail");
@@ -620,6 +620,15 @@ function CreateFeedByAdmin({ navigation }) {
 //     </SafeAreaView>
 //   );
 // }
+function ManagePost() {
+  return (
+    <View style={styles.container}>
+      <Text>
+        <GetNewsFeed />
+      </Text>
+    </View>
+  )
+}
 
 function StarRating() {
 

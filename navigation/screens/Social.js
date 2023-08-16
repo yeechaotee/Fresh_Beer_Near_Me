@@ -18,6 +18,10 @@ import {
   orderBy,
   where,
   limit,
+  limitToLast,
+  startAt,
+  startAfter,
+  endBefore
 } from "firebase/firestore";
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -33,10 +37,14 @@ const Drawer = createDrawerNavigator();
 const handleHead = ({ tintColor }) => <Text style={{ color: tintColor }}>H1</Text>
 
 function NewsFeed() {
+  let page = 0;
+  const PAGE_SIZE = 5;
+
   const [activeData, setActiveData] = React.useState([]);
   const auth = FIREBASE_AUTH;
-
   const [isAdmin, setIsAdmin] = React.useState(false);
+  const [showFoot, setShowFoot] = React.useState(0)
+  const [isRefresh, setIsRefresh] = React.useState(false)
 
   React.useEffect(() => {
     async function isAdmin() {
@@ -45,146 +53,144 @@ function NewsFeed() {
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        console.log(data.role)
         setIsAdmin(data.role === "businessUser");
       })
     }
+    getNewsFeed();
     isAdmin();
   }, [])
 
-  /*
-    React.useEffect(() => {
-      async function getNewsFeed() {
-        const feedsRef = collection(FIRESTORE_DB, "newsfeed");
-        const q = query(feedsRef, orderBy("createTime", "desc"));
+  async function getNewsFeed() {
+    const feedsRef = collection(FIRESTORE_DB, "newsfeed");
+    console.log(page)
+    if (page === 0) {
+      const q = query(feedsRef, orderBy("createTime", "desc"), limit(PAGE_SIZE * (page + 1)));
+      const querySnapshot = await getDocs(q);
+      next = querySnapshot.docs[querySnapshot.docs.length - 1];
+      console.log("aaa", next)
+      querySnapshot.forEach((doc) => {
+        activeData.push({
+          id: doc.id,
+          ...doc.data(),
+          createTime: doc.data().createTime.toDate().toDateString(),
+        });
+      });
+    } else {
+      const q1 = query(feedsRef, orderBy("createTime", "desc"), limit(PAGE_SIZE * page));
+      const querySnapshot1 = await getDocs(q1);
+      const next = querySnapshot1.docs[querySnapshot1.docs.length - 1];
+      if (next) {
+        const q = query(feedsRef, orderBy("createTime", "desc"), startAfter(next), limit(PAGE_SIZE));
         const querySnapshot = await getDocs(q);
-        const feeds = new Array();
         querySnapshot.forEach((doc) => {
-          
-          feeds.push({
+          activeData.push({
             id: doc.id,
             ...doc.data(),
             createTime: doc.data().createTime.toDate().toDateString(),
           });
         });
-        
-        //const userRef = doc(FIRESTORE_DB,8 'users', docId);
-  
-        
-        setActiveData(feeds);
       }
-      console.log("render list")
-      getNewsFeed();
-    }, []);
-  */
-
-  React.useEffect(() => {
-    async function getNewsFeed() {
-      const feedsRef = collection(FIRESTORE_DB, "newsfeed");
-      const q = query(feedsRef, orderBy("createTime", "desc"));
-      const querySnapshot = await getDocs(q);
-
-      const feedPromises = querySnapshot.docs.map(async (doc) => {
-        if (doc.data().creater) {
-          const userRef = collection(FIRESTORE_DB, "users");
-
-          const userQuerySnapshot = await getDocs(
-            query(userRef, where("email", "==", doc.data().creater), limit(1))
-          );
-
-          if (!userQuerySnapshot.empty) {
-            const userDoc = userQuerySnapshot.docs[0];
-            const userData = userDoc.data();
-            const profilePicture = userData.profile_picture;
-
-            return {
-              id: doc.id,
-              ...doc.data(),
-              createTime: doc.data().createTime.toDate().toDateString(),
-              profile_picture: profilePicture, // Include the user's profile picture
-            };
-          }
-
-        }
-
-      });
-
-      const feeds = await Promise.all(feedPromises);
-      setActiveData(feeds.filter(feed => feed)); // Remove any undefined feed items
     }
+    setActiveData([...activeData]);
+    setIsRefresh(false);
+  }
 
-    console.log("render list");
-    getNewsFeed();
-  }, []);
+  function _onEndReached({ distanceFromEnd }) {
+    if (isRefresh) {
+      page++;
+      getNewsFeed();
+      console.log()
+    }
+  }
+
+  function _renderFooter() {
+    if (showFoot === 1) {
+      return (
+        <View style={{ height: 30, alignItems: 'center', justifyContent: 'flex-start', }}>
+            <Text style={{ color: '#999999', fontSize: 14, marginTop: 5, marginBottom: 5, }}>
+                Nothing
+            </Text>
+        </View>
+      )
+    } else if (showFoot === 2) {
+      return (
+          <View style={{ height: 30, alignItems: 'center', justifyContent: 'flex-start', }}>
+              <Text style={{ color: '#999999', fontSize: 14, marginTop: 5, marginBottom: 5, }}>Loading...</Text>
+          </View>
+      );
+  } else if (showFoot === 0) {
+      return (
+          <View style={{ height: 30, alignItems: 'center', justifyContent: 'flex-start', }}>
+              <Text style={{ color: '#999999', fontSize: 14, marginTop: 5, marginBottom: 5, }}>welcome</Text>
+          </View>
+      );
+  }
+  }
 
 
   return (
     <View style={styles.container}>
       <FlatList
-        data={activeData}
-        renderItem={({ item }) => (
-          <View>
-            <View style={styles.rowHeader}>
-              <View style={styles.rowIcon} >
-                {
-                  //item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
-                  <Image
-                    style={{ width: 50, height: 50, borderRadius: 15, marginTop: -3 }}
-                    source={{ uri: item.profile_picture }}
-                  />
-                }
+          data={activeData}
+          renderItem={({ item }) => (
+              <View>
+                  <View style={styles.rowHeader}>
+                      <View style={styles.rowIcon} >
+                        {
+                          item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
+                        }
+                      </View>
+                      <View style={styles.rowContent}>
+                          <Text style={styles.rowHead}>{item.creater}</Text>
+                          <Text style={styles.rowText}>{item.createTime}</Text>
+                      </View>
+                  </View>
+                  <View style={styles.rowContent}>
+                      {
+                      item.startDateTime && item.endDatTime ?
+                        item.type ? <Text style={{...styles.rowText, marginRight: 5} }>Type: Promotion</Text> : <Text style={styles.rowText}>Type: Event</Text>
+                      : <></>
+                      }
+                      {
+                        item.startDateTime ? <Text style={{...styles.rowText, marginRight: 5}}>Start Date: {item.startDateTime}</Text> : <></>
+                      }
+                      {
+                        item.endDatTime ? <Text style={styles.rowText}>End Date: {item.endDatTime}</Text> : <></>
+                      }
+                      {
+                        item.numberOfPeople && item.numberOfPeople !== "" && item.numberOfPeople !== "0" ? <Text style={styles.rowText}>Number of people participating: {item.numberOfPeople}</Text> : <></>
+                      }
+                  </View>
+                  <Text style={styles.rowMessage}>{item.description.replace(/<\/?[^>]+(>|$)/g, "")}</Text>
+                  {
+                    item.image ? <Image source={{ uri: item.image }} style={{ width: 250, height: 250 }} /> : <></>
+                  }
+                  {/* <View style={styles.rowContainer}>
+                      <View style={styles.rowContainer}>
+                        {
+                          !isAdmin ? <>
+                            <FontAwesome5
+                              name={'heart'}
+                              size={20}
+                              color={'black'}
+                            />
+                            <FontAwesome5
+                                name={'comment'}
+                                size={20}
+                                color={'black'}
+                                style={{ paddingLeft: 10 }}
+                            />
+                          </> : <></>
+                        }
+                      </View>
+                  </View> */}
               </View>
-              <View style={styles.rowContent}>
-                <Text style={styles.rowHead}>{item.creater}</Text>
-                <Text style={styles.rowText}>{item.createTime}</Text>
-              </View>
-            </View>
-            <View style={styles.rowContent}>
-              {
-                <Text style={{ ...styles.rowText, marginRight: 5 }}>{item.title}</Text>
-              }
-              {
-                item.startDateTime && item.endDatTime ?
-                  item.type ? <Text style={{ ...styles.rowText, marginRight: 5 }}>Type: Promotion</Text> : <Text style={styles.rowText}>Type: Event</Text>
-                  : <></>
-              }
-              {
-                item.startDateTime ? <Text style={{ ...styles.rowText, marginRight: 5 }}>Start Date: {item.startDateTime}</Text> : <></>
-              }
-              {
-                item.endDatTime ? <Text style={styles.rowText}>End Date: {item.endDatTime}</Text> : <></>
-              }
-              {
-                item.numberOfPeople && item.numberOfPeople !== "" && item.numberOfPeople !== "0" ? <Text style={styles.rowText}>Number of people participating: {item.numberOfPeople}</Text> : <></>
-              }
-
-            </View>
-            <Text style={styles.rowMessage}>{item.description.replace(/<\/?[^>]+(>|$)/g, "")}</Text>
-            {
-              item.image ? <Image source={{ uri: item.image }} style={{ width: 250, height: 250 }} /> : <></>
-            }
-            <View style={styles.rowContainer}>
-              <View style={styles.rowContainer}>
-                {
-                  !isAdmin ? <>
-                    <FontAwesome5
-                      name={'heart'}
-                      size={20}
-                      color={'black'}
-                    />
-                    <FontAwesome5
-                      name={'comment'}
-                      size={20}
-                      color={'black'}
-                      style={{ paddingLeft: 10 }}
-                    />
-                  </> : <></>
-                }
-              </View>
-            </View>
-          </View>
-        )}
-        keyExtractor={(item) => item.id.toString()}
+          )}
+          keyExtractor={(item) => item.id.toString()}
+          onEndReached={_onEndReached}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={_renderFooter()}
+          onMomentumScrollBegin={() => { setIsRefresh(true); }}
       />
     </View>
   );
@@ -372,9 +378,13 @@ function CreateFeedByAdmin({ navigation }) {
     setShow(false);
     // set date
     if (dateTimeType) {
-      if (currentDate)
+      if (currentDate < new Date()) {
+        alert("Please a valid start date")
+      } else {
         setStartDateTime(currentDate)
+      }
     } else {
+      console.log(currentDate, startDateTime);
       if (currentDate < startDateTime) {
         alert("Please a valid end date")
       } else {
@@ -586,28 +596,28 @@ function CreateFeedByAdmin({ navigation }) {
   );
 }
 
-function AddFriends() {
-  return (
-    <SafeAreaView style={{ flex: 1, padding: 10 }}>
-      <View style={{ alignItems: "center" }}>
-        <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold" }}>
-          Add Via User Name
-        </Text>
-      </View>
-      <TextInput style={styles.input} value="username" />
-      <View style={{ marginBottom: 10 }}>
-        <Button title="Send friend Request" />
-      </View>
-      <View style={{ alignItems: "center" }}>
-        <Text style={{ marginTop: 40, fontWeight: "bold" }}>OR</Text>
-      </View>
-      <View style={{ marginBottom: 10, marginTop: 60 }}>
-        <Button title="Add Via Your Phone Contact" />
-      </View>
-      <Button style={{ marginTop: 10 }} title="Nearby Scan" />
-    </SafeAreaView>
-  );
-}
+// function AddFriends() {
+//   return (
+//     <SafeAreaView style={{ flex: 1, padding: 10 }}>
+//       <View style={{ alignItems: "center"}}>
+//         <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
+//           Add Via User Name
+//         </Text>
+//       </View>
+//         <TextInput style={styles.input} value="username"/>
+//         <View  style={{ marginBottom: 10 }}>
+//           <Button title="Send friend Request" />
+//         </View>
+//         <View style={{alignItems: "center"}}>
+//           <Text style={{marginTop: 40, fontWeight: "bold"}}>OR</Text>
+//         </View>
+//         <View style={{ marginBottom: 10, marginTop: 60}}>
+//           <Button title="Add Via Your Phone Contact" />
+//         </View>
+//         <Button style={{ marginTop: 10 }} title="Nearby Scan" />
+//     </SafeAreaView>
+//   );
+// }
 
 function StarRating() {
 
@@ -648,25 +658,28 @@ function StarRating() {
       const newRating = (rating * reviews + state.Default_Rating) / (reviews + 1);
       await setDoc(docRef, {
         ...data,
-        rating: newRating,
+        rating: newRating.toFixed(1),
         reviews: reviews + 1
       })
       setState({
         ...state,
         data: {
           ...state.data,
-          rating: newRating,
+          rating: newRating.toFixed(1),
           reviews: reviews + 1
         }
       })
-      sendCustomPushNotification(
-        "A user has given a rating of " + state.Default_Rating,
-        state.message,
-        "rating",
-        "businessUser",
-        docSnap.data().owner_uid
-      );
-
+      // notification business user
+      const bussinessUserId = data.owner_uid;
+      const data1 = {
+        type: "Rating",
+        title: "You have a new rating",
+        body: `You have a new rating. Venue: [${data.name}] Rating: ${state.Default_Rating.toFixed(1)}, Message: ${state.message}`,
+        timestamp: new Date(),
+        owner_uid: bussinessUserId,
+      }
+      const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
+      await setDoc(newRef1, data1);
     } else {
       // doc.data() will be undefined in this case
       console.log("No such document!");
@@ -802,34 +815,17 @@ function StarRating() {
   )
 }
 
-function ManagePost() {
-  return (
-    <SafeAreaView style={{ flex: 1, padding: 10 }}>
-      <ScrollView>
-        <View style={{ alignItems: "center" }}>
-          <Text>
-            <GetNewsFeed />
-          </Text>
-        </View>
-
-      </ScrollView>
-
-    </SafeAreaView>
-
-  )
-}
-
-function Report() {
-  return (
-    <SafeAreaView style={{ flex: 1, padding: 10 }}>
-      <View style={{ alignItems: "center" }}>
-        <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold" }}>
-          TODO: Report Page
-        </Text>
-      </View>
-    </SafeAreaView>
-  )
-}
+// function Report() {
+//   return (
+//     <SafeAreaView style={{ flex: 1, padding: 10 }}>
+//       <View style={{ alignItems: "center"}}>
+//         <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
+//           TODO: Report Page
+//         </Text>
+//       </View>
+//     </SafeAreaView>
+//   )
+// }
 
 export default function SocialScreen({ navigation }) {
   const auth = FIREBASE_AUTH;

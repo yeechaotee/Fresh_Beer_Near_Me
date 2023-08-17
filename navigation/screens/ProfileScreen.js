@@ -33,7 +33,7 @@ import { getStorage, getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const storage = getStorage();
-const ProfileScreen = ({ navigation, route}) => {
+const ProfileScreen = ({ navigation, route }) => {
   // const { user, logout } = useContext(AuthContext);
   // const [posts, setPosts] = useState([]);
   const [image, setImage] = useState(null);

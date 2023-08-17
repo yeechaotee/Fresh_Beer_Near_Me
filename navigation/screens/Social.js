@@ -29,6 +29,7 @@ import uuid from "uuid";
 import { VenueInfo } from "../../components/home/VenueItems";
 import GetNewsFeed from '../../components/profile/getNewsFeed';
 import sendCustomPushNotification from './NotificationUtils';
+import { useNavigation } from '@react-navigation/native';
 
 const Drawer = createDrawerNavigator();
 
@@ -640,6 +641,8 @@ function CreateFeedByAdmin({ navigation }) {
 
 function StarRating() {
 
+  const navigation = useNavigation();
+
   const [state, setState] = React.useState({
     id: null,
     Default_Rating: 2.5,
@@ -700,6 +703,8 @@ function StarRating() {
       }
       const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
       await setDoc(newRef1, data1);
+      navigation.goBack();
+
     } else {
       // doc.data() will be undefined in this case
       console.log("No such document!");

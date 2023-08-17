@@ -27,6 +27,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import uuid from "uuid";
 import { VenueInfo } from "../../components/home/VenueItems";
+import GetNewsFeed from '../../components/profile/getNewsFeed';
+import sendCustomPushNotification from './NotificationUtils';
 
 const Drawer = createDrawerNavigator();
 
@@ -304,7 +306,7 @@ function CreateFeed({ navigation }) {
               }}
             />
           </KeyboardAvoidingView>
-          <Button title="Creat Feed" onPress={async () => {
+          <Button title="Create Feed" onPress={async () => {
             const data = {
               type: false,
               startDateTime: "",
@@ -320,6 +322,7 @@ function CreateFeed({ navigation }) {
             const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
             // later...
             await setDoc(newRef, data);
+
             alert("Create Feed Success");
             navigation.navigate("News Feed");
           }} />
@@ -342,6 +345,7 @@ function CreateFeedByAdmin({ navigation }) {
   const [mode, setMode] = React.useState('date');
   const [show, setShow] = React.useState(false);
   const [type, setType] = React.useState(true); // promotion: true, event: false
+  const [title, setTitle] = React.useState(null); // promotion: true, event: false
   const [description, setDescription] = React.useState("");
   const [image, setImage] = React.useState(null);
 
@@ -351,6 +355,10 @@ function CreateFeedByAdmin({ navigation }) {
 
   const onSetEventToType = (value) => {
     setType(false);
+  }
+
+  const onSetTitle = (value) => {
+    setTitle(value);
   }
 
   const onChange = React.useCallback((event, selectedDate) => {
@@ -447,6 +455,17 @@ function CreateFeedByAdmin({ navigation }) {
           <Checkbox style={{ marginLeft: 10 }} value={!type} onValueChange={onSetEventToType} />
           <Text style={{ marginLeft: 10 }}>Event</Text>
         </View>
+        <View style={{ display: "flex", flexDirection: "row", padding: 10, alignItems: "center" }}>
+          <Text style={{ marginBottom: 5, marginTop: 5, fontWeight: "bold", textAlign: "center" }}>
+            Title:
+          </Text>
+          <TextInput
+            style={{ marginLeft: 10, borderWidth: 1, padding: 5, flex: 1 }}
+            placeholder="Enter title"
+            value={title}
+            onChangeText={onSetTitle}
+          />
+        </View>
         <View style={{ display: "flex", padding: 10, justifyContent: "flex-start" }}>
           <Text style={{ marginBottom: 5, marginTop: 5, fontWeight: "bold", textAlign: "left" }}>
             Datetime:
@@ -527,7 +546,7 @@ function CreateFeedByAdmin({ navigation }) {
               }}
             />
           </KeyboardAvoidingView>
-          <Button title="Creat Feed" onPress={async () => {
+          <Button title="Create Feed" onPress={async () => {
             const data = {
               type: type,
               startDateTime: startDateTime.toDateString(),
@@ -538,12 +557,54 @@ function CreateFeedByAdmin({ navigation }) {
               creater: FIREBASE_AUTH.currentUser.email,
               createTime: new Date(),
               avatar: FIREBASE_AUTH.currentUser.photoURL,
+              title: title,
             }
             console.log(data);
             try {
               // Add a new document with a generated id
               const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
               // later...
+
+
+              // Query the 'users' collection to get user IDs or device tokens of all users
+              const usersCollection = collection(FIRESTORE_DB, 'users');
+              const roleQuery = query(usersCollection, where('role', '==', 'user'));
+
+              // Retrieve user documents that match the query
+              const querySnapshot = await getDocs(roleQuery);
+
+              // Create an array to store recipient IDs
+              const recipientIds = [];
+
+              // Loop through the query snapshot to extract user IDs or device tokens
+              querySnapshot.forEach((doc) => {
+                const userData = doc.data();
+                // Assuming you have a field in your user data containing user IDs or device tokens
+                // Adjust the field name accordingly
+                const userId = userData.owner_uid; // Replace 'uid' with the actual field name
+                recipientIds.push(userId);
+              });
+
+              // Loop through each recipient and send a notification
+              for (const recipientId of recipientIds) {
+
+                const typeofpost = type ? "Promotion" : "Event";
+                const getTitle = title ? title : "New Event/Post";
+                const data1 = {
+                  type: typeofpost,
+                  title: getTitle,
+                  body: description,
+                  timestamp: new Date().toISOString(),
+                  owner_uid: recipientId, // Use the current recipient's ID
+                  readstatus: false,
+                  createdby: FIREBASE_AUTH.currentUser.uid,
+
+                };
+
+                //console.log("each reci setis", recipientId);
+                const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
+                await setDoc(newRef1, data1);
+              }
 
               await setDoc(newRef, data);
               alert("Create Feed Success");
@@ -637,8 +698,9 @@ function StarRating() {
         type: "Rating",
         title: "You have a new rating",
         body: `You have a new rating. Venue: [${data.name}] Rating: ${state.Default_Rating.toFixed(1)}, Message: ${state.message}`,
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
         owner_uid: bussinessUserId,
+        readstatus: false,
       }
       const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
       await setDoc(newRef1, data1);
@@ -785,6 +847,23 @@ function StarRating() {
 //   )
 // }
 
+function ManagePost() {
+  return (
+    <SafeAreaView style={{ flex: 1, padding: 10 }}>
+      <ScrollView>
+        <View style={{ alignItems: "center" }}>
+          <Text>
+            <GetNewsFeed />
+          </Text>
+        </View>
+
+      </ScrollView>
+
+    </SafeAreaView>
+
+  )
+}
+
 export default function SocialScreen({ navigation }) {
   const auth = FIREBASE_AUTH;
   const [isAdmin, setIsAdmin] = React.useState(false);
@@ -867,6 +946,19 @@ export default function SocialScreen({ navigation }) {
             headerTitleAlign: "center",
           }}
         /> : <></>
+      }
+      {
+        <Drawer.Screen
+          name="Manage Post"
+          component={ManagePost}
+          options={{
+            title: "Manage Post",
+            headerStyle: {
+              backgroundColor: "#ffa31a",
+            },
+            headerTitleAlign: "center",
+          }}
+        />
       }
       {/* {
         isAdmin ? <Drawer.Screen

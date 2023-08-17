@@ -119,7 +119,7 @@ const ProfileScreen = ({ navigation, route }) => {
       setImage(result.assets[0].uri); // Access selected asset through the 'assets' array
       setImageUploaded(false);
       handleFormSubmit(userProfile);
-      handleFormSubmit(userProfile);
+      // handleFormSubmit(userProfile);
     }
   };
 

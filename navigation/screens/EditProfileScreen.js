@@ -34,6 +34,7 @@ import { Picker } from '@react-native-picker/picker';
 import Constants from "expo-constants";
 import Modal from 'react-native-modal';
 import EditProfModal from "../../components/signup/EditProfModal";
+import ProfileScreen from './ProfileScreen';
 
 const EditProfileScreen = ({ navigation, route }) => {
   // const { user, logout } = useContext(AuthContext);
@@ -219,10 +220,13 @@ const EditProfileScreen = ({ navigation, route }) => {
         });
 
         console.log('User Updated!');
-        Alert.alert(
-          'Profile Updated!',
-          'Your profile has been updated successfully.'
-        );
+
+        navigation.navigate('ProfileScreen');
+
+        // Alert.alert(
+        //   'Profile Updated!',
+        //   'Your profile has been updated successfully.'
+        // );
       } catch (error) {
         console.error('Error updating user:', error);
         Alert.alert('Error', 'An error occurred while updating your profile.');
@@ -295,65 +299,65 @@ const EditProfileScreen = ({ navigation, route }) => {
     getUser();
   }, []);
 
-  const takePhotoFromCamera = () => {
-    // ImagePicker.openCamera({
-    //   compressImageMaxWidth: 300,
-    //   compressImageMaxHeight: 300,
-    //   cropping: true,
-    //   compressImageQuality: 0.7,
-    // }).then((image) => {
-    //   console.log(image);
-    //   const imageUri = Platform.OS === 'ios' ? image.sourceURL : image.path;
-    //   setImage(imageUri);
-    //   this.bs.current.snapTo(1);
-    // });
-  };
+  // const takePhotoFromCamera = () => {
+  //   ImagePicker.openCamera({
+  //     compressImageMaxWidth: 300,
+  //     compressImageMaxHeight: 300,
+  //     cropping: true,
+  //     compressImageQuality: 0.7,
+  //   }).then((image) => {
+  //     console.log(image);
+  //     const imageUri = Platform.OS === 'ios' ? image.sourceURL : image.path;
+  //     setImage(imageUri);
+  //     this.bs.current.snapTo(1);
+  //   });
+  // };
 
-  const choosePhotoFromLibrary = () => {
-    // ImagePicker.openPicker({
-    //   width: 300,
-    //   height: 300,
-    //   cropping: true,
-    //   compressImageQuality: 0.7,
-    // }).then((image) => {
-    //   console.log(image);
-    //   const imageUri = Platform.OS === 'ios' ? image.sourceURL : image.path;
-    //   setImage(imageUri);
-    //   this.bs.current.snapTo(1);
-    // });
-  };
+  // const choosePhotoFromLibrary = () => {
+  //   ImagePicker.openPicker({
+  //     width: 300,
+  //     height: 300,
+  //     cropping: true,
+  //     compressImageQuality: 0.7,
+  //   }).then((image) => {
+  //     console.log(image);
+  //     const imageUri = Platform.OS === 'ios' ? image.sourceURL : image.path;
+  //     setImage(imageUri);
+  //     this.bs.current.snapTo(1);
+  //   });
+  // };
 
-  renderInner = () => (
-    <View style={styles.panel}>
-      <View style={{ alignItems: 'center' }}>
-        <Text style={styles.panelTitle}>Upload Photo</Text>
-        <Text style={styles.panelSubtitle}>Choose Your Profile Picture</Text>
-      </View>
-      <TouchableOpacity
-        style={styles.panelButton}
-        onPress={takePhotoFromCamera}>
-        <Text style={styles.panelButtonTitle}>Take Photo</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.panelButton}
-        onPress={choosePhotoFromLibrary}>
-        <Text style={styles.panelButtonTitle}>Choose From Library</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.panelButton}
-        onPress={() => this.bs.current.snapTo(1)}>
-        <Text style={styles.panelButtonTitle}>Cancel</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  // renderInner = () => (
+  //   <View style={styles.panel}>
+  //     <View style={{ alignItems: 'center' }}>
+  //       <Text style={styles.panelTitle}>Upload Photo</Text>
+  //       <Text style={styles.panelSubtitle}>Choose Your Profile Picture</Text>
+  //     </View>
+  //     <TouchableOpacity
+  //       style={styles.panelButton}
+  //       onPress={takePhotoFromCamera}>
+  //       <Text style={styles.panelButtonTitle}>Take Photo</Text>
+  //     </TouchableOpacity>
+  //     <TouchableOpacity
+  //       style={styles.panelButton}
+  //       onPress={choosePhotoFromLibrary}>
+  //       <Text style={styles.panelButtonTitle}>Choose From Library</Text>
+  //     </TouchableOpacity>
+  //     <TouchableOpacity
+  //       style={styles.panelButton}
+  //       onPress={() => this.bs.current.snapTo(1)}>
+  //       <Text style={styles.panelButtonTitle}>Cancel</Text>
+  //     </TouchableOpacity>
+  //   </View>
+  // );
 
-  renderHeader = () => (
-    <View style={styles.header}>
-      <View style={styles.panelHeader}>
-        <View style={styles.panelHandle} />
-      </View>
-    </View>
-  );
+  // renderHeader = () => (
+  //   <View style={styles.header}>
+  //     <View style={styles.panelHeader}>
+  //       <View style={styles.panelHandle} />
+  //     </View>
+  //   </View>
+  // );
 
   bs = React.createRef();
   fall = new Animated.Value(1);
@@ -458,8 +462,7 @@ const EditProfileScreen = ({ navigation, route }) => {
                   onValueChange={(itemValue) => setUserData({ ...userData, gender: itemValue })}
                   style={[styles.textInput, { height: 40 }]}
                 >
-                  {/* <Picker.Item label="Select Gender" value="" /> */}
-                  <Picker.Prompt label="Select Gender" value="" />
+                  <Picker.Item label="Select Gender" value="" />
                   <Picker.Item label="Male" value="male" />
                   <Picker.Item label="Female" value="female" />
                 </Picker>

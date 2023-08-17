@@ -134,7 +134,7 @@ const TabNotif = ({ userRole }) => {
     { id: '2', name: 'Promotion' },
     { id: '3', name: 'Event' },
 
-    { id: '4', name: 'News Feed' },
+    { id: '4', name: 'New Venue' },
     // Add more tabs as needed
   ];
 

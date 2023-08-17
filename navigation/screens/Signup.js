@@ -99,6 +99,7 @@ export default function Signup({ navigation }) {
         beerProfile: beerProfile,
         favBeer: favBeer,
         region: region,
+        bizInfo: "",
       });
       console.log("document saved correctly", doc.id);
 

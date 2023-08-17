@@ -6,12 +6,12 @@ import React, { useEffect, useState, useRef } from 'react';
 
 import { SafeAreaView } from 'react-native';
 import {
-    StyleSheet,
-    View,
-    Text,
-    Pressable,
-    TouchableOpacity,
-    Button, Platform
+  StyleSheet,
+  View,
+  Text,
+  Pressable,
+  TouchableOpacity,
+  Button, Platform
 } from 'react-native';
 
 import { TailwindProvider } from 'tailwindcss-react-native';
@@ -35,10 +35,10 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from "expo-constants";
 //import { Text, View, Button, Platform } from 'react-native';
-import { addDoc, collection, collectionGroup, onSnapshot, setDoc, doc, getDoc,updateDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, collectionGroup, onSnapshot, setDoc, doc, getDoc, updateDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { FIREBASE_AUTH, FIRESTORE_DB  } from '../../firebase';
-import { dismissAllNotificationsAsync, getPresentedNotificationsAsync, cancelScheduledNotificationAsync,getNotificationAsync  } from 'expo-notifications';
+import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
+import { dismissAllNotificationsAsync, getPresentedNotificationsAsync, cancelScheduledNotificationAsync, getNotificationAsync } from 'expo-notifications';
 import { updateUsertoken } from 'firebase/firestore';// Import your function for updating the Firestore document
 //import { v4 as uuidv4 } from 'uuid';
 /////////////////////////////////////////////////////////
@@ -46,8 +46,8 @@ import { updateUsertoken } from 'firebase/firestore';// Import your function for
 export default function NotificationsScreen(navigation) {
 
   const onPressHandler = () => {
-      // navigation.navigate('Screen_A');
-      navigation.goBack();
+    // navigation.navigate('Screen_A');
+    navigation.goBack();
   }
 
   const [user, setUser] = useState(User);
@@ -64,14 +64,14 @@ export default function NotificationsScreen(navigation) {
   const dismissAllNotifications = async () => {
     try {
       await dismissAllNotificationsAsync();
-      
+
       const notificationsRef = collection(FIRESTORE_DB, 'notifications');
       const q = query(
         notificationsRef,
         where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
         where('readstatus', '==', false)
       );
-      
+
       const querySnapshot = await getDocs(q);
 
       const updatePromises = [];
@@ -127,106 +127,108 @@ export default function NotificationsScreen(navigation) {
 
   //get current user's docid
   const getCurrentUserDocId = async (userId) => {
-  try {
-    // Assuming you have a collection named after the current user's ID in Firestore
-    const userCollectionRef = collection(FIRESTORE_DB, 'users');
-    //console.log('My UserID:', userId);
-    // Create a query to fetch the documents in the user's collection (should be only one document)
-    const q = query(userCollectionRef, where('owner_uid', '==', userId));
+    try {
+      // Assuming you have a collection named after the current user's ID in Firestore
+      const userCollectionRef = collection(FIRESTORE_DB, 'users');
+      //console.log('My UserID:', userId);
+      // Create a query to fetch the documents in the user's collection (should be only one document)
+      const q = query(userCollectionRef, where('owner_uid', '==', userId));
 
-    // Execute the query and get the query snapshot
-    const querySnapshot = await getDocs(q);
+      // Execute the query and get the query snapshot
+      const querySnapshot = await getDocs(q);
 
-    // Check if there is a document in the user's collection
-    if (!querySnapshot.empty) {
-      // Get the first document from the query snapshot
-      const userDoc = querySnapshot.docs[0];
-      // Get the docID of the user's document
-      const docId = userDoc.id;
-      //const userRole = userDoc.role;
-      const userRole = userDoc.data().role; // Access the "role" field
-      return { docId, userRole };
-      //return docId;
-    } else {
-      console.log('User document not found');
+      // Check if there is a document in the user's collection
+      if (!querySnapshot.empty) {
+        // Get the first document from the query snapshot
+        const userDoc = querySnapshot.docs[0];
+        // Get the docID of the user's document
+        const docId = userDoc.id;
+        //const userRole = userDoc.role;
+        const userRole = userDoc.data().role; // Access the "role" field
+        return { docId, userRole };
+        //return docId;
+      } else {
+        console.log('User document not found');
+        return null;
+      }
+    } catch (error) {
+      console.log('Error getting current user document ID:', error);
       return null;
     }
-  } catch (error) {
-    console.log('Error getting current user document ID:', error);
-    return null;
-  }
-};
-
-const updateUsertoken = async (docId, expoPushToken) => {
-  try {
-    // Assuming you have a collection called "users" in Firestore
-    //const userRef = doc(FIRESTORE_DB, 'users', FIREBASE_AUTH.currentUser.uid);
-    const userRef = doc(FIRESTORE_DB, 'users', docId);
-
-    // Update the "expoPushToken" field in the user's document
-    await setDoc(userRef, { expoPushToken: expoPushToken }, { merge: true });
-
-    console.log('User expoPushToken updated successfully.');
-  } catch (error) {
-    console.log('Error updating user expoPushToken:', error);
-  }
-};
-
- // Get user's permission to send device notification
-useEffect(() => {
-  registerForPushNotificationsAsync(projectId)
-    .then(async (token) => {
-      setExpoPushToken(token);
-      console.log('expoPushToken token is', token);
-      console.log('user id is.', FIREBASE_AUTH.currentUser.uid);
-      // Call the function to get the current user's document ID
-      const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
-      if (userId) {
-        const { docId, userRole } = await getCurrentUserDocId(userId);
-        //console.log('user role is', userRole);
-        // Call the function to update the Firestore document with the new expoPushToken
-      
-        if (docId) {
-          updateUsertoken(docId, token);
-          setCurrentLoggedInUser({ docId, userRole });
-        } else {
-          console.log('User document not found.');
-        }
-      }
-    })
-    .catch((error) => {
-      console.log('Error getting Expo push token:', error);
-    });
-
-  notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
-    setNotification(notification);
-  });
-
-  responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-    console.log('response', response);
-  });
-
-  return () => {
-    Notifications.removeNotificationSubscription(notificationListener.current);
-    Notifications.removeNotificationSubscription(responseListener.current);
   };
-}, []);
 
-      return (
+  const updateUsertoken = async (docId, expoPushToken) => {
+    try {
+      // Assuming you have a collection called "users" in Firestore
+      //const userRef = doc(FIRESTORE_DB, 'users', FIREBASE_AUTH.currentUser.uid);
+      const userRef = doc(FIRESTORE_DB, 'users', docId);
 
-        <TailwindProvider>
-            <SafeAreaView className="bg-white flex-1 relative">
-                {/* First Section */}
-                {/* <View style={{ backgroundColor: 'white', padding: 10 }}>
+      // Update the "expoPushToken" field in the user's document
+      await setDoc(userRef, { expoPushToken: expoPushToken }, { merge: true });
+
+      console.log('User expoPushToken updated successfully.');
+    } catch (error) {
+      console.log('Error updating user expoPushToken:', error);
+    }
+  };
+
+  /* commenting out, give up on push local notification
+
+   // Get user's permission to send device notification
+  useEffect(() => {
+    registerForPushNotificationsAsync(projectId)
+      .then(async (token) => {
+        setExpoPushToken(token);
+        console.log('expoPushToken token is', token);
+        console.log('user id is.', FIREBASE_AUTH.currentUser.uid);
+        // Call the function to get the current user's document ID
+        const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
+        if (userId) {
+          const { docId, userRole } = await getCurrentUserDocId(userId);
+          //console.log('user role is', userRole);
+          // Call the function to update the Firestore document with the new expoPushToken
+        
+          if (docId) {
+            updateUsertoken(docId, token);
+            setCurrentLoggedInUser({ docId, userRole });
+          } else {
+            console.log('User document not found.');
+          }
+        }
+      })
+      .catch((error) => {
+        console.log('Error getting Expo push token:', error);
+      });
+  
+    notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
+      setNotification(notification);
+    });
+  
+    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
+      console.log('response', response);
+    });
+  
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener.current);
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
+  */
+  return (
+
+    <TailwindProvider>
+      <SafeAreaView className="bg-white flex-1 relative">
+        {/* First Section */}
+        {/* <View style={{ backgroundColor: 'white', padding: 10 }}>
                     <TabNotif />
                     <SearchBar />
                     <Categories />
                 </View> */}
-                <View className="flex-row px-6 mt-8 items-center space-x-2">
-                    <Text className="text-[#2A2B4B] text-3xl font-semibold">Notification</Text>
-                </View>
-                
-                {/* Test send Section 
+        <View className="flex-row px-6 mt-8 items-center space-x-2">
+          <Text className="text-[#2A2B4B] text-3xl font-semibold">Notification</Text>
+        </View>
+
+        {/* Test send Section 
                 <View
                     style={{ backgroundColor: 'white', padding: 10 }}>
                     <Text>Your expo push token: {expoPushToken}</Text>
@@ -258,19 +260,19 @@ useEffect(() => {
                 <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                       <Text>Notification Count: {presentedNotificationCount}</Text>
                 </View>*/}
-                
-                {/* Second Section */}
-                <View style={{ backgroundColor: 'white', padding: 10 }}>
-                    <TabNotif userRole={currentLoggedInUser ? currentLoggedInUser.userRole : null} />
-                </View>
 
-                
+        {/* Second Section */}
+        <View style={{ backgroundColor: 'white', padding: 10 }}>
+          <TabNotif userRole={currentLoggedInUser ? currentLoggedInUser.userRole : null} />
+        </View>
 
-            </SafeAreaView>
-        </TailwindProvider>
 
-      );
-  };
+
+      </SafeAreaView>
+    </TailwindProvider>
+
+  );
+};
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -292,7 +294,7 @@ async function sendPushNotification() {
     //await Notifications.cancelAllScheduledNotificationsAsync();
 
     // Schedule a new notification
-     const notification = await Notifications.scheduleNotificationAsync({
+    const notification = await Notifications.scheduleNotificationAsync({
       //identifier: uuidv4(),
       content: {
         title: "Happy Hour! Huat Arhhh 🍻",
@@ -303,7 +305,7 @@ async function sendPushNotification() {
     });
 
     //console.log('NotificationID:', notificationId);
-  
+
     // Convert the timestamp to a string
     const timestampString = new Date().toISOString();
 
@@ -335,13 +337,13 @@ async function schedulePushNotification() {
   //await Notifications.cancelAllScheduledNotificationsAsync();
 
   await Notifications.scheduleNotificationAsync({
-    identifier: notification.identifier, 
+    identifier: notification.identifier,
     content: {
       title: "Test 2 Schedule Fresh Beer Near Me! 🍻 ",
       body: 'Test',
       data: { data: 'goes here' },
     },
-    trigger: { seconds: 2, repeats: false},
+    trigger: { seconds: 2, repeats: false },
   });
 
   //console.log('NotificationID:', notificationId);

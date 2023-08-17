@@ -26,7 +26,7 @@ const HeaderButton = (props) => (
 );
 
 const TabNotif = ({ userRole }) => {
-  const [activeTab, setActiveTab] = useState('Activity');
+  const [activeTab, setActiveTab] = useState('Promotion');
   const [activeData, setActiveData] = useState([]);
 
 
@@ -119,8 +119,10 @@ const TabNotif = ({ userRole }) => {
   };
 
   const handleTabClick = (tabName) => {
-    setActiveTab(tabName);
-    fetchNotification(tabName);
+    if (tabName !== null) {
+      setActiveTab(tabName);
+      fetchNotification(tabName);
+    }
   };
 
   useEffect(() => {
@@ -133,20 +135,21 @@ const TabNotif = ({ userRole }) => {
      */
     { id: '2', name: 'Promotion' },
     { id: '3', name: 'Event' },
+    { id: '4', name: 'New Venue' },
 
-    { id: '4', name: 'News Feed' },
     // Add more tabs as needed
   ];
 
   const tabsBO = [
     { id: '1', name: 'Activity' },
-    { id: '2', name: 'Promotion' },
-    { id: '3', name: 'Event' },
+    { id: '2', name: '         ' },
+    { id: '3', name: '         ' },
+    { id: '3', name: '         ' },
     //{ id: '4', name: 'News Feed' },
     // Add more tabs as needed
   ];
-  const tabs = userRole === "businessUser" ? tabsBO : tabsBD;
-  //console.log('tabs is ',userRole);
+  const tabs = userRole == "businessUser" ? tabsBO : tabsBD;
+  console.log('tabs is ', userRole);
 
   /* //hardcoded testing data
 
@@ -240,7 +243,9 @@ const TabNotif = ({ userRole }) => {
             text={tab.name}
             activeTab={activeTab}
             setActiveTab={handleTabClick}
+            disabled={!tab.name}
           />
+
         ))}
       </View>
       <View style={styles.container}>

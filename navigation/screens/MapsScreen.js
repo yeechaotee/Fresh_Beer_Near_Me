@@ -59,14 +59,13 @@ export default function MapsScreen() {
   const [suggestion, setSuggestion] = useState([]);
   const [isCheckmarkVisible, setIsCheckmarkVisible] = useState(false);
 
-  //geocode location to get coordinates
-  //Function to geocode an address using the Google Maps Geocoding API
+
+  //Function to geocode an address using the Google Maps Geocoding API, no changes to this code
   const geocodeAddress = async (address) => {
     // Check if address is undefined
     if (!address) {
       return { latitude: 0, longitude: 0 }; // Return an appropriate value when geocoding is skipped
     }
-
     try {
       const response = await axios.get(
         "https://maps.googleapis.com/maps/api/geocode/json",
@@ -77,7 +76,6 @@ export default function MapsScreen() {
           },
         }
       );
-
       // Check if the response has results and the status is "OK"
       if (response.data.results && response.data.results.length > 0) {
         const { lat, lng } = response.data.results[0].geometry.location;
@@ -91,91 +89,85 @@ export default function MapsScreen() {
     }
   };
 
-  const getVenueDataFromFirestore = async () => {
-    try {
-      // Get a reference to the "Venue" collection in Firestore
-      const venueCollectionRef = query(collection(FIRESTORE_DB, "venues"), where('isActivated', "==", true));
+  useEffect(() => {
+  async function getVenueDataFromFirestore() {
+      try {
+        // Get a reference to the "Venue" collection in Firestore
+        const venueCollectionRef = query(collection(FIRESTORE_DB, "venues"), where('isActivated', "==", true));
+        // Execute the query and get the collection snapshot
+        const querySnapshot = await getDocs(venueCollectionRef);
+        // Initialize an array to store Promises for geocoding each venue
+        const geocodePromises = [];
+        // Initialize an empty array to hold the data
+        const venueData = [];
+        // Loop through the documents in the collection snapshot and extract the data
+        querySnapshot.forEach(async (doc) => {
+          // Get the data from each document
+          const data = doc.data();
+          // Add the data to the venueData array
+          venueData.push(data);
+          // Add a Promise for geocoding the location to the array
+          geocodePromises.push(geocodeAddress(data.location));
+        });
 
-      // Execute the query and get the collection snapshot
-      const querySnapshot = await getDocs(venueCollectionRef);
+        // Wait for all the geocoding Promises to resolve
+        const geocodedLocations = await Promise.all(geocodePromises);
+        // Update venueData with geocoded coordinates
+        venueData.forEach((venue, index) => {
+          const geocodedLocation = geocodedLocations[index];
+          if (geocodedLocation.latitude !== "undefined" &&
+            geocodedLocation.longitude !== "undefined") {
+            venue.latitude = geocodedLocation.latitude;
+            venue.longitude = geocodedLocation.longitude;
+          } else {
+            console.log("Geocoding failed for venue:", venue.location);
+            venue.latitude = "undefined";
+            venue.longitude = "undefined";
+          }
+        });
 
-      // Initialize an array to store Promises for geocoding each venue
-      const geocodePromises = [];
+        // Update the state with the retrieved venue data
+        setVenueData(venueData);
 
-      // Initialize an empty array to hold the data
-      const venueData = [];
+        //debug statements
+        console.log("Venue data retrieved from Firestore:", venueData);
+        console.log("trying to get specific contents");
 
-      // Loop through the documents in the collection snapshot and extract the data
-      querySnapshot.forEach(async (doc) => {
-        // Get the data from each document
-        const data = doc.data();
-
-        // Add the data to the venueData array
-        venueData.push(data);
-
-        // Add a Promise for geocoding the location to the array
-        geocodePromises.push(geocodeAddress(data.location));
-      });
-
-      // Wait for all the geocoding Promises to resolve
-      const geocodedLocations = await Promise.all(geocodePromises);
-
-      // Update venueData with geocoded coordinates
-      venueData.forEach((venue, index) => {
-        const geocodedLocation = geocodedLocations[index];
-        if (
-          geocodedLocation.latitude !== "undefined" &&
-          geocodedLocation.longitude !== "undefined"
-        ) {
-          venue.latitude = geocodedLocation.latitude;
-          venue.longitude = geocodedLocation.longitude;
-        } else {
-          console.log("Geocoding failed for venue:", venue.location);
-          venue.latitude = "undefined";
-          venue.longitude = "undefined";
+        for (let i = 0; i < venueData.length; i++) {
+          console.log("entry #", i);
+          console.log(
+            "Venue data retrieved from Firestore, name: ",
+            venueData[i].name
+          );
+          console.log(
+            "Venue data retrieved from Firestore,location: ",
+            venueData[i].location
+          );
+          console.log(
+            "Venue data retrieved from Firestore,latitude: ",
+            venueData[i].latitude
+          );
+          console.log(
+            "Venue data retrieved from Firestore,longitude: ",
+            venueData[i].longitude
+          );
+          console.log(
+            "Venue data retrieved from Firestore, caption: ",
+            venueData[i].caption
+          );
         }
-      });
-
-      // Update the state with the retrieved venue data
-      setVenueData(venueData);
-
-      //debug statements
-      console.log("Venue data retrieved from Firestore:", venueData);
-      console.log("trying to get specific contents");
-
-      for (let i = 0; i < venueData.length; i++) {
-        console.log("entry #", i);
-        console.log(
-          "Venue data retrieved from Firestore, name: ",
-          venueData[i].name
-        );
-        console.log(
-          "Venue data retrieved from Firestore,location: ",
-          venueData[i].location
-        );
-        console.log(
-          "Venue data retrieved from Firestore,latitude: ",
-          venueData[i].latitude
-        );
-        console.log(
-          "Venue data retrieved from Firestore,longitude: ",
-          venueData[i].longitude
-        );
-        console.log(
-          "Venue data retrieved from Firestore, caption: ",
-          venueData[i].caption
-        );
+      } catch (error) {
+        console.log("Error getting venue data from Firestore:", error);
       }
-    } catch (error) {
-      console.log("Error getting venue data from Firestore:", error);
     }
-  };
 
-  // newcode
-  
+  getVenueDataFromFirestore();
+}, []);
+
+  // Function to handle the check-in button press
   const chekInPress = () => {
     console.log("User Location:", userLocation);
-  
+
     // Find the nearest venue marker
     let nearestMarker = null;
     let minDistance = Number.MAX_SAFE_INTEGER;
@@ -228,11 +220,9 @@ export default function MapsScreen() {
     const lon1 = coord1.longitude;
     const lat2 = coord2.latitude;
     const lon2 = coord2.longitude;
-  
     const R = 6371; // Radius of the earth in km
     const dLat = deg2rad(lat2 - lat1);
     const dLon = deg2rad(lon2 - lon1);
-  
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(deg2rad(lat1)) *
@@ -248,9 +238,6 @@ export default function MapsScreen() {
   const deg2rad = (deg) => {
     return deg * (Math.PI / 180);
   };
-  
-
-  //end of new code
 
   const handleOpenModal = () => {
     setModalVisible(true);
@@ -272,6 +259,7 @@ export default function MapsScreen() {
     }
   };
 
+  // Function to handle the place selected event
   const onPlaceSelected = (details, flag) => {
     console.log("Selected Place:", details);
     console.log("Flag:", flag);
@@ -297,11 +285,12 @@ export default function MapsScreen() {
     }
   };
 
+
+// Function to show the locations of interest on the map
   const showLocationsOfInterest = () => {
     return venueData.map((item, index) => {
       const latitude = parseFloat(item.latitude); // Convert latitude to a floating-point number
       const longitude = parseFloat(item.longitude); // Convert longitude to a floating-point number
-
       if (isNaN(latitude) || isNaN(longitude)) {
         console.error(
           `Invalid latitude or longitude for item at index ${index}:`,
@@ -309,7 +298,6 @@ export default function MapsScreen() {
         );
         return null; // Return null if conversion failed
       }
-
       return (
         <Marker
           key={index}
@@ -340,6 +328,7 @@ export default function MapsScreen() {
     }
   };
 
+  //this runs once on load
   useEffect(() => {
     console.log("use effect run");
     const fetchDataAndPopulateLocations = async () => {
@@ -356,7 +345,7 @@ export default function MapsScreen() {
 
         // Get current user location
         console.log("trying get location");
-        let coords = await Location.getCurrentPositionAsync();
+        let coords = await Location.getLastKnownPositionAsync();
         setUserLocation(coords);
         console.log("location: ", coords);
         console.log("coordinates recorded");
@@ -371,6 +360,7 @@ export default function MapsScreen() {
     fetchDataAndPopulateLocations();
   }, []);
 
+  //handling search input, YC code
   const handleSearchInput = async (text) => {
     setSearchString(text);
 

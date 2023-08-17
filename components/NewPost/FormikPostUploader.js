@@ -4,7 +4,7 @@ import * as Yup from 'yup';
 import { Formik, formik } from 'formik';
 import { Divider } from 'react-native-elements';
 import validUrl from 'valid-url'
-import { addDoc, collection, onSnapshot, setDoc, doc, collectionGroup, firestore, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, onSnapshot, setDoc, doc, collectionGroup, firestore, updateDoc, query, where, getDocs } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
 import LottieView from 'lottie-react-native';
@@ -203,6 +203,56 @@ const FormikPostUploader = ({ navigation }) => {
         // finally {
         //     setLoading(false);
         // }
+
+        try {
+
+            // Add a new document with a generated id
+            const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
+
+            // Query the 'users' collection to get user IDs or device tokens of all users
+            const usersCollection = collection(FIRESTORE_DB, 'users');
+
+            const roleQuery = query(usersCollection, where('role', '==', 'user'));
+
+
+            // Retrieve user documents that match the query
+            const querySnapshot = await getDocs(roleQuery);
+
+            // Create an array to store recipient IDs
+            const recipientIds = [];
+
+            // Loop through the query snapshot to extract user IDs or device tokens
+            querySnapshot.forEach((doc) => {
+                const userData = doc.data();
+                // Assuming you have a field in your user data containing user IDs or device tokens
+                // Adjust the field name accordingly
+                const userId = userData.owner_uid; // Replace 'uid' with the actual field name
+                recipientIds.push(userId);
+
+            });
+
+            // Loop through each recipient and send a notification
+            for (const recipientId of recipientIds) {
+
+                const data1 = {
+                    type: "New Venue",
+                    title: resName,
+                    body: city ? city : "Location unknown",
+                    timestamp: new Date().toISOString(),
+                    owner_uid: recipientId, // Use the current recipient's ID
+                    readstatus: false,
+                    createdby: FIREBASE_AUTH.currentUser.uid,
+
+                };
+
+                //console.log("each reci setis", recipientId);
+                const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
+                await setDoc(newRef1, data1);
+            }
+            alert("Create Feed Success");
+        } catch (e) {
+            alert("Create Feed Fail");
+        }
 
     }
 

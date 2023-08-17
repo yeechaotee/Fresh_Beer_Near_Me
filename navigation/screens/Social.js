@@ -287,18 +287,18 @@ function CreateFeed({ navigation }) {
   return (
     <SafeAreaView>
       <ScrollView>
-        <RichToolbar
+        {/* <RichToolbar
           editor={richText}
           actions={[actions.setBold, actions.setItalic, actions.setUnderline, actions.heading1]}
           iconMap={{ [actions.heading1]: handleHead }}
-        />
+        /> */}
         <Button title="Pick an image" onPress={pickImage} />
-        <ScrollView>
           <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, minHeight: 400 }}>
             <Text>Description:</Text>
             <RichEditor
               ref={richText}
               style={{ minHeight: 400 }}
+              value={description}
               onChange={descriptionText => {
                 setDescription(descriptionText);
               }}
@@ -324,7 +324,6 @@ function CreateFeed({ navigation }) {
             navigation.navigate("News Feed");
           }} />
         </ScrollView>
-      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -508,14 +507,12 @@ function CreateFeedByAdmin({ navigation }) {
             }}
           />
         </View>
-        <RichToolbar
+        {/* <RichToolbar
           editor={richText}
           actions={[actions.setBold, actions.setItalic, actions.setUnderline, actions.heading1]}
           iconMap={{ [actions.heading1]: handleHead }}
-        />
+        /> */}
         <Button title="Pick an image" onPress={pickImage} />
-
-        <ScrollView>
           <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, minHeight: 100 }}>
             <RichEditor
               ref={richText}
@@ -552,7 +549,6 @@ function CreateFeedByAdmin({ navigation }) {
               alert("Create Feed Fail");
             }
           }} />
-        </ScrollView>
       </ScrollView>
     </SafeAreaView>
   );

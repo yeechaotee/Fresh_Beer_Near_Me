@@ -212,7 +212,7 @@ const GetNewsFeed = () => {
     );
 
 
-    const [numberOfPeople, setNumberOfPeople] = React.useState(null);
+    const [numberOfppl, setNumberOfPeople] = React.useState(selectedItem.numberOfPeople);
 
 
     const [isDatePickerVisible, setDatePickerVisible] = useState(false);
@@ -302,7 +302,7 @@ const GetNewsFeed = () => {
                             <View style={styles.inputRow}>
                                 <Text style={styles.label}>No. of people participating:</Text>
                                 <TextInput
-                                    value={selectedItem.numberOfPeople}
+                                    value={numberOfppl}
                                     style={styles.input}
                                     placeholder="number"
                                     keyboardType="numeric"

@@ -26,7 +26,7 @@ const HeaderButton = (props) => (
 );
 
 const TabNotif = ({ userRole }) => {
-  const [activeTab, setActiveTab] = useState('Activity');
+  const [activeTab, setActiveTab] = useState('Promotion');
   const [activeData, setActiveData] = useState([]);
 
 
@@ -148,8 +148,8 @@ const TabNotif = ({ userRole }) => {
     //{ id: '4', name: 'News Feed' },
     // Add more tabs as needed
   ];
-  const tabs = userRole === "businessUser" ? tabsBO : tabsBD;
-  //console.log('tabs is ',userRole);
+  const tabs = userRole == "businessUser" ? tabsBO : tabsBD;
+  console.log('tabs is ', userRole);
 
   /* //hardcoded testing data
 

@@ -33,7 +33,7 @@ import { getStorage, getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const storage = getStorage();
-const ProfileScreen = ({ navigation, route }) => {
+const ProfileScreen = ({ navigation, route, ...props }) => {
   // const { user, logout } = useContext(AuthContext);
   // const [posts, setPosts] = useState([]);
   const [image, setImage] = useState(null);
@@ -116,6 +116,8 @@ const ProfileScreen = ({ navigation, route }) => {
     // This effect will run whenever 'image' state changes
     console.log("Image is ", image);
     handleFormSubmit(userProfile);
+    props.getUserProfile();
+
   }, [image, imageUploaded]); // Add 'image' to the dependency array
   const updateProfilePicture = async (profilePictureUrl) => {
     try {

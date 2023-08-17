@@ -36,15 +36,27 @@ const Tab = createMaterialBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 const LogonStack = createNativeStackNavigator();
 
+
+const [userProfile, setUserProfile] = useState(null);
+const getUserProfile = async (user) => {
+  const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
+  const querySnapshot = await getDocs(q);
+  querySnapshot.forEach((doc) => {
+    setUserProfile(doc.data());
+  });
+};
+
 const ProfileStack = ({ navigation, route }) => (
+
   <Stack.Navigator>
     <Stack.Screen
       name="ProfileScreen"
-      component={ProfileScreen}
+      component={<ProfileScreen getUserProfile={getUserProfile} />}
       options={{
         headerShown: false,
       }}
     />
+
     <Stack.Screen
       name="EditProfile"
       component={EditProfileScreen}
@@ -162,10 +174,10 @@ function LogonLayout() {
     };
 
     // Call the function to get the initial count
-    getPresentedNotifications();
+    //getPresentedNotifications();
 
-    // Set up an interval to update the notification count every 10 seconds
-    const interval = setInterval(getPresentedNotifications, 10000);
+    // Set up an interval to update the notification count every 10 seconds =>10000
+    const interval = setInterval(getPresentedNotifications, 21600000);
 
     return () => {
       //unsubscribe();

@@ -65,6 +65,7 @@ export default function VenueItems({ navigation, ...props }) {
             operating_hour: venue.operating_hour,
             location: venue.location,
             venueId: (venue.venueId ? venue.venueId : ''),
+            isActivated: ((venue.isActivated !== undefined || '') ? venue.isActivated : true),
           })
           }>
 
@@ -94,7 +95,7 @@ export const VenueImage = (props) => {
 
   }, [props.userProfile, props.venueId]);
 
-// will trigger onpress component
+  // will trigger onpress component
   const toggleFavorite = async () => {
     if (props.userProfile) {
       try {
@@ -159,7 +160,7 @@ export const VenueImage = (props) => {
         style={{ width: '100%', height: 180 }}
       />
 
-        {/* ADDED: Only general user able to see favourite heart shape icon for favouriting their venues and update onto firebase 'users' --> 'favVenue' list */}
+      {/* ADDED: Only general user able to see favourite heart shape icon for favouriting their venues and update onto firebase 'users' --> 'favVenue' list */}
       {props.userProfile && props.userProfile.role === 'user' && (
         <TouchableOpacity
           style={{ position: 'absolute', right: 20, top: 20 }} onPress={toggleFavorite}

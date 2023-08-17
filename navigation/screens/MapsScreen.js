@@ -94,7 +94,7 @@ export default function MapsScreen() {
   const getVenueDataFromFirestore = async () => {
     try {
       // Get a reference to the "Venue" collection in Firestore
-      const venueCollectionRef = collection(FIRESTORE_DB, "venues");
+      const venueCollectionRef = query(collection(FIRESTORE_DB, "venues"), where('isActivated', "==", true));
 
       // Execute the query and get the collection snapshot
       const querySnapshot = await getDocs(venueCollectionRef);
@@ -379,6 +379,7 @@ export default function MapsScreen() {
         collection(FIRESTORE_DB, "venues"),
         where("name", ">=", searchString),
         where("name", "<=", searchString + "\uf8ff"),
+        where('isActivated', "==", true),
         limit(2)
       );
       // console.log("user id is:: " + user.uid);

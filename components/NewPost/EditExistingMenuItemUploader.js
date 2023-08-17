@@ -30,6 +30,12 @@ const EditExistingMenuItemUploader = ({ navigation, ...props }) => {
 
     const [thumbnailUrl, setThumbnailUrl] = useState(itemData?.image || PLACEHOLDER_IMG);
 
+
+
+    console.log("itemData.image:", itemData.image);
+    console.log("thumbnailUrl:", thumbnailUrl);
+
+
     const handleFormSubmit = async (values, { setSubmitting }) => {
         if (image && !imageUploaded) {
             try {
@@ -41,8 +47,10 @@ const EditExistingMenuItemUploader = ({ navigation, ...props }) => {
                 setSubmitting(false);
                 return;
             }
-        } else {
-            values.imageUrl = PLACEHOLDER_IMG;
+        }
+
+        if (values.imageUrl) {
+            setThumbnailUrl(values.imageUrl);
         }
 
         // Update the existing menu item in Firebase
@@ -135,7 +143,7 @@ const EditExistingMenuItemUploader = ({ navigation, ...props }) => {
                 <Formik
                     initialValues={{
                         description: itemData?.description || '',
-                        imageUrl: thumbnailUrl,
+                        imageUrl: itemData?.image || thumbnailUrl,
                         title: itemData?.title || '',
                         price: itemData?.price || '',
                     }}

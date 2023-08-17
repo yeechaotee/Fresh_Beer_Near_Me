@@ -71,7 +71,7 @@ function Home({ navigation }) {
     const fetchDataFromFirebase = async () => {
         try {
             setPosts([]); // Clear previous posts
-            const querySnapshot = query(collection(FIRESTORE_DB, 'venues'), orderBy('createdAt', 'desc'));
+            const querySnapshot = query(collection(FIRESTORE_DB, 'venues'), where('isActivated', "==", true), orderBy('createdAt', 'desc'));
             const unsubcribe = onSnapshot(querySnapshot, (snapshot) => {
                 const initialPosts = [];
                 snapshot.docChanges().forEach((change) => {
@@ -162,7 +162,7 @@ function Home({ navigation }) {
         setSearchString(text);
 
         if (text !== "") {
-            const q = query(collection(FIRESTORE_DB, 'venues'), where("name", ">=", searchString), where("name", "<=", searchString + '\uf8ff'), limit(2));
+            const q = query(collection(FIRESTORE_DB, 'venues'), where("name", ">=", searchString), where('isActivated', "==", true), where("name", "<=", searchString + '\uf8ff'), limit(2));
             // console.log("user id is:: " + user.uid);
             const querySnapshot = await getDocs(q);
             setSuggestion(querySnapshot.docs);
@@ -250,10 +250,10 @@ function Home({ navigation }) {
 
             if (fieldtype === 'array') {
                 // For array fields like beerProfile and favBeer
-                querySnapshot = await getDocs(query(venueCollectionRef, where(fieldName, 'array-contains-any', fieldValue)));
+                querySnapshot = await getDocs(query(venueCollectionRef, where(fieldName, 'array-contains-any', fieldValue), where('isActivated', "==", true)));
             } else {
                 // For single value fields like region 
-                querySnapshot = await getDocs(query(venueCollectionRef, where(fieldName, '==', fieldValue)));
+                querySnapshot = await getDocs(query(venueCollectionRef, where(fieldName, '==', fieldValue), where('isActivated', "==", true)));
             }
             const venueData = [];
             querySnapshot.forEach((doc) => {

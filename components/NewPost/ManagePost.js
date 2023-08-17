@@ -50,6 +50,7 @@ export default function ManagePost({ navigation }) {
                         console.log(doc.id, " => User Role: ", doc.data().role);
                     });
 
+                    // Must render all venues including deactivated and active venues for business user management
                     setPosts([]); // Clear previous posts
                     const subquerySnapshot = query(collection(FIRESTORE_DB, 'venues'), orderBy('createdAt', "desc"));
                     const unsubcribe = onSnapshot(subquerySnapshot, (snapshot) => {

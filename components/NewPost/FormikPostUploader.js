@@ -191,6 +191,7 @@ const FormikPostUploader = ({ navigation }) => {
                     favBeer: favBeer,
                     region: region,
                     status: "Pending Approval",
+                    isActivated: true,
                     createdAt: new Date().toISOString(),
                 }).then(setTimeout(() => { navigation.push("LoggedOn") }, 2000));
 

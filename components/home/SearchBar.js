@@ -1,5 +1,5 @@
 
-import { View, Text, Image, StyleSheet } from 'react-native'
+import { View, Text, Image, StyleSheet, LogBox } from 'react-native'
 import React from 'react'
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete'
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -7,7 +7,10 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import LottieView from 'lottie-react-native';
 
 
+
 // cityHandler is using destructure way
+
+LogBox.ignoreAllLogs(true);
 
 export default function SearchBar({ cityHandler }) {
 
@@ -15,7 +18,7 @@ export default function SearchBar({ cityHandler }) {
         <View style={{ marginTop: 5, flexDirection: "row", marginBottom: 5 }}>
             {/* query is using YC API Key to enable auto suggestion */}
             {/* <Image style={styles.logo} source={require('../../assets/fresh-beer-logo.jpg')} /> */}
-            <Text style={{marginTop: 10,fontSize: 17, fontWeight: '500', marginLeft: -5}}>Location: </Text>
+            <Text style={{ marginTop: 10, fontSize: 17, fontWeight: '500', marginLeft: -5 }}>Location: </Text>
             <GooglePlacesAutocomplete
                 query={{ key: 'AIzaSyAF_ydiFOLLLkBe7bpYvAL7oIuuJYdk-pc' }}
                 onPress={(data, details = null) => {
@@ -48,21 +51,21 @@ export default function SearchBar({ cityHandler }) {
                     </View>
                 }
 
-                // renderRightButton={() =>
-                //     <View
-                //         style={{
-                //             flexDirection: 'row',
-                //             marginRight: 8,
-                //             backgroundColor: 'white',
-                //             padding: 9,
-                //             borderRadius: 30,
-                //             alignItems: "center",
-                //         }}>
+            // renderRightButton={() =>
+            //     <View
+            //         style={{
+            //             flexDirection: 'row',
+            //             marginRight: 8,
+            //             backgroundColor: 'white',
+            //             padding: 9,
+            //             borderRadius: 30,
+            //             alignItems: "center",
+            //         }}>
 
-                //         {/* <AntDesign name='clockcircle' size={11} style={{ marginRight: 4 }} />
-                //         <Text>Search</Text> */}
-                //     </View>
-                // }
+            //         {/* <AntDesign name='clockcircle' size={11} style={{ marginRight: 4 }} />
+            //         <Text>Search</Text> */}
+            //     </View>
+            // }
             />
         </View>
     );

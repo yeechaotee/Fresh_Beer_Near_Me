@@ -287,11 +287,11 @@ function CreateFeed({ navigation }) {
   return (
     <SafeAreaView>
       <ScrollView>
-        <RichToolbar
+        {/* <RichToolbar
           editor={richText}
           actions={[ actions.setBold, actions.setItalic, actions.setUnderline, actions.heading1 ]}
           iconMap={{ [actions.heading1]: handleHead }}
-        />
+        /> */}
         <Button title="Pick an image" onPress={pickImage} />
           <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}	style={{ flex: 1, minHeight: 300 }}>
             <Text>Description:</Text>
@@ -507,11 +507,11 @@ function CreateFeedByAdmin({ navigation }) {
             }}
           />
       </View>
-      <RichToolbar
+      {/* <RichToolbar
         editor={richText}
         actions={[ actions.setBold, actions.setItalic, actions.setUnderline, actions.heading1 ]}
         iconMap={{ [actions.heading1]: handleHead }}
-      />
+      /> */}
       <Button title="Pick an image" onPress={pickImage} />
 
       <ScrollView>

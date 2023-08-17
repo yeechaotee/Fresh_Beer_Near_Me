@@ -79,11 +79,11 @@ const EditProfileScreen = ({ navigation, route }) => {
   const [favBeer, setFavBeer] = useState([]);
   const [region, setRegion] = useState([]);
 
-const finishModal=()=>{
+  const finishModal = () => {
     // setUserData({ ...userData, beerProfile: beerProfile })
     // setUserData({ ...userData, favBeer: favBeer })
     // setUserData({ ...userData, region: region })
-}
+  }
 
   /*
   const getUser = async () => {
@@ -99,7 +99,7 @@ const finishModal=()=>{
       })
   }
   */
- 
+
 
 
 
@@ -209,7 +209,7 @@ const finishModal=()=>{
           // ...(userData.region !== undefined && { region: userData.region }), // Add region
           // ...(userData.beerProfile !== undefined && { beerProfile: userData.beerProfile }), // Add beerProfile
           // ...(userData.favBeer !== undefined && { favBeer: userData.favBeer }), // Add favBeer
-          
+
           ...(userData.region !== undefined && { region: region }), // Add region
           ...(userData.beerProfile !== undefined && { beerProfile: beerProfile }), // Add beerProfile
           ...(userData.favBeer !== undefined && { favBeer: favBeer }), // Add favBeer
@@ -366,6 +366,16 @@ const finishModal=()=>{
     setDatePickerVisible(true);
   };
 
+  const handleDateChange = (event, selected) => {
+    if (selected) {
+      setSelectedDate(selected);
+      setDatePickerVisible(false); // Hide the DatePicker
+    } else {
+      setDatePickerVisible(false); // Hide the DatePicker if the user cancels
+    }
+  };
+
+
 
   return (
     <View style={styles.container}>
@@ -389,43 +399,43 @@ const finishModal=()=>{
           {/*show biz user*/}
           {userRole === "businessUser" && (
             <React.Fragment>
-          <View style={styles.action}>
-            <Ionicons name="document-text-outline" color="#333333" size={20} />
-            <Text>  {businessUEN}</Text>
-          </View>
-          </React.Fragment>)}
+              <View style={styles.action}>
+                <Ionicons name="document-text-outline" color="#333333" size={20} />
+                <Text>  {businessUEN}</Text>
+              </View>
+            </React.Fragment>)}
 
           {/*if userRole = user*/}
           {userRole === "user" && (
             <React.Fragment>
-          <View style={styles.action}>
-            <FontAwesome name="user-o" color="#333333" size={20} />
-            <TextInput
-              placeholder="First Name"
-              placeholderTextColor="#666666"
-              autoCorrect={false}
-              value={userData ? userData.fname : ''}
-              onChangeText={(txt) => setUserData({ ...userData, fname: txt })}
-              style={styles.textInput}
-            />
-          </View>
-          
-          <View style={styles.action}>
-            <FontAwesome name="user-o" color="#333333" size={20} />
-            <TextInput
-              placeholder="Last Name"
-              placeholderTextColor="#666666"
-              value={userData ? userData.lname : ''}
-              onChangeText={(txt) => setUserData({ ...userData, lname: txt })}
-              autoCorrect={false}
-              style={styles.textInput}
-            />
-          </View>
-          </React.Fragment>)}
+              <View style={styles.action}>
+                <FontAwesome name="user-o" color="#333333" size={20} />
+                <TextInput
+                  placeholder="First Name"
+                  placeholderTextColor="#666666"
+                  autoCorrect={false}
+                  value={userData ? userData.fname : ''}
+                  onChangeText={(txt) => setUserData({ ...userData, fname: txt })}
+                  style={styles.textInput}
+                />
+              </View>
+
+              <View style={styles.action}>
+                <FontAwesome name="user-o" color="#333333" size={20} />
+                <TextInput
+                  placeholder="Last Name"
+                  placeholderTextColor="#666666"
+                  value={userData ? userData.lname : ''}
+                  onChangeText={(txt) => setUserData({ ...userData, lname: txt })}
+                  autoCorrect={false}
+                  style={styles.textInput}
+                />
+              </View>
+            </React.Fragment>)}
 
           {/*show regardless*/}
           <View style={styles.action}>
-          <FontAwesome name="user-o" color="#333333" size={20} />
+            <FontAwesome name="user-o" color="#333333" size={20} />
             <TextInput
               multiline
               numberOfLines={3}
@@ -441,111 +451,111 @@ const finishModal=()=>{
           {/*if userRole = user*/}
           {userRole === "user" && (
             <React.Fragment>
-          <View style={styles.action}>
-            <Ionicons name="male-female-outline" color="#333333" size={20} />
-            <Picker
-              selectedValue={userData ? userData.gender : ''}
-              onValueChange={(itemValue) => setUserData({ ...userData, gender: itemValue })}
-              style={[styles.textInput, { height: 40 }]}
-            >
-              {/* <Picker.Item label="Select Gender" value="" /> */}
-              <Picker.Prompt label="Select Gender" value="" />
-              <Picker.Item label="Male" value="male" />
-              <Picker.Item label="Female" value="female" />
-            </Picker>
-          </View>
-          </React.Fragment>)}
-          
+              <View style={styles.action}>
+                <Ionicons name="male-female-outline" color="#333333" size={20} />
+                <Picker
+                  selectedValue={userData ? userData.gender : ''}
+                  onValueChange={(itemValue) => setUserData({ ...userData, gender: itemValue })}
+                  style={[styles.textInput, { height: 40 }]}
+                >
+                  {/* <Picker.Item label="Select Gender" value="" /> */}
+                  <Picker.Prompt label="Select Gender" value="" />
+                  <Picker.Item label="Male" value="male" />
+                  <Picker.Item label="Female" value="female" />
+                </Picker>
+              </View>
+            </React.Fragment>)}
+
           {/*if userRole = user*/}
           {userRole === 'user' && (
-        <>
-          {isDatePickerVisible && (
-            <DateTimePicker
-              value={selectedDate || new Date()}
-              mode="date"
-              display="default"
-              onChange={(event, selectedDate) => {
-                if (selectedDate) {
-                  setSelectedDate(selectedDate); // Set the selected date
-                  setUserData({ ...userData, birthday: selectedDate.toISOString() });
-                }
-                setDatePickerVisible(false); // Hide the date picker
-              }}
-            />
+            <>
+              {isDatePickerVisible && (
+                <DateTimePicker
+                  value={selectedDate || new Date()}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    if (selectedDate) {
+                      setSelectedDate(selectedDate); // Set the selected date
+                      setUserData({ ...userData, birthday: selectedDate.toISOString() });
+                    }
+                    setDatePickerVisible(false); // Hide the date picker
+                  }}
+                />
+              )}
+              <TouchableOpacity onPress={showDatePicker}>
+                <View style={styles.action}>
+                  <FontAwesome name="calendar" color="#333333" size={20} />
+                  <TextInput
+                    placeholder="Birthday"
+                    placeholderTextColor="#666666"
+                    editable={false}
+                    value={
+                      selectedDate
+                        ? selectedDate.toDateString()
+                        : userData.birthday
+                          ? new Date(userData.birthday).toDateString()
+                          : ''
+                    }
+                    style={styles.textInput}
+                  />
+                </View>
+              </TouchableOpacity>
+            </>
           )}
-          <TouchableOpacity onPress={showDatePicker}>
-            <View style={styles.action}>
-              <FontAwesome name="calendar" color="#333333" size={20} />
-              <TextInput
-                placeholder="Birthday"
-                placeholderTextColor="#666666"
-                editable={false}
-                value={
-                  selectedDate
-                    ? selectedDate.toDateString()
-                    : userData.birthday
-                    ? new Date(userData.birthday).toDateString()
-                    : ''
-                }
-                style={styles.textInput}
-              />
-            </View>
-          </TouchableOpacity>
-        </>
-      )}
-          
-          
+
+
           {/*if userRole = user*/}
           {userRole === "user" && (
             <React.Fragment>
-          <View style={styles.action}>
-          <Text style={styles.Header1}>Your Preferences</Text>
-          </View>
-          <View style={styles.action}>
-          <Text>your fav. beers: {favBeer.join(', ')}</Text>
-          </View>
-          <View style={styles.action}>
-          <Text>your beer profile: {beerProfile.join(', ')}</Text>
-          </View>
-          <View style={styles.action}>
-          <Text>your current region: {region}</Text>
-          </View>
-          <FormButton buttonTitle="Change Preferences" onPress={handleOpenModal} />
-          </React.Fragment>)}
+              <View style={styles.action}>
+                <Text style={styles.Header1}>Your Preferences</Text>
+              </View>
+              <View style={styles.action}>
+                <Text>your fav. beers: {favBeer.join(', ')}</Text>
+              </View>
+              <View style={styles.action}>
+                <Text>your beer profile: {beerProfile.join(', ')}</Text>
+              </View>
+              <View style={styles.action}>
+                <Text>your current region: {region}</Text>
+              </View>
+              <FormButton buttonTitle="Change Preferences" onPress={handleOpenModal} />
+            </React.Fragment>)}
 
-            {/*business user editable fields here*/}
-            {userRole === "businessUser" && (
+          {/*business user editable fields here*/}
+          {userRole === "businessUser" && (
             <React.Fragment>
-            <View style={styles.action}>
-            <Ionicons name="document-text-outline" color="#333333" size={20} />
-            <Text>  business Information</Text>
-          </View>
-          <View style={styles.action2}>
-          
-          <TextInput
-              placeholder="Tell us about your business: "
-              placeholderTextColor="#666666"
-              autoCorrect={false}
-              multiline={true}
-              value={bizInfo}
-              onChangeText={(txt) => setBizInfo(txt)}
-              style={styles.textInput2}
-            />
-            
-             
+              <View style={styles.action}>
+                <Ionicons name="document-text-outline" color="#333333" size={20} />
+                <Text>  business Information</Text>
+              </View>
+              <View style={styles.action2}>
+
+                <TextInput
+                  placeholder="Tell us about your business: "
+                  placeholderTextColor="#666666"
+                  autoCorrect={false}
+                  multiline={true}
+                  value={bizInfo}
+                  onChangeText={(txt) => setBizInfo(txt)}
+                  style={styles.textInput2}
+                />
+
+
               </View>
 
-          </React.Fragment>)}
+            </React.Fragment>)}
 
           <FormButton buttonTitle="Update" onPress={handleUpdate} />
           <EditProfModal
-                      modalVisible={modalVisible}
-                      setModalVisible={setModalVisible}
-                      setBeerProfile={setBeerProfile}
-                      setFavBeer={setFavBeer}
-                      setRegion={setRegion}
-                      finishModal={finishModal}
-                    />
+            modalVisible={modalVisible}
+            setModalVisible={setModalVisible}
+            setBeerProfile={setBeerProfile}
+            setFavBeer={setFavBeer}
+            setRegion={setRegion}
+            finishModal={finishModal}
+          />
         </SafeAreaView>
       </Animated.View>
     </View>

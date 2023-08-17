@@ -164,8 +164,8 @@ function LogonLayout() {
     // Call the function to get the initial count
     getPresentedNotifications();
 
-    // Set up an interval to update the notification count every 5 seconds
-    const interval = setInterval(getPresentedNotifications, 1000);
+    // Set up an interval to update the notification count every 60 seconds
+    const interval = setInterval(getPresentedNotifications, 60000);
 
     return () => {
       //unsubscribe();

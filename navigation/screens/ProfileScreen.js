@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useContext } from "react";
 import {
   View,
@@ -10,7 +11,6 @@ import {
 } from "react-native";
 // import FormButton from '../components/FormButton';
 import { AuthContext } from "../AuthProvider/AuthProvider";
-
 import { onAuthStateChanged, User } from "firebase/auth";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../../firebase";
 import {
@@ -32,7 +32,6 @@ import * as ImagePicker from "expo-image-picker";
 import { getStorage, getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-
 const storage = getStorage();
 const ProfileScreen = ({ navigation, route }) => {
   // const { user, logout } = useContext(AuthContext);
@@ -42,10 +41,8 @@ const ProfileScreen = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true);
   const [deleted, setDeleted] = useState(false);
   // const [userData, setUserData] = useState(null);
-
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
-
   // get current user and user role from firebase
   useEffect(
     () =>
@@ -73,9 +70,7 @@ const ProfileScreen = ({ navigation, route }) => {
       }),
     [navigation, loading]
   );
-
   // console.log("profile page userDATA is :"+userData)
-
   // const getUser = async () => {
   //     await firestore()
   //         .collection('users')
@@ -88,61 +83,55 @@ const ProfileScreen = ({ navigation, route }) => {
   //             }
   //         })
   // }
-
   // useEffect(() => {
   //     onAuthStateChanged(FIREBASE_AUTH, (user) => {
   //         setUser(user);
   //     });
   // }, []);
-
   // useEffect(() => {
   //     getUser();
   //     // fetchPosts();
   //     navigation.addListener("focus", () => setLoading(!loading));
   // }, [navigation, loading]);
-
   const selectImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       alert('Permission to access the camera roll is required!');
       return;
     }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
     });
-
     if (!result.canceled) {
-      setImage(result.assets[0].uri); // Access selected asset through the 'assets' array
+      setImage(result.assets[0].uri); // Set the image state
       setImageUploaded(false);
-      handleFormSubmit(userProfile);
-      handleFormSubmit(userProfile);
+      // Call handleFormSubmit after setting the image state
+      //handleFormSubmit(userProfile);
     }
   };
-
+  useEffect(() => {
+    // This effect will run whenever 'image' state changes
+    console.log("Image is ", image);
+    handleFormSubmit(userProfile);
+  }, [image, imageUploaded]); // Add 'image' to the dependency array
   const updateProfilePicture = async (profilePictureUrl) => {
     try {
-
       const userDocRef = collection(FIRESTORE_DB, 'users');
       const q = query(
         userDocRef,
         where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
       );
-
       const querySnapshot = await getDocs(q);
-
       const updatePromises = [];
       //console.log("are u dismiss?");
       querySnapshot.forEach((doc) => {
         const userRef = doc.ref; // Use .ref to get the reference to the document
         // Update the "readstatus" field in each document using updateDoc
         updatePromises.push(updateDoc(userRef, { profile_picture: profilePictureUrl }));
-
       });
-
       // Execute the update promises using Promise.all
       await Promise.all(updatePromises);
       console.log("Profile picture updated successfully");
@@ -150,7 +139,6 @@ const ProfileScreen = ({ navigation, route }) => {
       console.log('Error updating profile picture4:', error);
     }
   };
-
   /*
     const updateProfilePicture = async (profilePictureUrl) => {
       try {
@@ -165,10 +153,14 @@ const ProfileScreen = ({ navigation, route }) => {
     };
   */
   const handleFormSubmit = async (values) => {
-    if (image && !imageUploaded) {
+    console.log("handleformsubmit, image is ", image);
+    console.log("handloeformsubmit, imageupload is", imageUploaded);
+    const selectedImage = image; // Use the value from the parameter
+    if (selectedImage && !imageUploaded) {
       try {
-        const imageUrl = await uploadImageToStorage(image);
-
+        console.log("uploading to firebase");
+        const imageUrl = await uploadImageToStorage(selectedImage);
+        console.log("uploaded to firebase, imageurl:", imageUrl);
         values.profile_picture = imageUrl;
         setImageUploaded(true);
       } catch (error) {
@@ -178,33 +170,27 @@ const ProfileScreen = ({ navigation, route }) => {
     } else {
       values.profile_picture = userProfile?.profile_picture || '';
     }
-
     // Update user profile in Firestore
     try {
-
+      console.log("updating user profile");
       await updateProfilePicture(values.profile_picture);
       // Rest of the code for updating other profile details...
+      console.log("updated user profile :)");
     } catch (error) {
       console.log('Profile picture update error3:', error);
-
       return;
     }
   };
-
   const uploadImageToStorage = async (uri) => {
     const imageName = 'profile_picture_' + new Date().getTime();
     const uploadUri = Platform.OS === 'ios' ? uri.replace('file://', '') : uri;
-
     try {
       const response = await fetch(uploadUri);
       const blob = await response.blob();
-
       // Dynamically create the storage reference
       const storageRef = ref(storage, 'profile_pictures/' + imageName);
-
       // Upload the image to Firebase Storage
       await uploadBytes(storageRef, blob);
-
       // Get the image URL from Firebase Storage
       const imageUrl = await getDownloadURL(storageRef);
       return imageUrl;
@@ -213,7 +199,6 @@ const ProfileScreen = ({ navigation, route }) => {
       throw error;
     }
   };
-
 
 
 
@@ -241,7 +226,6 @@ const ProfileScreen = ({ navigation, route }) => {
             <Ionicons name="add-circle-sharp" color="#ffa31a" size={50} style={styles.addIcon} />
           </View>
         </TouchableOpacity>
-
         {/* <Text style={styles.userName}>{userData ? userData.fname || 'Test' : 'Test'} {userData ? userData.lname || 'User' : 'User'}</Text> */}
         <Text style={styles.userName}>
           {userProfile ? userProfile.username || "Undefine" : "Undefine"}
@@ -252,7 +236,6 @@ const ProfileScreen = ({ navigation, route }) => {
         {/* <Text style={styles.aboutUser}>
                     {userData ? userData.about || 'No details added.' : ''}
                 </Text> */}
-
         <View style={styles.userBtnWrapper}>
           {
             <>
@@ -279,10 +262,8 @@ const ProfileScreen = ({ navigation, route }) => {
             </>
           }
         </View>
-
         <View style={styles.userInfoWrapper}>
           <View style={styles.userInfoItem}>
-
 
             {/* Use the GetNewsFeed component */}
             {/* <Text style={styles.userInfoTitle}>{posts.length}</Text>
@@ -297,7 +278,6 @@ const ProfileScreen = ({ navigation, route }) => {
                         <Text style={styles.userInfoSubTitle}>Following</Text>
                     </View> */}
         </View>
-
         {/* {posts.map((item) => (
           <PostCard key={item.id} item={item} onDelete={handleDelete} />
         ))} */}
@@ -305,9 +285,7 @@ const ProfileScreen = ({ navigation, route }) => {
     </SafeAreaView>
   );
 };
-
 export default ProfileScreen;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

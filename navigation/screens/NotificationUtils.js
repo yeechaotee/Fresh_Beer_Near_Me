@@ -1,6 +1,6 @@
 //import { Notifications } from 'expo';
 import { addDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { FIREBASE_AUTH, FIRESTORE_DB  } from '../../firebase';
+import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
 import * as Notifications from 'expo-notifications';
 
 const projectId = 'e8e6d84c-21a0-433c-acfc-4c1e40ae9d2c';
@@ -21,23 +21,27 @@ export async function sendCustomPushNotification(title, body, type, usergroup, u
     }
     */
 
-    const usersSnapshot = userID?  await getDocs(query(usersCollection, where('owner_uid', '==', userID))) : await getDocs(roleQuery);
+    const usersSnapshot = userID ? await getDocs(query(usersCollection, where('owner_uid', '==', userID))) : await getDocs(roleQuery);
 
-     // Loop through each user document
+    // Loop through each user document
     usersSnapshot.forEach(async (userDoc) => {
       const usertoken = userDoc.data().expoPushToken;
 
       // Check if the user has an Expo push token
       if (usertoken) {
-        console.log('user receiving notif docid is:', userDoc.id,  'uid is:', userDoc.data().owner_uid, 'expo push token is:', usertoken);
+        console.log('user receiving notif docid is:', userDoc.id, 'uid is:', userDoc.data().owner_uid, 'expo push token is:', usertoken);
 
         const notification = await Notifications.scheduleNotificationAsync({
+
+          /* not triggering push notification anymore
           content: {
             title: title,
             body: body,
           },
           to: usertoken,
           trigger: { seconds: 2, repeats: false },
+          */
+
         });
 
         if (notification) {

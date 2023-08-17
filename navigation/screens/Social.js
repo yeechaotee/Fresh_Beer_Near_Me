@@ -29,6 +29,7 @@ import uuid from "uuid";
 import { VenueInfo } from "../../components/home/VenueItems";
 import GetNewsFeed from '../../components/profile/getNewsFeed';
 import sendCustomPushNotification from './NotificationUtils';
+import { useNavigation } from '@react-navigation/native';
 
 const Drawer = createDrawerNavigator();
 
@@ -295,38 +296,38 @@ function CreateFeed({ navigation }) {
           iconMap={{ [actions.heading1]: handleHead }}
         /> */}
         <Button title="Pick an image" onPress={pickImage} />
-          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, minHeight: 400 }}>
-            <Text>Description:</Text>
-            <RichEditor
-              ref={richText}
-              style={{ minHeight: 400 }}
-              value={description}
-              onChange={descriptionText => {
-                setDescription(descriptionText);
-              }}
-            />
-          </KeyboardAvoidingView>
-          <Button title="Create Feed" onPress={async () => {
-            const data = {
-              type: false,
-              startDateTime: "",
-              endDatTime: "",
-              numberOfPeople: "0",
-              description: description,
-              image: image,
-              creater: FIREBASE_AUTH.currentUser.email,
-              createTime: new Date(),
-              avatar: FIREBASE_AUTH.currentUser.photoURL,
-            }
-            // Add a new document with a generated id
-            const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
-            // later...
-            await setDoc(newRef, data);
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, minHeight: 400 }}>
+          <Text>Description:</Text>
+          <RichEditor
+            ref={richText}
+            style={{ minHeight: 400 }}
+            value={description}
+            onChange={descriptionText => {
+              setDescription(descriptionText);
+            }}
+          />
+        </KeyboardAvoidingView>
+        <Button title="Create Feed" onPress={async () => {
+          const data = {
+            type: false,
+            startDateTime: "",
+            endDatTime: "",
+            numberOfPeople: "0",
+            description: description,
+            image: image,
+            creater: FIREBASE_AUTH.currentUser.email,
+            createTime: new Date(),
+            avatar: FIREBASE_AUTH.currentUser.photoURL,
+          }
+          // Add a new document with a generated id
+          const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
+          // later...
+          await setDoc(newRef, data);
 
-            alert("Create Feed Success");
-            navigation.navigate("News Feed");
-          }} />
-        </ScrollView>
+          alert("Create Feed Success");
+          navigation.navigate("News Feed");
+        }} />
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -532,84 +533,84 @@ function CreateFeedByAdmin({ navigation }) {
           iconMap={{ [actions.heading1]: handleHead }}
         /> */}
         <Button title="Pick an image" onPress={pickImage} />
-          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, minHeight: 100 }}>
-            <RichEditor
-              ref={richText}
-              style={{ minHeight: 500 }}
-              placeholder="Description"
-              value={description}
-              onChange={descriptionText => {
-                setDescription(descriptionText);
-              }}
-            />
-          </KeyboardAvoidingView>
-          <Button title="Create Feed" onPress={async () => {
-            const data = {
-              type: type,
-              startDateTime: startDateTime.toDateString(),
-              endDatTime: endDatTime.toDateString(),
-              numberOfPeople: numberOfPeople,
-              description: description,
-              image: image,
-              creater: FIREBASE_AUTH.currentUser.email,
-              createTime: new Date(),
-              avatar: FIREBASE_AUTH.currentUser.photoURL,
-              title: title,
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, minHeight: 100 }}>
+          <RichEditor
+            ref={richText}
+            style={{ minHeight: 500 }}
+            placeholder="Description"
+            value={description}
+            onChange={descriptionText => {
+              setDescription(descriptionText);
+            }}
+          />
+        </KeyboardAvoidingView>
+        <Button title="Create Feed" onPress={async () => {
+          const data = {
+            type: type,
+            startDateTime: startDateTime.toDateString(),
+            endDatTime: endDatTime.toDateString(),
+            numberOfPeople: numberOfPeople,
+            description: description,
+            image: image,
+            creater: FIREBASE_AUTH.currentUser.email,
+            createTime: new Date(),
+            avatar: FIREBASE_AUTH.currentUser.photoURL,
+            title: title,
+          }
+          console.log(data);
+          try {
+            // Add a new document with a generated id
+            const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
+            // later...
+
+
+            // Query the 'users' collection to get user IDs or device tokens of all users
+            const usersCollection = collection(FIRESTORE_DB, 'users');
+            const roleQuery = query(usersCollection, where('role', '==', 'user'));
+
+            // Retrieve user documents that match the query
+            const querySnapshot = await getDocs(roleQuery);
+
+            // Create an array to store recipient IDs
+            const recipientIds = [];
+
+            // Loop through the query snapshot to extract user IDs or device tokens
+            querySnapshot.forEach((doc) => {
+              const userData = doc.data();
+              // Assuming you have a field in your user data containing user IDs or device tokens
+              // Adjust the field name accordingly
+              const userId = userData.owner_uid; // Replace 'uid' with the actual field name
+              recipientIds.push(userId);
+            });
+
+            // Loop through each recipient and send a notification
+            for (const recipientId of recipientIds) {
+
+              const typeofpost = type ? "Promotion" : "Event";
+              const getTitle = title ? title : "New Event/Post";
+              const data1 = {
+                type: typeofpost,
+                title: getTitle,
+                body: description,
+                timestamp: new Date().toISOString(),
+                owner_uid: recipientId, // Use the current recipient's ID
+                readstatus: false,
+                createdby: FIREBASE_AUTH.currentUser.uid,
+
+              };
+
+              //console.log("each reci setis", recipientId);
+              const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
+              await setDoc(newRef1, data1);
             }
-            console.log(data);
-            try {
-              // Add a new document with a generated id
-              const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
-              // later...
 
-
-              // Query the 'users' collection to get user IDs or device tokens of all users
-              const usersCollection = collection(FIRESTORE_DB, 'users');
-              const roleQuery = query(usersCollection, where('role', '==', 'user'));
-
-              // Retrieve user documents that match the query
-              const querySnapshot = await getDocs(roleQuery);
-
-              // Create an array to store recipient IDs
-              const recipientIds = [];
-
-              // Loop through the query snapshot to extract user IDs or device tokens
-              querySnapshot.forEach((doc) => {
-                const userData = doc.data();
-                // Assuming you have a field in your user data containing user IDs or device tokens
-                // Adjust the field name accordingly
-                const userId = userData.owner_uid; // Replace 'uid' with the actual field name
-                recipientIds.push(userId);
-              });
-
-              // Loop through each recipient and send a notification
-              for (const recipientId of recipientIds) {
-
-                const typeofpost = type ? "Promotion" : "Event";
-                const getTitle = title ? title : "New Event/Post";
-                const data1 = {
-                  type: typeofpost,
-                  title: getTitle,
-                  body: description,
-                  timestamp: new Date().toISOString(),
-                  owner_uid: recipientId, // Use the current recipient's ID
-                  readstatus: false,
-                  createdby: FIREBASE_AUTH.currentUser.uid,
-
-                };
-
-                //console.log("each reci setis", recipientId);
-                const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
-                await setDoc(newRef1, data1);
-              }
-
-              await setDoc(newRef, data);
-              alert("Create Feed Success");
-              navigation.navigate("News Feed");
-            } catch (e) {
-              alert("Create Feed Fail");
-            }
-          }} />
+            await setDoc(newRef, data);
+            alert("Create Feed Success");
+            navigation.navigate("News Feed");
+          } catch (e) {
+            alert("Create Feed Fail");
+          }
+        }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -653,7 +654,9 @@ function StarRating() {
   //Empty Star. You can also give the path from local
   const Star_With_Border = 'https://raw.githubusercontent.com/AboutReact/sampleresource/master/star_corner.png';
 
+  const navigation = useNavigation();
   async function onSubmitComment() {
+
     if (state.id === null) {
       alert("Please search and select one beer")
       return
@@ -700,6 +703,7 @@ function StarRating() {
       }
       const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
       await setDoc(newRef1, data1);
+      navigation.goBack();
     } else {
       // doc.data() will be undefined in this case
       console.log("No such document!");

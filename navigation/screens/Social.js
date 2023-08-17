@@ -293,12 +293,12 @@ function CreateFeed({ navigation }) {
           iconMap={{ [actions.heading1]: handleHead }}
         />
         <Button title="Pick an image" onPress={pickImage} />
-        <ScrollView>
-          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}	style={{ flex: 1, minHeight: 400 }}>
+          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}	style={{ flex: 1, minHeight: 300 }}>
             <Text>Description:</Text>
             <RichEditor
                 ref={richText}
-                style={{ minHeight: 400 }}
+                style={{ minHeight: 300 }}
+                value={description}
                 onChange={ descriptionText => {
                   setDescription(descriptionText);
                 }}
@@ -323,7 +323,6 @@ function CreateFeed({ navigation }) {
             alert("Create Feed Success");
             navigation.navigate("News Feed");
           }}/>
-        </ScrollView>
       </ScrollView>
     </SafeAreaView>
   );

@@ -8,6 +8,7 @@ import { actions, RichEditor, RichToolbar } from "react-native-pell-rich-editor"
 import { WebView } from 'react-native-webview';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+
 const GetNewsFeed = () => {
 
     const [newsFeedData, setNewsFeedData] = useState([]);
@@ -16,8 +17,10 @@ const GetNewsFeed = () => {
 
 
     useEffect(() => {
+
         async function fetchNewsFeed() {
             const feedsRef = collection(FIRESTORE_DB, 'newsfeed');
+            console.log("whi is my role", FIREBASE_AUTH.currentUser.role);
 
             const q = query(feedsRef, where('creater', '==', FIREBASE_AUTH.currentUser.email));
 

@@ -87,7 +87,7 @@ const GetNewsFeed = () => {
                     const docRef = querySnapshot.docs[0].ref;
                     await updateDoc(docRef, {
                         title: selectedItem.title,
-                        numberOfPeople: numberOfPeople,
+                        numberOfPeople: selectedItem.numberOfPeople,
                         // Update other fields as needed
                     });
                 }
@@ -212,7 +212,7 @@ const GetNewsFeed = () => {
     );
 
 
-    const [numberOfppl, setNumberOfPeople] = React.useState(selectedItem.numberOfPeople);
+    // const [numberOfppl, setNumberOfPeople] = React.useState(selectedItem.numberOfPeople);
 
 
     const [isDatePickerVisible, setDatePickerVisible] = useState(false);
@@ -302,11 +302,11 @@ const GetNewsFeed = () => {
                             <View style={styles.inputRow}>
                                 <Text style={styles.label}>No. of people participating:</Text>
                                 <TextInput
-                                    value={numberOfppl}
+                                    value={selectedItem.numberOfPeople}
                                     style={styles.input}
                                     placeholder="number"
                                     keyboardType="numeric"
-                                    onChangeText={(text) => setNumberOfPeople(text)}
+                                    // onChangeText={(text) => setNumberOfPeople(text)}
                                 />
                             </View>
 

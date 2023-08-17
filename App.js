@@ -37,21 +37,21 @@ const Stack = createNativeStackNavigator();
 const LogonStack = createNativeStackNavigator();
 
 
-const [userProfile, setUserProfile] = useState(null);
-const getUserProfile = async (user) => {
-  const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
-  const querySnapshot = await getDocs(q);
-  querySnapshot.forEach((doc) => {
-    setUserProfile(doc.data());
-  });
-};
+// const [userProfile, setUserProfile] = useState(null);
+// const getUserProfile = async (user) => {
+//   const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
+//   const querySnapshot = await getDocs(q);
+//   querySnapshot.forEach((doc) => {
+//     setUserProfile(doc.data());
+//   });
+// };
 
 const ProfileStack = ({ navigation, route }) => (
 
   <Stack.Navigator>
     <Stack.Screen
       name="ProfileScreen"
-      component={<ProfileScreen getUserProfile={getUserProfile} />}
+      component={ProfileScreen}
       options={{
         headerShown: false,
       }}

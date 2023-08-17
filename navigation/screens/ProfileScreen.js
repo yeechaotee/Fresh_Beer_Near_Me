@@ -8,6 +8,7 @@ import {
   StyleSheet,
   ScrollView,
   SafeAreaView,
+  LogBox,
 } from "react-native";
 // import FormButton from '../components/FormButton';
 import { AuthContext } from "../AuthProvider/AuthProvider";
@@ -32,8 +33,10 @@ import * as ImagePicker from "expo-image-picker";
 import { getStorage, getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
+LogBox.ignoreAllLogs(true);
+
 const storage = getStorage();
-const ProfileScreen = ({ navigation, route}) => {
+const ProfileScreen = ({ navigation, route }) => {
   // const { user, logout } = useContext(AuthContext);
   // const [posts, setPosts] = useState([]);
   const [image, setImage] = useState(null);

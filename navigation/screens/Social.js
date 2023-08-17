@@ -641,6 +641,8 @@ function CreateFeedByAdmin({ navigation }) {
 
 function StarRating() {
 
+  const navigation = useNavigation();
+
   const [state, setState] = React.useState({
     id: null,
     Default_Rating: 2.5,

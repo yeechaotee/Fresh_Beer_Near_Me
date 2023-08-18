@@ -36,7 +36,7 @@ const Drawer = createDrawerNavigator();
 const handleHead = ({ tintColor }) => <Text style={{ color: tintColor }}>H1</Text>
 
 function NewsFeed() {
-  let page = 0;
+  
   const PAGE_SIZE = 5;
 
   const [activeData, setActiveData] = React.useState([]);
@@ -44,6 +44,7 @@ function NewsFeed() {
   const [isAdmin, setIsAdmin] = React.useState(false);
   const [showFoot, setShowFoot] = React.useState(0)
   const [isRefresh, setIsRefresh] = React.useState(false)
+  const [page, setPage] = React.useState(0);
 
   React.useEffect(() => {
     async function isAdmin() {
@@ -61,12 +62,9 @@ function NewsFeed() {
 
   async function getNewsFeed() {
     const feedsRef = collection(FIRESTORE_DB, "newsfeed");
-    console.log(page)
     if (page === 0) {
       const q = query(feedsRef, orderBy("createTime", "desc"), limit(PAGE_SIZE * (page + 1)));
       const querySnapshot = await getDocs(q);
-      next = querySnapshot.docs[querySnapshot.docs.length - 1];
-      console.log("aaa", next)
       querySnapshot.forEach((doc) => {
         activeData.push({
           id: doc.id,
@@ -74,7 +72,10 @@ function NewsFeed() {
           createTime: doc.data().createTime.toDate().toDateString(),
         });
       });
+      ;
+      setPage(page + 1);
     } else {
+      console.log(page)
       const q1 = query(feedsRef, orderBy("createTime", "desc"), limit(PAGE_SIZE * page));
       const querySnapshot1 = await getDocs(q1);
       const next = querySnapshot1.docs[querySnapshot1.docs.length - 1];
@@ -89,16 +90,15 @@ function NewsFeed() {
           });
         });
       }
+      setPage(page + 1);
     }
     setActiveData([...activeData]);
-    setIsRefresh(false);
+    setIsRefresh(true);
   }
 
   function _onEndReached({ distanceFromEnd }) {
     if (isRefresh) {
-      page++;
       getNewsFeed();
-      console.log()
     }
   }
 
@@ -135,7 +135,7 @@ function NewsFeed() {
             <View style={styles.rowHeader}>
               <View style={styles.rowIcon} >
                 {
-                  item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
+                  item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 40, height: 40, borderRadius: 20 }} /> : <></>
                 }
               </View>
               <View style={styles.rowContent}>
@@ -308,6 +308,16 @@ function CreateFeed({ navigation }) {
           />
         </KeyboardAvoidingView>
         <Button title="Create Feed" onPress={async () => {
+          const userRef = collection(FIRESTORE_DB, "users");
+          console.log(FIREBASE_AUTH.currentUser.uid)
+          const userSnap = query(userRef, where("owner_uid", "==", FIREBASE_AUTH.currentUser.uid));
+          const userSnapShot = await getDocs(userSnap);
+          if (userSnapShot.size === 0) {
+            alert("User Profile is not exist");
+            return;
+          }
+          const user = userSnapShot.docs[0].data();
+          console.log(user)
           const data = {
             type: false,
             startDateTime: "",
@@ -317,7 +327,7 @@ function CreateFeed({ navigation }) {
             image: image,
             creater: FIREBASE_AUTH.currentUser.email,
             createTime: new Date(),
-            avatar: FIREBASE_AUTH.currentUser.photoURL,
+            avatar: user.profile_picture,
           }
           // Add a new document with a generated id
           const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
@@ -545,6 +555,16 @@ function CreateFeedByAdmin({ navigation }) {
           />
         </KeyboardAvoidingView>
         <Button title="Create Feed" onPress={async () => {
+          const userRef = collection(FIRESTORE_DB, "users");
+          console.log(FIREBASE_AUTH.currentUser.uid)
+          const userSnap = query(userRef, where("owner_uid", "==", FIREBASE_AUTH.currentUser.uid));
+          const userSnapShot = await getDocs(userSnap);
+          if (userSnapShot.size === 0) {
+            alert("User Profile is not exist");
+            return;
+          }
+          const user = userSnapShot.docs[0].data();
+          console.log(user)
           const data = {
             type: type,
             startDateTime: startDateTime.toDateString(),
@@ -554,7 +574,7 @@ function CreateFeedByAdmin({ navigation }) {
             image: image,
             creater: FIREBASE_AUTH.currentUser.email,
             createTime: new Date(),
-            avatar: FIREBASE_AUTH.currentUser.photoURL,
+            avatar: user.profile_picture,
             title: title,
           }
           console.log(data);

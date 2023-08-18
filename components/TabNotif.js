@@ -26,7 +26,12 @@ const HeaderButton = (props) => (
 );
 
 const TabNotif = ({ userRole }) => {
-  const [activeTab, setActiveTab] = useState('Promotion');
+
+  // const defaultTab = userRole == "businessUser" ? "Activity" : "New Venue"
+  //const [activeTab, setActiveTab] = useState("defaultTab");
+  const [activeTab, setActiveTab] = useState("New Venue");
+
+
   const [activeData, setActiveData] = useState([]);
 
 
@@ -38,30 +43,25 @@ const TabNotif = ({ userRole }) => {
       return;
     }
 
+
     try {
+
       const notificationsRef = collection(FIRESTORE_DB, 'notifications');
-      const q = tabName === "News Feed" ?
+      const q =
+        /*  tabName === "Activity" ?
+            query(
+              notificationsRef,
+              where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
+              where('type', 'in', ['Rating', 'verification']),
+              orderBy('timestamp', 'desc')
+            )
+            :*/
         query(
           notificationsRef,
           where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
-          where('type', '==', "userpost"),
+          where('type', '==', tabName),
           orderBy('timestamp', 'desc')
-        )
-        :
-        tabName === "Activity" ?
-          query(
-            notificationsRef,
-            where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
-            where('type', 'in', ['rating', 'verification']),
-            orderBy('timestamp', 'desc')
-          )
-          :
-          query(
-            notificationsRef,
-            where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
-            where('type', '==', tabName),
-            orderBy('timestamp', 'desc')
-          );
+        );
 
 
       const querySnapshot = await getDocs(q);
@@ -111,7 +111,6 @@ const TabNotif = ({ userRole }) => {
 
       const notifications = await Promise.all(notificationPromises);
 
-
       setActiveData(notifications);
     } catch (error) {
       console.log(`Error fetching ${tabName} notifications:`, error);
@@ -133,23 +132,25 @@ const TabNotif = ({ userRole }) => {
   const tabsBD = [
     /*{ id: '1', name: 'Activity' },
      */
+    { id: '4', name: 'New Venue' },
     { id: '2', name: 'Promotion' },
     { id: '3', name: 'Event' },
-    { id: '4', name: 'New Venue' },
+
 
     // Add more tabs as needed
   ];
 
   const tabsBO = [
     { id: '1', name: 'Activity' },
-    { id: '2', name: '         ' },
-    { id: '3', name: '         ' },
-    { id: '3', name: '         ' },
+    { id: '2', name: '                                    ' },
+    //{ id: '3', name: '         ' },
+    //{ id: '3', name: '         ' },
     //{ id: '4', name: 'News Feed' },
     // Add more tabs as needed
   ];
   const tabs = userRole == "businessUser" ? tabsBO : tabsBD;
   console.log('tabs is ', userRole);
+
 
   /* //hardcoded testing data
 
@@ -249,35 +250,31 @@ const TabNotif = ({ userRole }) => {
         ))}
       </View>
       <View style={styles.container}>
-        {activeData.length === 0 ? ( // Check if there are no notifications
-          <View style={styles.noNotificationContainer}>
-            <Text style={styles.noNotificationText}>No notifications</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={activeData}
-            renderItem={({ item }) => (
-              <View style={styles.rowContainer}>
 
-                <View style={styles.rowIcon} >
-                  {
-                    //item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
-                    <Image
-                      style={{ width: 50, height: 50, borderRadius: 25, marginTop: -3 }}
-                      source={{ uri: item.profile_picture }}
-                    />
-                  }
-                </View>
-                <View style={{ ...styles.rowContent, flex: 3 }}>
-                  <Text style={styles.rowHead}>{item.title}</Text>
-                  <Text style={styles.rowText}>{removeDivTags(item.body)}</Text>
-                  <Text style={styles.rowText}>{item.timestamp.toLocaleString()}</Text>
-                </View>
+        <FlatList
+          data={activeData}
+          renderItem={({ item }) => (
+            <View style={styles.rowContainer}>
+
+              <View style={styles.rowIcon} >
+                {
+                  //item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
+                  <Image
+                    style={{ width: 50, height: 50, borderRadius: 25, marginTop: -3 }}
+                    source={{ uri: item.profile_picture }}
+                  />
+                }
               </View>
-            )}
-            keyExtractor={(item) => item.id.toString()}
-          />
-        )}
+              <View style={{ ...styles.rowContent, flex: 3 }}>
+                <Text style={styles.rowHead}>{item.title}</Text>
+                <Text style={styles.rowText}>{removeDivTags(item.body)}</Text>
+                <Text style={styles.rowText}>{item.timestamp.toLocaleString()}</Text>
+              </View>
+            </View>
+          )}
+          keyExtractor={(item) => item.id.toString()}
+        />
+
       </View>
     </View>
   );

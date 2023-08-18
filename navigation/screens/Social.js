@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, Text, FlatList, TextInput, SafeAreaView, Button, ScrollView, KeyboardAvoidingView, Image, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Text, FlatList, TextInput, SafeAreaView, Button, ScrollView, KeyboardAvoidingView, Image, TouchableOpacity, LogBox, } from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { actions, RichEditor, RichToolbar } from "react-native-pell-rich-editor";
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -30,6 +30,8 @@ import { VenueInfo } from "../../components/home/VenueItems";
 import GetNewsFeed from '../../components/profile/getNewsFeed';
 import sendCustomPushNotification from './NotificationUtils';
 import { useNavigation } from '@react-navigation/native';
+
+LogBox.ignoreAllLogs(true);
 
 const Drawer = createDrawerNavigator();
 
@@ -135,7 +137,7 @@ function NewsFeed() {
             <View style={styles.rowHeader}>
               <View style={styles.rowIcon} >
                 {
-                  item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
+                  item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 40, height: 40, borderRadius: 20 }} /> : <></>
                 }
               </View>
               <View style={styles.rowContent}>
@@ -296,38 +298,38 @@ function CreateFeed({ navigation }) {
           iconMap={{ [actions.heading1]: handleHead }}
         /> */}
         <Button title="Pick an image" onPress={pickImage} />
-          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, minHeight: 400 }}>
-            <Text>Description:</Text>
-            <RichEditor
-              ref={richText}
-              style={{ minHeight: 400 }}
-              value={description}
-              onChange={descriptionText => {
-                setDescription(descriptionText);
-              }}
-            />
-          </KeyboardAvoidingView>
-          <Button title="Create Feed" onPress={async () => {
-            const data = {
-              type: false,
-              startDateTime: "",
-              endDatTime: "",
-              numberOfPeople: "0",
-              description: description,
-              image: image,
-              creater: FIREBASE_AUTH.currentUser.email,
-              createTime: new Date(),
-              avatar: FIREBASE_AUTH.currentUser.photoURL,
-            }
-            // Add a new document with a generated id
-            const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
-            // later...
-            await setDoc(newRef, data);
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, minHeight: 400 }}>
+          <Text>Description:</Text>
+          <RichEditor
+            ref={richText}
+            style={{ minHeight: 400 }}
+            value={description}
+            onChange={descriptionText => {
+              setDescription(descriptionText);
+            }}
+          />
+        </KeyboardAvoidingView>
+        <Button title="Create Feed" onPress={async () => {
+          const data = {
+            type: false,
+            startDateTime: "",
+            endDatTime: "",
+            numberOfPeople: "0",
+            description: description,
+            image: image,
+            creater: FIREBASE_AUTH.currentUser.email,
+            createTime: new Date(),
+            avatar: FIREBASE_AUTH.currentUser.photoURL,
+          }
+          // Add a new document with a generated id
+          const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
+          // later...
+          await setDoc(newRef, data);
 
-            alert("Create Feed Success");
-            navigation.navigate("News Feed");
-          }} />
-        </ScrollView>
+          alert("Create Feed Success");
+          navigation.navigate("News Feed");
+        }} />
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -533,84 +535,84 @@ function CreateFeedByAdmin({ navigation }) {
           iconMap={{ [actions.heading1]: handleHead }}
         /> */}
         <Button title="Pick an image" onPress={pickImage} />
-          <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, minHeight: 100 }}>
-            <RichEditor
-              ref={richText}
-              style={{ minHeight: 500 }}
-              placeholder="Description"
-              value={description}
-              onChange={descriptionText => {
-                setDescription(descriptionText);
-              }}
-            />
-          </KeyboardAvoidingView>
-          <Button title="Create Feed" onPress={async () => {
-            const data = {
-              type: type,
-              startDateTime: startDateTime.toDateString(),
-              endDatTime: endDatTime.toDateString(),
-              numberOfPeople: numberOfPeople,
-              description: description,
-              image: image,
-              creater: FIREBASE_AUTH.currentUser.email,
-              createTime: new Date(),
-              avatar: FIREBASE_AUTH.currentUser.photoURL,
-              title: title,
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, minHeight: 100 }}>
+          <RichEditor
+            ref={richText}
+            style={{ minHeight: 500 }}
+            placeholder="Description"
+            value={description}
+            onChange={descriptionText => {
+              setDescription(descriptionText);
+            }}
+          />
+        </KeyboardAvoidingView>
+        <Button title="Create Feed" onPress={async () => {
+          const data = {
+            type: type,
+            startDateTime: startDateTime.toDateString(),
+            endDatTime: endDatTime.toDateString(),
+            numberOfPeople: numberOfPeople,
+            description: description,
+            image: image,
+            creater: FIREBASE_AUTH.currentUser.email,
+            createTime: new Date(),
+            avatar: FIREBASE_AUTH.currentUser.photoURL,
+            title: title,
+          }
+          console.log(data);
+          try {
+            // Add a new document with a generated id
+            const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
+            // later...
+
+
+            // Query the 'users' collection to get user IDs or device tokens of all users
+            const usersCollection = collection(FIRESTORE_DB, 'users');
+            const roleQuery = query(usersCollection, where('role', '==', 'user'));
+
+            // Retrieve user documents that match the query
+            const querySnapshot = await getDocs(roleQuery);
+
+            // Create an array to store recipient IDs
+            const recipientIds = [];
+
+            // Loop through the query snapshot to extract user IDs or device tokens
+            querySnapshot.forEach((doc) => {
+              const userData = doc.data();
+              // Assuming you have a field in your user data containing user IDs or device tokens
+              // Adjust the field name accordingly
+              const userId = userData.owner_uid; // Replace 'uid' with the actual field name
+              recipientIds.push(userId);
+            });
+
+            // Loop through each recipient and send a notification
+            for (const recipientId of recipientIds) {
+
+              const typeofpost = type ? "Promotion" : "Event";
+              const getTitle = title ? title : "New Event/Post";
+              const data1 = {
+                type: typeofpost,
+                title: getTitle,
+                body: description,
+                timestamp: new Date().toISOString(),
+                owner_uid: recipientId, // Use the current recipient's ID
+                readstatus: false,
+                createdby: FIREBASE_AUTH.currentUser.uid,
+
+              };
+
+              //console.log("each reci setis", recipientId);
+              const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
+              await setDoc(newRef1, data1);
             }
-            console.log(data);
-            try {
-              // Add a new document with a generated id
-              const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
-              // later...
 
-
-              // Query the 'users' collection to get user IDs or device tokens of all users
-              const usersCollection = collection(FIRESTORE_DB, 'users');
-              const roleQuery = query(usersCollection, where('role', '==', 'user'));
-
-              // Retrieve user documents that match the query
-              const querySnapshot = await getDocs(roleQuery);
-
-              // Create an array to store recipient IDs
-              const recipientIds = [];
-
-              // Loop through the query snapshot to extract user IDs or device tokens
-              querySnapshot.forEach((doc) => {
-                const userData = doc.data();
-                // Assuming you have a field in your user data containing user IDs or device tokens
-                // Adjust the field name accordingly
-                const userId = userData.owner_uid; // Replace 'uid' with the actual field name
-                recipientIds.push(userId);
-              });
-
-              // Loop through each recipient and send a notification
-              for (const recipientId of recipientIds) {
-
-                const typeofpost = type ? "Promotion" : "Event";
-                const getTitle = title ? title : "New Event/Post";
-                const data1 = {
-                  type: typeofpost,
-                  title: getTitle,
-                  body: description,
-                  timestamp: new Date().toISOString(),
-                  owner_uid: recipientId, // Use the current recipient's ID
-                  readstatus: false,
-                  createdby: FIREBASE_AUTH.currentUser.uid,
-
-                };
-
-                //console.log("each reci setis", recipientId);
-                const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
-                await setDoc(newRef1, data1);
-              }
-
-              await setDoc(newRef, data);
-              alert("Create Feed Success");
-              navigation.navigate("News Feed");
-            } catch (e) {
-              alert("Create Feed Fail");
-            }
-          }} />
+            await setDoc(newRef, data);
+            alert("Create Feed Success");
+            navigation.navigate("News Feed");
+          } catch (e) {
+            alert("Create Feed Fail");
+          }
+        }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -694,12 +696,13 @@ function StarRating() {
       // notification business user
       const bussinessUserId = data.owner_uid;
       const data1 = {
-        type: "Rating",
+        type: "Activity",
         title: "You have a new rating",
         body: `You have a new rating. Venue: [${data.name}] Rating: ${state.Default_Rating.toFixed(1)}, Message: ${state.message}`,
         timestamp: new Date().toISOString(),
         owner_uid: bussinessUserId,
         readstatus: false,
+        createdby: FIREBASE_AUTH.currentUser.uid,
       }
       const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
       await setDoc(newRef1, data1);
@@ -848,13 +851,14 @@ function StarRating() {
 //   )
 // }
 
+
 function ManagePost() {
   return (
     <SafeAreaView style={{ flex: 1, padding: 10 }}>
       <ScrollView>
         <View style={{ alignItems: "center" }}>
           <Text>
-            <GetNewsFeed />
+            <GetNewsFeed></GetNewsFeed>
           </Text>
         </View>
 
@@ -864,6 +868,7 @@ function ManagePost() {
 
   )
 }
+
 
 export default function SocialScreen({ navigation }) {
   const auth = FIREBASE_AUTH;
@@ -953,7 +958,7 @@ export default function SocialScreen({ navigation }) {
           name="Manage Post"
           component={ManagePost}
           options={{
-            title: "Manage Post",
+            title: "My Post",
             headerStyle: {
               backgroundColor: "#ffa31a",
             },

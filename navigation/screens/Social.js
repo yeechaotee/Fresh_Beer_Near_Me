@@ -147,10 +147,10 @@ function NewsFeed() {
                   : <></>
               }
               {
-                item.startDateTime ? <Text style={{ ...styles.rowText, marginRight: 5 }}>Start Date: {item.startDateTime}</Text> : <></>
+                item.startDateTime ? <Text style={{ ...styles.rowText, marginRight: 5 }}>Start Date: {typeof item.startDateTime === 'string' ? item.startDateTime : ""}</Text> : <></>
               }
               {
-                item.endDatTime ? <Text style={styles.rowText}>End Date: {item.endDatTime}</Text> : <></>
+                item.endDatTime ? <Text style={styles.rowText}>End Date: {typeof item.endDatTime === 'string' ? item.endDatTime : ""}</Text> : <></>
               }
               {
                 item.numberOfPeople && item.numberOfPeople !== "" && item.numberOfPeople !== "0" ? <Text style={styles.rowText}>Number of people participating: {item.numberOfPeople}</Text> : <></>

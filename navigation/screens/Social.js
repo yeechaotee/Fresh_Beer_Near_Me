@@ -722,7 +722,6 @@ function StarRating({ navigation }) {
       }
       const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
       await setDoc(newRef1, data1);
-      console.log("given star rating notif to", bussinessUserId);
       navigation.navigate('News Feed')
     } else {
       // doc.data() will be undefined in this case

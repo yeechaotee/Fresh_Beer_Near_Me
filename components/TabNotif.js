@@ -52,7 +52,7 @@ const TabNotif = ({ userRole }) => {
           query(
             notificationsRef,
             where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
-            where('type', 'in', ['Rating', 'Verification']),
+            where('type', 'in', ['Rating', 'verification']),
             orderBy('timestamp', 'desc')
           )
           :

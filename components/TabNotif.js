@@ -26,8 +26,10 @@ const HeaderButton = (props) => (
 );
 
 const TabNotif = ({ userRole }) => {
-  const defaultTab = userRole == "businessUser" ? "Activity" : "New Venue";
-  const [activeTab, setActiveTab] = useState("defaultTab");
+
+  // const defaultTab = userRole == "businessUser" ? "Activity" : "New Venue"
+  //const [activeTab, setActiveTab] = useState("defaultTab");
+  const [activeTab, setActiveTab] = useState("New Venue");
 
 
   const [activeData, setActiveData] = useState([]);
@@ -40,6 +42,7 @@ const TabNotif = ({ userRole }) => {
       console.log('User not authenticated.');
       return;
     }
+
 
     try {
 
@@ -108,7 +111,6 @@ const TabNotif = ({ userRole }) => {
 
       const notifications = await Promise.all(notificationPromises);
 
-
       setActiveData(notifications);
     } catch (error) {
       console.log(`Error fetching ${tabName} notifications:`, error);
@@ -148,6 +150,7 @@ const TabNotif = ({ userRole }) => {
   ];
   const tabs = userRole == "businessUser" ? tabsBO : tabsBD;
   console.log('tabs is ', userRole);
+
 
   /* //hardcoded testing data
 

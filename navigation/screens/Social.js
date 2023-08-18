@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, Text, FlatList, TextInput, SafeAreaView, Button, ScrollView, KeyboardAvoidingView, Image, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Text, FlatList, TextInput, SafeAreaView, Button, ScrollView, KeyboardAvoidingView, Image, TouchableOpacity, LogBox, } from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { actions, RichEditor, RichToolbar } from "react-native-pell-rich-editor";
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -30,6 +30,8 @@ import { VenueInfo } from "../../components/home/VenueItems";
 import GetNewsFeed from '../../components/profile/getNewsFeed';
 import sendCustomPushNotification from './NotificationUtils';
 import { useNavigation } from '@react-navigation/native';
+
+LogBox.ignoreAllLogs(true);
 
 const Drawer = createDrawerNavigator();
 

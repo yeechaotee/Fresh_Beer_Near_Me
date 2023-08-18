@@ -132,7 +132,7 @@ function NewsFeed() {
             <View style={styles.rowHeader}>
               <View style={styles.rowIcon} >
                 {
-                  item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
+                  item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 40, height: 40, borderRadius: 20 }} /> : <></>
                 }
               </View>
               <View style={styles.rowContent}>
@@ -305,6 +305,16 @@ function CreateFeed({ navigation }) {
             />
           </KeyboardAvoidingView>
           <Button title="Creat Feed" onPress={async () => {
+            const userRef = collection(FIRESTORE_DB, "users");
+            console.log(FIREBASE_AUTH.currentUser.uid)
+            const userSnap = query(userRef, where("owner_uid", "==", FIREBASE_AUTH.currentUser.uid));
+            const userSnapShot = await getDocs(userSnap);
+            if (userSnapShot.size === 0) {
+              alert("User Profile is not exist");
+              return;
+            }
+            const user = userSnapShot.docs[0].data();
+            console.log(user)
             const data = {
               type: false,
               startDateTime: "",
@@ -314,7 +324,7 @@ function CreateFeed({ navigation }) {
               image: image,
               creater: FIREBASE_AUTH.currentUser.email,
               createTime: new Date(),
-              avatar: FIREBASE_AUTH.currentUser.photoURL,
+              avatar: user.profile_picture,
             }
             // Add a new document with a generated id
             const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
@@ -528,6 +538,7 @@ function CreateFeedByAdmin({ navigation }) {
             />
           </KeyboardAvoidingView>
           <Button title="Creat Feed" onPress={async () => {
+            console.log(FIREBASE_AUTH.currentUser)
             const data = {
               type: type,
               startDateTime: startDateTime.toDateString(),
@@ -537,7 +548,7 @@ function CreateFeedByAdmin({ navigation }) {
               image: image,
               creater: FIREBASE_AUTH.currentUser.email,
               createTime: new Date(),
-              avatar: FIREBASE_AUTH.currentUser.photoURL,
+              avatar: FIREBASE_AUTH.currentUser.profile_picture,
             }
             console.log(data);
             try {
@@ -558,30 +569,7 @@ function CreateFeedByAdmin({ navigation }) {
   );
 }
 
-// function AddFriends() {
-//   return (
-//     <SafeAreaView style={{ flex: 1, padding: 10 }}>
-//       <View style={{ alignItems: "center"}}>
-//         <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
-//           Add Via User Name
-//         </Text>
-//       </View>
-//         <TextInput style={styles.input} value="username"/>
-//         <View  style={{ marginBottom: 10 }}>
-//           <Button title="Send friend Request" />
-//         </View>
-//         <View style={{alignItems: "center"}}>
-//           <Text style={{marginTop: 40, fontWeight: "bold"}}>OR</Text>
-//         </View>
-//         <View style={{ marginBottom: 10, marginTop: 60}}>
-//           <Button title="Add Via Your Phone Contact" />
-//         </View>
-//         <Button style={{ marginTop: 10 }} title="Nearby Scan" />
-//     </SafeAreaView>
-//   );
-// }
-
-function StarRating() {
+function StarRating({ navigation }) {
 
   const [state, setState] = React.useState({
     id: null,
@@ -642,6 +630,7 @@ function StarRating() {
       }
       const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
       await setDoc(newRef1, data1);
+      navigation.navigate('News Feed');
     } else {
       // doc.data() will be undefined in this case
       console.log("No such document!");
@@ -772,18 +761,6 @@ function StarRating() {
     </SafeAreaView>
   )
 }
-
-// function Report() {
-//   return (
-//     <SafeAreaView style={{ flex: 1, padding: 10 }}>
-//       <View style={{ alignItems: "center"}}>
-//         <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
-//           TODO: Report Page
-//         </Text>
-//       </View>
-//     </SafeAreaView>
-//   )
-// }
 
 export default function SocialScreen({ navigation }) {
   const auth = FIREBASE_AUTH;

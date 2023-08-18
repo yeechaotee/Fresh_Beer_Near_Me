@@ -849,14 +849,14 @@ function StarRating() {
 //   )
 // }
 
-/* cindy comment out
+
 function ManagePost() {
   return (
     <SafeAreaView style={{ flex: 1, padding: 10 }}>
       <ScrollView>
         <View style={{ alignItems: "center" }}>
           <Text>
-
+            <GetNewsFeed></GetNewsFeed>
           </Text>
         </View>
 
@@ -866,7 +866,7 @@ function ManagePost() {
 
   )
 }
-*/
+
 
 export default function SocialScreen({ navigation }) {
   const auth = FIREBASE_AUTH;
@@ -951,19 +951,19 @@ export default function SocialScreen({ navigation }) {
           }}
         /> : <></>
       }
-      {/*
+      {
         <Drawer.Screen
           name="Manage Post"
           component={ManagePost}
           options={{
-            title: "Manage Post",
+            title: "My Post",
             headerStyle: {
               backgroundColor: "#ffa31a",
             },
             headerTitleAlign: "center",
           }}
         />
-        */}
+      }
       {/* {
         isAdmin ? <Drawer.Screen
           name="Report"

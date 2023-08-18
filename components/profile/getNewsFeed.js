@@ -202,11 +202,7 @@ const GetNewsFeed = () => {
                     </View>
                 </View>
             </View>
-            <View style={styles.rowContainer}>
-                <TouchableOpacity onPress={() => handleEditPress(item)}>
-                    <FontAwesome5 name="edit" size={20} color="black" />
-                </TouchableOpacity>
-            </View>
+
         </TouchableOpacity>
 
     );
@@ -242,89 +238,6 @@ const GetNewsFeed = () => {
                 renderItem={renderNewsFeedItem}
                 keyExtractor={(item) => item.id}
             />
-
-            {/* Modal */}
-            <Modal
-                visible={isModalVisible}
-                animationType="slide"
-                transparent={true}
-            >
-                <View style={styles.modalContainer}>
-                    {selectedItem && (
-                        <View style={styles.modalContent}>
-                            {/* Display editable fields */}
-                            <Text style={styles.title}>Edit</Text>
-
-                            <View style={styles.inputRow}>
-                                <Text style={styles.label}>Title:</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    value={selectedItem.title}
-                                    onChangeText={(text) =>
-                                        setSelectedItem((prevItem) => ({ ...prevItem, title: text }))
-                                    }
-                                />
-                            </View>
-                            {isDatePickerVisible && (
-                                <DateTimePicker
-                                    value={selectedDate || new Date()}
-                                    mode="date"
-                                    display="default"
-                                    onChange={(event, selectedDate) => {
-                                        if (selectedDate) {
-                                            setSelectedDate(selectedDate); // Set the selected date
-                                            setUserData({ ...prevItem, startDateTime: selectedDate.toISOString() });
-                                        }
-                                        setDatePickerVisible(false); // Hide the date picker
-                                    }}
-                                />
-                            )}
-                            {/* Start Date */}
-                            <TouchableOpacity onPress={() => showDatePicker}>
-                                <View style={styles.inputRow}>
-                                    <FontAwesome style={{ marginRight: 10 }} name="calendar" color="#333333" size={20} />
-                                    <TextInput
-                                        placeholder="start date"
-                                        placeholderTextColor="#666666"
-                                        editable={false}
-                                        value={
-                                            selectedDate
-                                                ? selectedDate.toDateString()
-                                                : selectedItem.startDateTime
-                                                    ? new Date(selectedItem.startDateTime).toDateString()
-                                                    : ''
-                                        }
-                                        style={styles.input}
-                                    />
-                                </View>
-                            </TouchableOpacity>
-
-                            <View style={styles.inputRow}>
-                                <Text style={styles.label}>No. of people participating:</Text>
-                                <TextInput
-                                    value={selectedItem.numberOfPeople}
-                                    style={styles.input}
-                                    placeholder="number"
-                                    keyboardType="numeric"
-                                    // onChangeText={(text) => setNumberOfPeople(text)}
-                                />
-                            </View>
-
-
-                            {/* ... Other editable fields */}
-                            <View style={styles.buttonContainer}>
-                                <TouchableOpacity style={styles.buttonLeft} onPress={saveModal}>
-                                    <Text style={styles.buttonText}>Save</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.buttonRight} onPress={closeModal}>
-                                    <Text style={styles.buttonText}>Cancel</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    )}
-                </View>
-
-            </Modal>
         </View>
     );
 };

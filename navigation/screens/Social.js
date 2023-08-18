@@ -538,6 +538,16 @@ function CreateFeedByAdmin({ navigation }) {
             />
           </KeyboardAvoidingView>
           <Button title="Creat Feed" onPress={async () => {
+            const userRef = collection(FIRESTORE_DB, "users");
+            console.log(FIREBASE_AUTH.currentUser.uid)
+            const userSnap = query(userRef, where("owner_uid", "==", FIREBASE_AUTH.currentUser.uid));
+            const userSnapShot = await getDocs(userSnap);
+            if (userSnapShot.size === 0) {
+              alert("User Profile is not exist");
+              return;
+            }
+            const user = userSnapShot.docs[0].data();
+            console.log(user)
             console.log(FIREBASE_AUTH.currentUser)
             const data = {
               type: type,
@@ -548,7 +558,7 @@ function CreateFeedByAdmin({ navigation }) {
               image: image,
               creater: FIREBASE_AUTH.currentUser.email,
               createTime: new Date(),
-              avatar: FIREBASE_AUTH.currentUser.profile_picture,
+              avatar: user.profile_picture,
             }
             console.log(data);
             try {

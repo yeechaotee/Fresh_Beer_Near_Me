@@ -172,7 +172,7 @@ export default function NotificationsScreen(navigation) {
     }
   };
 
-  /* commenting out, give up on push local notification
+  /* commenting out, give up on push notification
 
    // Get user's permission to send device notification
   useEffect(() => {
@@ -214,6 +214,28 @@ export default function NotificationsScreen(navigation) {
     };
   }, []);
   */
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
+      if (userId) {
+        const { docId, userRole } = await getCurrentUserDocId(userId);
+        if (docId) {
+          //updateUsertoken(docId, token);
+          setCurrentLoggedInUser({ docId, userRole });
+        } else {
+          console.log('User document not found.');
+        }
+      }
+    };
+
+    // Call the fetchUserToken function
+    fetchUserRole();
+
+    // Rest of your code
+  }, []);
+
+
   return (
 
     <TailwindProvider>

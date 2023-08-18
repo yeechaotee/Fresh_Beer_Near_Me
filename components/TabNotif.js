@@ -26,7 +26,7 @@ const HeaderButton = (props) => (
 );
 
 const TabNotif = ({ userRole }) => {
-  const [activeTab, setActiveTab] = useState('Promotion');
+  const [activeTab, setActiveTab] = userRole == "businessUser" ? useState('Activity') : useState('Promotion');
   const [activeData, setActiveData] = useState([]);
 
 
@@ -52,7 +52,7 @@ const TabNotif = ({ userRole }) => {
           query(
             notificationsRef,
             where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
-            where('type', 'in', ['rating', 'verification']),
+            where('type', 'in', ['Rating', 'Verification']),
             orderBy('timestamp', 'desc')
           )
           :
@@ -142,9 +142,9 @@ const TabNotif = ({ userRole }) => {
 
   const tabsBO = [
     { id: '1', name: 'Activity' },
-    { id: '2', name: '         ' },
-    { id: '3', name: '         ' },
-    { id: '3', name: '         ' },
+    { id: '2', name: '                                    ' },
+    //{ id: '3', name: '         ' },
+    //{ id: '3', name: '         ' },
     //{ id: '4', name: 'News Feed' },
     // Add more tabs as needed
   ];

@@ -87,7 +87,13 @@ const GetNewsFeed = () => {
                     const docRef = querySnapshot.docs[0].ref;
                     await updateDoc(docRef, {
                         title: selectedItem.title,
+
+                        type: selectedItem.type,
+                        startDateTime: selectedItem.startDateTime,
+                        startDateTime: selectedItem.startDateTime,
+                        endDatTime: selectedItem.endDatTime,
                         numberOfPeople: selectedItem.numberOfPeople,
+                        description: selectedItem.description,
                         // Update other fields as needed
                     });
                 }
@@ -96,7 +102,7 @@ const GetNewsFeed = () => {
                 setSelectedItem(null);
 
                 // Refresh the news feed after updating
-                fetchNewsFeed();
+                //fetchNewsFeed();
 
             } catch (error) {
                 console.error('Error updating data:', error);
@@ -265,50 +271,49 @@ const GetNewsFeed = () => {
                                     }
                                 />
                             </View>
-                            {isDatePickerVisible && (
-                                <DateTimePicker
-                                    value={selectedDate || new Date()}
-                                    mode="date"
-                                    display="default"
-                                    onChange={(event, selectedDate) => {
-                                        if (selectedDate) {
-                                            setSelectedDate(selectedDate); // Set the selected date
-                                            setUserData({ ...prevItem, startDateTime: selectedDate.toISOString() });
-                                        }
-                                        setDatePickerVisible(false); // Hide the date picker
-                                    }}
-                                />
-                            )}
-                            {/* Start Date */}
-                            <TouchableOpacity onPress={() => showDatePicker}>
-                                <View style={styles.inputRow}>
-                                    <FontAwesome style={{ marginRight: 10 }} name="calendar" color="#333333" size={20} />
-                                    <TextInput
-                                        placeholder="start date"
-                                        placeholderTextColor="#666666"
-                                        editable={false}
-                                        value={
-                                            selectedDate
-                                                ? selectedDate.toDateString()
-                                                : selectedItem.startDateTime
-                                                    ? new Date(selectedItem.startDateTime).toDateString()
-                                                    : ''
-                                        }
-                                        style={styles.input}
-                                    />
-                                </View>
-                            </TouchableOpacity>
+
 
                             <View style={styles.inputRow}>
-                                <Text style={styles.label}>No. of people participating:</Text>
+                                <Text style={styles.label}>startDateTime:</Text>
                                 <TextInput
-                                    value={selectedItem.numberOfPeople}
                                     style={styles.input}
-                                    placeholder="number"
-                                    keyboardType="numeric"
-                                // onChangeText={(text) => setNumberOfPeople(text)}
+                                    value={selectedItem.startDateTime}
+                                    onChangeText={(text) =>
+                                        setSelectedItem((prevItem) => ({ ...prevItem, startDateTime: text }))
+                                    }
                                 />
                             </View>
+                            <View style={styles.inputRow}>
+                                <Text style={styles.label}>endDatTime:</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    value={selectedItem.endDatTime}
+                                    onChangeText={(text) =>
+                                        setSelectedItem((prevItem) => ({ ...prevItem, endDatTime: text }))
+                                    }
+                                />
+                            </View>
+                            <View style={styles.inputRow}>
+                                <Text style={styles.label}>numberOfPeople:</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    value={selectedItem.numberOfPeople}
+                                    onChangeText={(text) =>
+                                        setSelectedItem((prevItem) => ({ ...prevItem, numberOfPeople: text }))
+                                    }
+                                />
+                            </View>
+                            <View style={styles.inputRow}>
+                                <Text style={styles.label}>description:</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    value={selectedItem.description}
+                                    onChangeText={(text) =>
+                                        setSelectedItem((prevItem) => ({ ...prevItem, description: text }))
+                                    }
+                                />
+                            </View>
+
 
 
                             {/* ... Other editable fields */}

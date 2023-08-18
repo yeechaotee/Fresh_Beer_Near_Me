@@ -688,8 +688,10 @@ function StarRating({ navigation }) {
     }
     const newRef = doc(collection(FIRESTORE_DB, "reviews"));
     await setDoc(newRef, data);
+
+
     // reviews & rating
-    console.log(state.id)
+    console.log("Created review", state.id);
     const docRef = doc(FIRESTORE_DB, "venues", state.id);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
@@ -713,15 +715,18 @@ function StarRating({ navigation }) {
       // notification business user
       const bussinessUserId = data.owner_uid;
       const data1 = {
-        type: "Rating",
+        type: "Activity",
         title: "You have a new rating",
-        body: `You have a new rating. Venue: [${data.name}] Rating: ${state.Default_Rating.toFixed(1)}, Message: ${state.message}`,
+        body: "idw to die",// `You have a new rating. Venue: [${data.name}] Rating: ${state.Default_Rating.toFixed(1)}, Message: ${state.message}`,
         timestamp: new Date().toISOString(),
         owner_uid: bussinessUserId,
         readstatus: false,
+        createdby: FIREBASE_AUTH.currentUser.uid,
       }
       const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
       await setDoc(newRef1, data1);
+      console.log("created notif", data.name, state.Default_Rating.toFixed(1), state.message);
+
       navigation.navigate('News Feed')
     } else {
       // doc.data() will be undefined in this case

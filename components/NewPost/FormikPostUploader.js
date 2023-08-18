@@ -235,7 +235,7 @@ const FormikPostUploader = ({ navigation }) => {
             for (const recipientId of recipientIds) {
 
                 const data1 = {
-                    type: "New Venue",
+                    type: "Activity",
                     title: resName,
                     body: city ? city : "Location unknown",
                     timestamp: new Date().toISOString(),

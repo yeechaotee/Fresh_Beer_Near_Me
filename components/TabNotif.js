@@ -26,7 +26,9 @@ const HeaderButton = (props) => (
 );
 
 const TabNotif = ({ userRole }) => {
-  const [activeTab, setActiveTab] = userRole == "businessUser" ? useState('Activity') : useState('Promotion');
+  const [activeTab, setActiveTab] = useState("Activity");
+
+
   const [activeData, setActiveData] = useState([]);
 
 
@@ -39,29 +41,23 @@ const TabNotif = ({ userRole }) => {
     }
 
     try {
+
       const notificationsRef = collection(FIRESTORE_DB, 'notifications');
-      const q = tabName === "News Feed" ?
+      const q =
+        /*  tabName === "Activity" ?
+            query(
+              notificationsRef,
+              where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
+              where('type', 'in', ['Rating', 'verification']),
+              orderBy('timestamp', 'desc')
+            )
+            :*/
         query(
           notificationsRef,
           where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
-          where('type', '==', "userpost"),
+          where('type', '==', tabName),
           orderBy('timestamp', 'desc')
-        )
-        :
-        tabName === "Activity" ?
-          query(
-            notificationsRef,
-            where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
-            where('type', 'in', ['Rating', 'verification']),
-            orderBy('timestamp', 'desc')
-          )
-          :
-          query(
-            notificationsRef,
-            where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
-            where('type', '==', tabName),
-            orderBy('timestamp', 'desc')
-          );
+        );
 
 
       const querySnapshot = await getDocs(q);
@@ -133,9 +129,10 @@ const TabNotif = ({ userRole }) => {
   const tabsBD = [
     /*{ id: '1', name: 'Activity' },
      */
+    { id: '4', name: 'Activity' },
     { id: '2', name: 'Promotion' },
     { id: '3', name: 'Event' },
-    { id: '4', name: 'New Venue' },
+
 
     // Add more tabs as needed
   ];

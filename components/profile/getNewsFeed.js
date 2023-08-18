@@ -306,7 +306,7 @@ const GetNewsFeed = () => {
                                     style={styles.input}
                                     placeholder="number"
                                     keyboardType="numeric"
-                                    // onChangeText={(text) => setNumberOfPeople(text)}
+                                // onChangeText={(text) => setNumberOfPeople(text)}
                                 />
                             </View>
 

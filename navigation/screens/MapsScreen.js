@@ -90,7 +90,7 @@ export default function MapsScreen() {
   };
 
   useEffect(() => {
-  async function getVenueDataFromFirestore() {
+    async function getVenueDataFromFirestore() {
       try {
         // Get a reference to the "Venue" collection in Firestore
         const venueCollectionRef = query(collection(FIRESTORE_DB, "venues"), where('isActivated', "==", true));
@@ -161,8 +161,8 @@ export default function MapsScreen() {
       }
     }
 
-  getVenueDataFromFirestore();
-}, []);
+    getVenueDataFromFirestore();
+  }, []);
 
   // Function to handle the check-in button press
   const chekInPress = () => {
@@ -171,21 +171,21 @@ export default function MapsScreen() {
     // Find the nearest venue marker
     let nearestMarker = null;
     let minDistance = Number.MAX_SAFE_INTEGER;
-  
+
     venueData.forEach((item, index) => {
       const venuePosition = {
         latitude: parseFloat(item.latitude),
         longitude: parseFloat(item.longitude),
       };
-  
+
       const distance = getDistance(userLocation, venuePosition);
-  
+
       if (distance < minDistance) {
         minDistance = distance;
         nearestMarker = item;
       }
     });
-  
+
     // Focus the map on the nearest marker
     if (nearestMarker) {
       const nearestMarkerPosition = {
@@ -196,24 +196,24 @@ export default function MapsScreen() {
 
       // Simulate pressing the marker twice (change the delay between presses if needed)
       setTimeout(() => {
-      handleOpenMapInfoModal(nearestMarker.name);
+        handleOpenMapInfoModal(nearestMarker.name);
       }, 1000); // Delay before the first press
 
       setTimeout(() => {
-      handleOpenMapInfoModal(nearestMarker.name);
+        handleOpenMapInfoModal(nearestMarker.name);
       }, 2000); // Delay before the second press
-  
+
     }
-  
+
     // Show the checkmark animation
     setIsCheckmarkVisible(true);
-  
+
     // Hide the checkmark animation after the animation completes
     setTimeout(() => {
       setIsCheckmarkVisible(false);
     }, 4000); // Adjust the duration as needed based on the animation duration
   };
-  
+
   // Function to calculate the distance between two coordinate points
   const getDistance = (coord1, coord2) => {
     const lat1 = coord1.latitude;
@@ -233,7 +233,7 @@ export default function MapsScreen() {
     const distance = R * c; // Distance in km
     return distance;
   };
-  
+
   // Function to convert degrees to radians
   const deg2rad = (deg) => {
     return deg * (Math.PI / 180);
@@ -286,7 +286,7 @@ export default function MapsScreen() {
   };
 
 
-// Function to show the locations of interest on the map
+  // Function to show the locations of interest on the map
   const showLocationsOfInterest = () => {
     return venueData.map((item, index) => {
       const latitude = parseFloat(item.latitude); // Convert latitude to a floating-point number

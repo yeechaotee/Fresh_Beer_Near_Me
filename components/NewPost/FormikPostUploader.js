@@ -206,9 +206,6 @@ const FormikPostUploader = ({ navigation }) => {
 
         try {
 
-            // Add a new document with a generated id
-            const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
-
             // Query the 'users' collection to get user IDs or device tokens of all users
             const usersCollection = collection(FIRESTORE_DB, 'users');
 
@@ -249,7 +246,6 @@ const FormikPostUploader = ({ navigation }) => {
                 const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
                 await setDoc(newRef1, data1);
             }
-            alert("Create Feed Success");
         } catch (e) {
             alert("Create Feed Fail");
         }

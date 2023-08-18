@@ -418,38 +418,6 @@ function CreateFeedByAdmin({ navigation }) {
     _handleImagePicked(pickerResult);
   };
 
-  const _maybeRenderImage = () => {
-    let { image } = state;
-    if (!image) {
-      return;
-    }
-
-    return (
-      <View
-        style={{
-          marginTop: 30,
-          width: 250,
-          borderRadius: 3,
-          elevation: 2,
-        }}
-      >
-        <View
-          style={{
-            borderTopRightRadius: 3,
-            borderTopLeftRadius: 3,
-            shadowColor: "rgba(0,0,0,1)",
-            shadowOpacity: 0.2,
-            shadowOffset: { width: 4, height: 4 },
-            shadowRadius: 5,
-            overflow: "hidden",
-          }}
-        >
-          <Image source={{ uri: image }} style={{ width: 250, height: 250 }} />
-        </View>
-      </View>
-    );
-  };
-
   return (
     <SafeAreaView>
       <ScrollView>
@@ -579,11 +547,6 @@ function CreateFeedByAdmin({ navigation }) {
           }
           console.log(data);
           try {
-            // Add a new document with a generated id
-            const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
-            // later...
-
-
             // Query the 'users' collection to get user IDs or device tokens of all users
             const usersCollection = collection(FIRESTORE_DB, 'users');
             const roleQuery = query(usersCollection, where('role', '==', 'user'));
@@ -623,7 +586,8 @@ function CreateFeedByAdmin({ navigation }) {
               const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
               await setDoc(newRef1, data1);
             }
-
+            // Add a new document with a generated id
+            const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
             await setDoc(newRef, data);
             alert("Create Feed Success");
             navigation.navigate("News Feed");

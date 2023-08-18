@@ -639,9 +639,7 @@ function CreateFeedByAdmin({ navigation }) {
 //   );
 // }
 
-function StarRating() {
-
-  const navigation = useNavigation();
+function StarRating({ navigation }) {
 
   const [state, setState] = React.useState({
     id: null,
@@ -656,7 +654,6 @@ function StarRating() {
   //Empty Star. You can also give the path from local
   const Star_With_Border = 'https://raw.githubusercontent.com/AboutReact/sampleresource/master/star_corner.png';
 
-  const navigation = useNavigation();
   async function onSubmitComment() {
 
     if (state.id === null) {
@@ -705,7 +702,7 @@ function StarRating() {
       }
       const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
       await setDoc(newRef1, data1);
-      navigation.goBack();
+      navigation.navigate('News Feed')
     } else {
       // doc.data() will be undefined in this case
       console.log("No such document!");

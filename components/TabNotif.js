@@ -131,7 +131,7 @@ const TabNotif = ({ userRole }) => {
               const handcreatedate = new Date(notificationData.createTime.seconds * 1000 + notificationData.createTime.nanoseconds / 1000000);
 
               // Compare the two dates
-              if (startdateFromStr <= threeDaysLater && startdateFromStr < enddateFromStr) {
+              if (startdateFromStr <= threeDaysLater && startdateFromStr <= enddateFromStr) {
 
                 const profilePicture = userDoc.data().profile_picture;
                 const eventorpromo = notificationData.type ? " a promotion" : "an event";

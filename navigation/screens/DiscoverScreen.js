@@ -24,7 +24,6 @@ import { DrawerActions } from '@react-navigation/native';
 import NewPostScreen from './NewPostScreen';
 
 
-
 const YELP_API_KEY = "S_sQQHygX7Ui-K8lufhHmS0SZ_eH9ICa3CFPWTf1a0PcucfjqtH97x-sPBtpF3m65FB2Hp1UAQyMSw3XLlTHm3WALMQ3l5q3YcCmWnVxK8Cyaah2kiYfivsO0U2uZHYx"
 
 

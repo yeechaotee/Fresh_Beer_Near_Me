@@ -4,10 +4,15 @@
 
 Use [`expo-router`](https://expo.github.io/router) to build native navigation using files in the `app/` directory.
 
-## 🚀 How to use
+## 🚀 How to Setup and Execute our mobile app (Must run below CLI for initial setup)
 
 ```sh
+Initial installation:
+npm install
 npm install --global expo-cli
+
+(For starting mobile application after setup)
+npm start
 expo-cli start --tunnel
 
 Kindly install all neccessary CLI packages required in this mobile application if prompted to you during the compilation and setup

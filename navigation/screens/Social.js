@@ -588,8 +588,8 @@ function CreateFeedByAdmin({ navigation }) {
             // Loop through each recipient and send a notification
             for (const recipientId of recipientIds) {
 
-              const typeofpost = type ? "Promotion" : "Event";
-              const getTitle = title ? title : "New Event/Post";
+              const typeofpost = "Promo/Event";
+              const getTitle = title ? title : "New Promo/Event";
               const data1 = {
                 type: typeofpost,
                 title: getTitle,
@@ -603,6 +603,7 @@ function CreateFeedByAdmin({ navigation }) {
 
               //console.log("each reci setis", recipientId);
               const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
+
               await setDoc(newRef1, data1);
             }
 

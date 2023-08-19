@@ -29,7 +29,7 @@ const TabNotif = ({ userRole }) => {
 
   // const defaultTab = userRole == "businessUser" ? "Activity" : "New Venue"
   //const [activeTab, setActiveTab] = useState("defaultTab");
-  const [activeTab, setActiveTab] = useState("New Venue");
+  const [activeTab, setActiveTab] = useState("Upcoming");
 
 
   const [activeData, setActiveData] = useState([]);
@@ -47,24 +47,27 @@ const TabNotif = ({ userRole }) => {
     try {
 
       const notificationsRef = collection(FIRESTORE_DB, 'notifications');
-      const q =
-        /*  tabName === "Activity" ?
-            query(
-              notificationsRef,
-              where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
-              where('type', 'in', ['Rating', 'verification']),
-              orderBy('timestamp', 'desc')
-            )
-            :*/
-        query(
-          notificationsRef,
-          where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
-          where('type', '==', tabName),
-          orderBy('timestamp', 'desc')
-        );
+      const feedsRef = collection(FIRESTORE_DB, "newsfeed");
 
+      const q =
+        tabName === "Upcoming" ?
+          query(
+            feedsRef,
+            orderBy("startDateTime", "asc"),
+          )
+          :
+          query(
+            notificationsRef,
+            where('owner_uid', '==', FIREBASE_AUTH.currentUser.uid),
+            where('type', '==', tabName),
+            orderBy('timestamp', 'desc')
+          );
 
       const querySnapshot = await getDocs(q);
+
+      const numberOfDocumentsQueried = querySnapshot.size;
+      console.log('Number of documents queried:', numberOfDocumentsQueried);
+
       /*
       const notifications = [];
 
@@ -76,12 +79,12 @@ const TabNotif = ({ userRole }) => {
       });
       */
 
-
       const notificationPromises = querySnapshot.docs.map(async (doc) => {
         const notificationData = doc.data();
         const timestampString = notificationData.timestamp;
         const timestamp = new Date(timestampString);
-        //console.log("Cindyyyyy");
+
+        // for tabs that are filtering from "notification" collection
         if (notificationData.owner_uid) {
           const userRef = collection(FIRESTORE_DB, "users");
           const userQuerySnapshot = await getDocs(
@@ -96,13 +99,75 @@ const TabNotif = ({ userRole }) => {
               query(userRef, where("owner_uid", "==", notificationData.createdby), limit(1))
             );
             const profilePicture = NotifCreaterSnapshot.docs[0].data().profile_picture;
-            //console.log("can u see meeee", profilePicture);
+            //console.log("profile pic is", profilePicture);
             return {
               id: doc.id,
               ...notificationData,
               timestamp,
               profile_picture: profilePicture, // Include the user's profile picture
             };
+
+          }
+        }
+
+        // for tabs that are filtering from "newsfeed" collection
+        if (notificationData.creater) {
+          const userRef = collection(FIRESTORE_DB, "users");
+          const userQuerySnapshot = await getDocs(
+            query(userRef, where("email", "==", notificationData.creater), limit(1))
+          );
+
+          if (!userQuerySnapshot.empty) {
+            const userDoc = userQuerySnapshot.docs[0];
+            const userData = userDoc.data();
+
+            if (notificationData.startDateTime) {
+              /*
+              const moment = require('moment');
+              const dateString = "Tue Sep 19 2023";
+              const dateObject = moment(dateString, "ddd MMM DD YYYY").toDate();
+              console.log(dateObject);
+              console.log("notification data is ", notificationData.startDateTime);
+              */
+              // Example date string in the format "Sat Aug 26 2023"
+
+              // Get the current date
+              const currentDate = new Date();
+
+              // Calculate three days ago
+              const threeDaysLater = new Date();
+              threeDaysLater.setDate(currentDate.getDate() + 3);
+              //console.log("3 days ago", threeDaysLater);
+
+              const startdateString = notificationData.startDateTime;
+              const enddateString = notificationData.endDatTime;
+
+              // Parse the date string into a JavaScript Date object
+              const startdateFromStr = new Date(startdateString);
+              const enddateFromStr = new Date(enddateString);
+
+              console.log("The notif", notificationData.createTime.nanoseconds);
+              console.log("The notif", notificationData.createTime.seconds);
+              const handcreatedate = new Date(notificationData.createTime.seconds * 1000 + notificationData.createTime.nanoseconds / 1000000);
+
+              // Compare the two dates
+              if (startdateFromStr <= threeDaysLater && startdateFromStr < enddateFromStr) {
+
+                const profilePicture = userDoc.data().profile_picture;
+                const eventorpromo = notificationData.type ? " a promotion" : "an event";
+
+                return {
+                  id: doc.id,
+                  body:
+                    ` Hey, ${eventorpromo} is happening from ${notificationData.startDateTime} to ${notificationData.endDatTime}. Check out news feed from social for more!`,
+                  ...notificationData,
+                  timestamp: handcreatedate,
+                  profile_picture: profilePicture,
+                };
+
+              }
+            }
+
           }
         }
 
@@ -110,8 +175,8 @@ const TabNotif = ({ userRole }) => {
       });
 
       const notifications = await Promise.all(notificationPromises);
-
-      setActiveData(notifications);
+      const nonNullNotifications = notifications.filter((notification) => notification !== null);
+      setActiveData(nonNullNotifications);
     } catch (error) {
       console.log(`Error fetching ${tabName} notifications:`, error);
     }
@@ -130,20 +195,21 @@ const TabNotif = ({ userRole }) => {
   }, []);
 
   const tabsBD = [
-    /*{ id: '1', name: 'Activity' },
-     */
+    { id: '1', name: 'Upcoming' },
     { id: '4', name: 'New Venue' },
-    { id: '2', name: 'Promotion' },
-    { id: '3', name: 'Event' },
+    { id: '3', name: 'Promo/Event' },
+    //{ id: '2', name: 'Promotion' },
+    //{ id: '3', name: 'Event' },
 
 
     // Add more tabs as needed
   ];
 
   const tabsBO = [
-    { id: '1', name: 'Activity' },
-    { id: '2', name: '                                    ' },
-    //{ id: '3', name: '         ' },
+    { id: '1', name: 'Upcoming' },
+    { id: '2', name: 'Activity' },
+    { id: '3', name: '                  ' },
+    //
     //{ id: '3', name: '         ' },
     //{ id: '4', name: 'News Feed' },
     // Add more tabs as needed
@@ -237,7 +303,6 @@ const TabNotif = ({ userRole }) => {
       <View style={styles.tabContainer}>
 
         {tabs.map((tab) => (
-
 
           <HeaderButton
             key={tab.id}

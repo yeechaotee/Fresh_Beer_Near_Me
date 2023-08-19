@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, SafeAreaView } from 'react-native';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../firebase';
 import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -314,7 +314,7 @@ const TabNotif = ({ userRole }) => {
 
         ))}
       </View>
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
 
         <FlatList
           data={activeData}
@@ -340,7 +340,7 @@ const TabNotif = ({ userRole }) => {
           keyExtractor={(item) => item.id.toString()}
         />
 
-      </View>
+      </SafeAreaView>
     </View>
   );
 };
@@ -350,6 +350,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     backgroundColor: '#ffffff',
+    marginBottom: 70,
   },
   tabContainer: {
     flexDirection: 'row',

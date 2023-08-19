@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Text, FlatList, TextInput, SafeAreaView, Button, ScrollView, KeyboardAvoidingView, Image, TouchableOpacity, LogBox, } from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { actions, RichEditor, RichToolbar } from "react-native-pell-rich-editor";
@@ -47,6 +47,7 @@ function NewsFeed() {
   const [showFoot, setShowFoot] = React.useState(0)
   const [isRefresh, setIsRefresh] = React.useState(false)
 
+
   React.useEffect(() => {
     async function isAdmin() {
       const feedsRef = collection(FIRESTORE_DB, "users");
@@ -75,6 +76,7 @@ function NewsFeed() {
           ...doc.data(),
           createTime: doc.data().createTime.toDate().toDateString(),
         });
+
       });
     } else {
       const q1 = query(feedsRef, orderBy("createTime", "desc"), limit(PAGE_SIZE * page));
@@ -257,6 +259,24 @@ function CreateFeed({ navigation }) {
     _handleImagePicked(pickerResult);
   };
 
+
+  const [profilePic2, setProfilePic2] = useState("");
+
+
+  useEffect(async () => {
+    const user = FIREBASE_AUTH.currentUser;
+
+    if (user) {
+      const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        setProfilePic2(doc.data().profile_picture);
+      });
+
+    }
+  }, []);
+
+
   const _maybeRenderImage = () => {
     if (!image) {
       return;
@@ -310,6 +330,7 @@ function CreateFeed({ navigation }) {
           />
         </KeyboardAvoidingView>
         <Button title="Create Feed" onPress={async () => {
+
           const data = {
             type: false,
             startDateTime: "",
@@ -319,7 +340,7 @@ function CreateFeed({ navigation }) {
             image: image,
             creater: FIREBASE_AUTH.currentUser.email,
             createTime: new Date(),
-            avatar: FIREBASE_AUTH.currentUser.photoURL,
+            avatar: profilePic2,
           }
           // Add a new document with a generated id
           const newRef = doc(collection(FIRESTORE_DB, "newsfeed"));
@@ -409,6 +430,22 @@ function CreateFeedByAdmin({ navigation }) {
     console.log({ pickerResult });
     _handleImagePicked(pickerResult);
   };
+
+  const [profilePic, setProfilePic] = useState("");
+
+
+  useEffect(async () => {
+    const user = FIREBASE_AUTH.currentUser;
+
+    if (user) {
+      const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        setProfilePic(doc.data().profile_picture);
+      });
+
+    }
+  }, []);
 
   const _maybeRenderImage = () => {
     let { image } = state;
@@ -547,6 +584,7 @@ function CreateFeedByAdmin({ navigation }) {
           />
         </KeyboardAvoidingView>
         <Button title="Create Feed" onPress={async () => {
+
           const data = {
             type: type,
             startDateTime: startDateTime.toDateString(),
@@ -556,7 +594,7 @@ function CreateFeedByAdmin({ navigation }) {
             image: image,
             creater: FIREBASE_AUTH.currentUser.email,
             createTime: new Date(),
-            avatar: FIREBASE_AUTH.currentUser.photoURL,
+            avatar: profilePic,
             title: title,
           }
           console.log(data);

@@ -15,38 +15,24 @@ import {
 } from 'react-native';
 
 import { TailwindProvider } from 'tailwindcss-react-native';
-// import { DiscoveryImage } from '../../assets';
-// import * as Animatable from "react-native-animatable";
 import TabNotif from '../../components/TabNotif';
-//import TabNotif from '../../components/TabNotif';
-// import SearchBar from '../../components/SearchBar';
-// import Categories from '../../components/Categories';
-
-///////////////////////////////////////////////
-
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-//import ScreenA from './ScreenA';
-import ScreenB from './ScreenB';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from "expo-constants";
-//import { Text, View, Button, Platform } from 'react-native';
 import { addDoc, collection, collectionGroup, onSnapshot, setDoc, doc, getDoc, updateDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
 import { dismissAllNotificationsAsync, getPresentedNotificationsAsync, cancelScheduledNotificationAsync, getNotificationAsync } from 'expo-notifications';
 import { updateUsertoken } from 'firebase/firestore';// Import your function for updating the Firestore document
-//import { v4 as uuidv4 } from 'uuid';
 /////////////////////////////////////////////////////////
 
 export default function NotificationsScreen(navigation) {
 
   const onPressHandler = () => {
-    // navigation.navigate('Screen_A');
     navigation.goBack();
   }
 
@@ -75,7 +61,6 @@ export default function NotificationsScreen(navigation) {
       const querySnapshot = await getDocs(q);
 
       const updatePromises = [];
-      //console.log("are u dismiss?");
       querySnapshot.forEach((doc) => {
         const notificationRef = doc.ref; // Use .ref to get the reference to the document
         // Update the "readstatus" field in each document using updateDoc
@@ -92,7 +77,6 @@ export default function NotificationsScreen(navigation) {
 
 
   //To be uncomment after integration
-  //dismissAllNotificationsAsync();
 
   //for manual trigger
   const [presentedNotificationCount, setPresentedNotificationCount] = useState(0);
@@ -130,7 +114,6 @@ export default function NotificationsScreen(navigation) {
     try {
       // Assuming you have a collection named after the current user's ID in Firestore
       const userCollectionRef = collection(FIRESTORE_DB, 'users');
-      //console.log('My UserID:', userId);
       // Create a query to fetch the documents in the user's collection (should be only one document)
       const q = query(userCollectionRef, where('owner_uid', '==', userId));
 
@@ -172,49 +155,6 @@ export default function NotificationsScreen(navigation) {
     }
   };
 
-  /* commenting out, give up on push notification
-
-   // Get user's permission to send device notification
-  useEffect(() => {
-    registerForPushNotificationsAsync(projectId)
-      .then(async (token) => {
-        setExpoPushToken(token);
-        console.log('expoPushToken token is', token);
-        console.log('user id is.', FIREBASE_AUTH.currentUser.uid);
-        // Call the function to get the current user's document ID
-        const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
-        if (userId) {
-          const { docId, userRole } = await getCurrentUserDocId(userId);
-          //console.log('user role is', userRole);
-          // Call the function to update the Firestore document with the new expoPushToken
-        
-          if (docId) {
-            updateUsertoken(docId, token);
-            setCurrentLoggedInUser({ docId, userRole });
-          } else {
-            console.log('User document not found.');
-          }
-        }
-      })
-      .catch((error) => {
-        console.log('Error getting Expo push token:', error);
-      });
-  
-    notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
-      setNotification(notification);
-    });
-  
-    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-      console.log('response', response);
-    });
-  
-    return () => {
-      Notifications.removeNotificationSubscription(notificationListener.current);
-      Notifications.removeNotificationSubscription(responseListener.current);
-    };
-  }, []);
-  */
-
   useEffect(() => {
     const fetchUserRole = async () => {
       const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
@@ -240,48 +180,9 @@ export default function NotificationsScreen(navigation) {
 
     <TailwindProvider>
       <SafeAreaView className="bg-white flex-1 relative">
-        {/* First Section */}
-        {/* <View style={{ backgroundColor: 'white', padding: 10 }}>
-                    <TabNotif />
-                    <SearchBar />
-                    <Categories />
-                </View> */}
         <View className="flex-row px-6 mt-8 items-center space-x-2">
           <Text className="text-[#2A2B4B] text-3xl font-semibold">Notification</Text>
         </View>
-
-        {/* Test send Section 
-                <View
-                    style={{ backgroundColor: 'white', padding: 10 }}>
-                    <Text>Your expo push token: {expoPushToken}</Text>
-                    <Text>uid: {FIREBASE_AUTH.currentUser.uid}</Text>
-                    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                      <Text>Title: {notification && notification.request.content.title} </Text>
-                      <Text>Body: {notification && notification.request.content.body}</Text>
-                      <Text>Data: {notification && JSON.stringify(notification.request.content.data)}</Text>
-                    </View>
-                    <Button
-                      title="Press to schedule a notification 2"
-                      onPress={async () => {
-                        await schedulePushNotification();
-                        
-                      }}
-                    />
-
-                    <Button
-                      title="Press to schedule a notification 1"
-                      onPress={async () => {
-                        await sendPushNotification();
-                      }}
-                    />
-                  </View>
-
-                  <Button title="Dismiss All Notifications" onPress={dismissAllNotifications} />
-                  <Button title="Get Presented Notifications" onPress={getPresentedNotifications} />
-                      
-                <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                      <Text>Notification Count: {presentedNotificationCount}</Text>
-                </View>*/}
 
         {/* Second Section */}
         <View style={{ backgroundColor: 'white', padding: 10 }}>
@@ -356,7 +257,6 @@ async function sendPushNotification() {
 async function schedulePushNotification() {
 
   // Cancel all previously scheduled notifications
-  //await Notifications.cancelAllScheduledNotificationsAsync();
 
   await Notifications.scheduleNotificationAsync({
     identifier: notification.identifier,
@@ -368,7 +268,6 @@ async function schedulePushNotification() {
     trigger: { seconds: 2, repeats: false },
   });
 
-  //console.log('NotificationID:', notificationId);
 }
 
 

@@ -9,7 +9,6 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
 import LottieView from 'lottie-react-native';
 import { Picker } from '@react-native-picker/picker'
-// import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import TimeRangePicker from 'react-native-range-timepicker';
 import SearchBar from '../../components/home/SearchBar';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -29,7 +28,6 @@ const FormikPostUploader = ({ navigation }) => {
     const [selectedCat, setSelectedCat] = useState("Bar");
 
     const uploadPostSchema = Yup.object().shape({
-        // imageUrl: Yup.string().url().required('A URL is required'),
         caption: Yup.string().max(2200, 'Caption has reached the max characters (2200)'),
         resName: Yup.string().required('Restaurant Name is required.').max(255, 'Restaurant name has reached the max characters (255)'),
         priceRange: Yup.string().required('Price Range is required.').max(5, 'Kindly input between 1 to 5 range only.')
@@ -113,10 +111,6 @@ const FormikPostUploader = ({ navigation }) => {
             quality: 1,
         });
 
-        // if (!result.cancelled) {
-        //     setImage(result.uri);
-        // }
-
         if (!result.canceled && result.assets.length > 0) {
             setImage(result.assets[0].uri);
             setImageUploaded(false);
@@ -160,8 +154,6 @@ const FormikPostUploader = ({ navigation }) => {
     const [region, setRegion] = useState([]);
 
 
-
-
     // Get user on mount
     useEffect(() => {
         getUser();
@@ -174,10 +166,8 @@ const FormikPostUploader = ({ navigation }) => {
             // add to 'posts' database firebase
             const doc = await addDoc(collection(FIRESTORE_DB, 'venues'),
                 {
-                    // venueId: doc.id,
                     name: resName,
                     image_url: imageUrl,
-                    // owner_uid: FIREBASE_AUTH.currentUser.uid,
                     caption: caption,
                     categories: [selectedCat],
                     rating: 0,
@@ -200,9 +190,6 @@ const FormikPostUploader = ({ navigation }) => {
             console.log(error);
             alert('venues add to firebase failed: ' + error.message);
         }
-        // finally {
-        //     setLoading(false);
-        // }
 
         try {
 
@@ -245,7 +232,6 @@ const FormikPostUploader = ({ navigation }) => {
 
                 };
 
-                //console.log("each reci setis", recipientId);
                 const newRef1 = doc(collection(FIRESTORE_DB, "notifications"));
                 await setDoc(newRef1, data1);
             }
@@ -338,7 +324,6 @@ const FormikPostUploader = ({ navigation }) => {
                         </View>
                         <Divider width={0.2} orientation='vertical' />
                         <View style={{ padding: 10 }}>
-                            {/* <HeaderTabs activeTab={activeTab} setActiveTab={setActiveTab} /> */}
                             <SearchBar cityHandler={setCity} />
                         </View>
                         <Divider width={0.2} orientation='vertical' />
@@ -381,31 +366,6 @@ const FormikPostUploader = ({ navigation }) => {
                         </View>
 
                         <Divider width={0.2} orientation='vertical' />
-                        {/* <View style={{ marginBottom: 1 }} >
-                            <TextInput
-                                onChange={(e) => setThumbnailUrl(e.nativeEvent.text)}
-                                style={{ fontSize: 17 }}
-                                placeholder='Enter Image Url'
-                                placeholderTextColor='gray'
-                                onChangeText={handleChange('imageUrl')}
-                                onBlur={handleBlur('imageUrl')}
-                                value={values.imageUrl}
-                            />
-                            {errors.imageUrl && (
-                                <Text style={{ fontSize: 10, color: 'red' }}>
-                                    {errors.imageUrl}
-                                </Text>
-                            )}
-                        </View> */}
-
-
-                        {/* <Pressable titleSize={20}
-                        style={styles.button(isValid)}
-                        onPress={handleSubmit}
-                        disabled={!isValid}
-                    >
-                        <Text style={styles.buttonText} >Log In</Text>
-                    </Pressable> */}
 
                         <Button title="Upload Image" onPress={selectImage} />
                         <Pressable titleSize={20}
@@ -424,12 +384,11 @@ const FormikPostUploader = ({ navigation }) => {
                             setRegion={setRegion}
                             username={values.resName}
                         />
-                        {/* <Button style={{ maxWidth: 280, borderRadius: 10 }} onPress={handleSubmit} title='Post' disabled={!isValid} /> */}
+
                         {loading ?
                             <LottieView source={require('../../assets/onSuccess.json')}
                                 autoPlay={true}
                                 loop={true}
-                            // onAnimationFinish={onAnimationFinish}
                             /> :
                             (<></>)}
 

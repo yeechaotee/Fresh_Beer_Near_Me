@@ -50,7 +50,6 @@ export default function MenuItems(props) {
                 style={[styles.backRightBtn, styles.backRightBtnRight]}
                 onPress={() => {
                     // delete item action here
-                    // console.log('Delete item:', data.item);
                     deleteItem(data.item);
 
                 }}>
@@ -63,27 +62,6 @@ export default function MenuItems(props) {
         navigation.navigate('EditExistingMenuItemScreen', { venueId: venueId, itemData: item });
     };
 
-    // const saveEditedItem = async () => {
-    //     if (!editedItem) {
-    //         console.error('No item is being edited.');
-    //         return;
-    //     }
-
-    //     try {
-    //         // Update the item in Firebase
-    //         const itemDocRef = doc(FIRESTORE_DB, 'venues', venueId, 'MenuItems', editedItem.id);
-    //         await setDoc(itemDocRef, editedItem, { merge: true }); // Merge with existing data
-
-    //         // Update the local state to reflect the changes
-    //         const updatedData = nestedData.map((d) => (d.id === editedItem.id ? editedItem : d));
-    //         setNestedData(updatedData);
-
-    //         // Clear the editedItem state after saving
-    //         setEditedItem(null);
-    //     } catch (error) {
-    //         console.error('Error saving edited item:', error);
-    //     }
-    // };
 
     const deleteItem = async (item) => {
         try {

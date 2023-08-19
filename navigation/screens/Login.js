@@ -27,8 +27,6 @@ export default function Login({ navigation }) {
         password: Yup.string().required().min(6, 'Your password has to have at least 8 characters')
     })
 
-    // const [email, setEmail] = useState('');
-    // const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const auth = FIREBASE_AUTH;
 
@@ -62,43 +60,12 @@ export default function Login({ navigation }) {
                     }
                 ]
             )
-            // alert('Sign in failed: ' + error.message);
         }
         finally {
             setLoading(false);
         }
     }
 
-    // const signIn = async () => {
-    //     setLoading(true);
-    //     try {
-    //         const response = await signInWithEmailAndPassword(auth, email, password);
-    //         console.log(response);
-    //     }
-    //     catch (error) {
-    //         console.log(error);
-    //         alert('Sign in failed: ' + error);
-    //     }
-    //     finally {
-    //         setLoading(false);
-    //     }
-    // }
-
-    // const signUp = async () => {
-    //     setLoading(true);
-    //     try {
-    //         const response = await createUserWithEmailAndPassword(auth, email, password);
-    //         console.log(response);
-    //         alert('Sign Up successfully! Please check your email.');
-    //     }
-    //     catch (error) {
-    //         console.log(error);
-    //         alert('Sign Up failed: ' + error);
-    //     }
-    //     finally {
-    //         setLoading(false);
-    //     }
-    // }
 
     return (
         <View style={styles.container}>
@@ -116,7 +83,6 @@ export default function Login({ navigation }) {
                         source={require('../../assets/arrowback.png')}
                         style={{ width: 20, height: 20 }}
                     />
-                    {/* <FontAwesome5 name={'arrow-alt-circle-left'} color={'#fff'} size={30} /> */}
                 </TouchableOpacity>}
             <View style={styles.logoContainer}>
                 <Image source={{ uri: BEER_LOGO, height: 200, width: 200 }} />
@@ -144,11 +110,9 @@ export default function Login({ navigation }) {
                                         autoCapitalize='none'
                                         keyboardType='email-address'
                                         autoFocus={true}
-                                        // value={email}
                                         value={values.email}
                                         onChangeText={handleChange('email')}
                                         onBlur={handleBlur('email')}
-                                    // onChangeText={(text) => setEmail(text)}
                                     ></TextInput>
                                 </View>
                                 <View style={[styles.inputField, {
@@ -163,8 +127,6 @@ export default function Login({ navigation }) {
                                         value={values.password}
                                         onChangeText={handleChange('password')}
                                         onBlur={handleBlur('password')}
-                                    // value={password}
-                                    // onChangeText={(text) => setPassword(text)}
                                     ></TextInput>
                                 </View>
                                 {loading ?
@@ -183,9 +145,6 @@ export default function Login({ navigation }) {
                                                 <Text style={{ color: '#6BB0F5' }}>Sign Up</Text>
                                             </TouchableOpacity>
                                         </View>
-                                        {/* <Button title='Log in' onPress={signIn} /> */}
-                                        {/* <Button title='Create an account' onPress={signUp} /> */}
-                                        {/* <Button title='Create an account' onPress={() => navigation.navigate("Signup")} /> */}
 
                                     </>
                                     )}

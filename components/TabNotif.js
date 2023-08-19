@@ -27,8 +27,6 @@ const HeaderButton = (props) => (
 
 const TabNotif = ({ userRole }) => {
 
-  // const defaultTab = userRole == "businessUser" ? "Activity" : "New Venue"
-  //const [activeTab, setActiveTab] = useState("defaultTab");
   const [activeTab, setActiveTab] = useState("Upcoming");
 
 
@@ -68,16 +66,6 @@ const TabNotif = ({ userRole }) => {
       const numberOfDocumentsQueried = querySnapshot.size;
       console.log('Number of documents queried:', numberOfDocumentsQueried);
 
-      /*
-      const notifications = [];
-
-      querySnapshot.forEach((doc) => {
-        const notificationData = doc.data();
-        const timestampString = notificationData.timestamp;
-        const timestamp = new Date(timestampString); 
-        notifications.push({ id: doc.id, ...notificationData, timestamp  });
-      });
-      */
 
       const notificationPromises = querySnapshot.docs.map(async (doc) => {
         const notificationData = doc.data();
@@ -99,7 +87,6 @@ const TabNotif = ({ userRole }) => {
               query(userRef, where("owner_uid", "==", notificationData.createdby), limit(1))
             );
             const profilePicture = NotifCreaterSnapshot.docs[0].data().profile_picture;
-            //console.log("profile pic is", profilePicture);
             return {
               id: doc.id,
               ...notificationData,
@@ -122,13 +109,6 @@ const TabNotif = ({ userRole }) => {
             const userData = userDoc.data();
 
             if (notificationData.startDateTime) {
-              /*
-              const moment = require('moment');
-              const dateString = "Tue Sep 19 2023";
-              const dateObject = moment(dateString, "ddd MMM DD YYYY").toDate();
-              console.log(dateObject);
-              console.log("notification data is ", notificationData.startDateTime);
-              */
               // Example date string in the format "Sat Aug 26 2023"
 
               // Get the current date
@@ -198,10 +178,6 @@ const TabNotif = ({ userRole }) => {
     { id: '1', name: 'Upcoming' },
     { id: '4', name: 'New Venue' },
     { id: '3', name: 'Promo/Event' },
-    //{ id: '2', name: 'Promotion' },
-    //{ id: '3', name: 'Event' },
-
-
     // Add more tabs as needed
   ];
 
@@ -209,85 +185,11 @@ const TabNotif = ({ userRole }) => {
     { id: '1', name: 'Upcoming' },
     { id: '2', name: 'Activity' },
     { id: '3', name: '                  ' },
-    //
-    //{ id: '3', name: '         ' },
-    //{ id: '4', name: 'News Feed' },
     // Add more tabs as needed
   ];
   const tabs = userRole == "businessUser" ? tabsBO : tabsBD;
   console.log('tabs is ', userRole);
 
-
-  /* //hardcoded testing data
-
-  const generateRandomTime = () => {
-  const hours = Math.floor(Math.random() * 12); // Random hour (0-11)
-  const minutes = Math.floor(Math.random() * 60); // Random minute (0-59)
-  const isAM = Math.random() < 0.5; // Randomly choose AM or PM
-
-  // Format hours to be in two digits
-  const formattedHours = hours.toString().padStart(2, '0');
-
-  // Format minutes to be in two digits
-  const formattedMinutes = minutes.toString().padStart(2, '0');
-
-  // Determine if it's AM or PM
-  const period = isAM ? 'AM' : 'PM';
-
-  // Return the formatted time
-  return `${formattedHours}:${formattedMinutes} ${period}`;
-};
-
-  const SampleDataActivity = [
-    { id: '1', name: 'Franco', message: 'testmessage', time: generateRandomTime() },
-    { id: '2', name: 'Matilda', message: 'testmessage', time: generateRandomTime() },
-    // Other data for Activity
-  ];
-
-  const SampleDataPromotion = Array.from({ length: 100 }, (item, index) => ({
-    id: index + 1,
-    name: `Mike ${index + 1}`,
-    message: `testmessage ${index + 1}`,
-    time: generateRandomTime(),
-  }));
-
-  const SampleDataEvent = Array.from({ length: 100 }, (item, index) => ({
-    id: index + 1,
-    name: `YC ${index + 1}`,
-    message: `testmessage ${index + 1}`,
-    time: generateRandomTime(),
-  }));
-
-  const SampleDataNewsFeed = Array.from({ length: 100 }, (item, index) => ({
-    id: index + 1,
-    name: `Mandy ${index + 1}`,
-    message: `testmessage ${index + 1}`,
-    time: generateRandomTime(),
-  }));
-
-  let activeData = [];
-
-  switch (activeTab) {
-    case 'Activity':
-      activeData = SampleDataActivity;
-      break;
-    case 'Promotion':
-      activeData = SampleDataPromotion;
-      break;
-    case 'Event':
-      //activeData = fetchNotification;
-      activeData = SampleDataEvent;
-      break;
-    case 'News Feed':
-      activeData = SampleDataNewsFeed;
-      break;
-
-    // Add more cases for additional tabs if needed
-
-    default:
-      activeData = [];
-  }
-  */
 
   function removeDivTags(text) {
     // Replace <div> and </div> tags with an empty string
@@ -323,7 +225,6 @@ const TabNotif = ({ userRole }) => {
 
               <View style={styles.rowIcon} >
                 {
-                  //item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
                   <Image
                     style={{ width: 50, height: 50, borderRadius: 25, marginTop: -3 }}
                     source={{ uri: item.profile_picture }}
@@ -380,7 +281,6 @@ const styles = StyleSheet.create({
   },
   rowText: {
     fontSize: 16,
-    //fontWeight: 'bold',
     marginBottom: 4,
   },
   rowTime: {

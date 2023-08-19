@@ -1,13 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-//import { Image } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
-import ScreenB from './navigation/screens/ScreenB';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Social from './navigation/screens/Social';
 import ProfileScreen from './navigation/screens/ProfileScreen';
 import MapsScreen from './navigation/screens/MapsScreen';
-//import { View } from 'react-native-animatable';
 import RootNavigation from './navigation';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './navigation/screens/Login';
@@ -36,15 +33,6 @@ const Tab = createMaterialBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 const LogonStack = createNativeStackNavigator();
 
-
-// const [userProfile, setUserProfile] = useState(null);
-// const getUserProfile = async (user) => {
-//   const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
-//   const querySnapshot = await getDocs(q);
-//   querySnapshot.forEach((doc) => {
-//     setUserProfile(doc.data());
-//   });
-// };
 
 const ProfileStack = ({ navigation, route }) => (
 
@@ -80,27 +68,6 @@ function LogonLayout() {
   const [userProfile, setUserProfile] = useState(null);
   const navigation = useNavigation();
 
-  /*
-  // get current user and user role from firebase
-  useEffect(() =>
-    onAuthStateChanged(FIREBASE_AUTH, async (user) => {
-      // console.log('User info ---> ', user);
-      if (user) {
-        const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
-        console.log("user id is:: " + user.uid);
-        const querySnapshot = await getDocs(q);
-        querySnapshot.forEach((doc) => {
-          // doc.data() is never undefined for query doc snapshots
-          setUserProfile(doc.data());
-          // console.log(doc.id, " => ", doc.data());
-          // console.log(doc.id, " => User Role: ", doc.data().role);
-        });
-      }
-    })
-    , []);
-
-    */
-
   // Fetch user profile from Firestore
   const fetchUserProfile = async (user) => {
     const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
@@ -126,19 +93,6 @@ function LogonLayout() {
 
   useEffect(() => {
 
-    /*
-    // Fetch user profile from Firestore
-    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (user) => {
-      if (user) {
-        const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
-        const querySnapshot = await getDocs(q);
-        querySnapshot.forEach((doc) => {
-          setUserProfile(doc.data());
-          console.log("showing?");
-        });
-      }
-    });
-    */
 
     // Subscribe to notification events and update the count when a new notification is presented
     const notificationSubscription = Notifications.addNotificationResponseReceivedListener(() => {
@@ -149,12 +103,6 @@ function LogonLayout() {
     const getPresentedNotifications = async () => {
       try {
 
-        /*
-        const presentedNotifications = await getPresentedNotificationsAsync();
-        const notificationCount = presentedNotifications.length;
-        const firestoreNotificationCount = 0;
-        setPresentedNotificationCount(notificationCount)
-        */
 
         const notificationsRef = collection(FIRESTORE_DB, 'notifications');
         const q = query(
@@ -173,14 +121,10 @@ function LogonLayout() {
       }
     };
 
-    // Call the function to get the initial count
-    //getPresentedNotifications();
-
     // Set up an interval to update the notification count every 10 seconds =>10000
     const interval = setInterval(getPresentedNotifications, 21600000);
 
     return () => {
-      //unsubscribe();
       notificationSubscription.remove();
 
       clearInterval(interval); // Clear the interval when the component unmounts
@@ -195,26 +139,21 @@ function LogonLayout() {
           if (route.name === 'Map') {
             iconName = 'map';
             size = focused ? 25 : 20;
-            // color = focused ? '#f0f' : '#555';
           } else if (route.name === 'Discovery') {
             iconName = 'beer';
             size = focused ? 25 : 20;
-            // color = focused ? '#f0f' : '#555';
           }
           else if (route.name === 'Social') {
             iconName = 'users';
             size = focused ? 25 : 20;
-            // color = focused ? '#f0f' : '#555';
           }
           else if (route.name === 'Notification') {
             iconName = 'bell';
             size = focused ? 25 : 20;
-            // color = focused ? '#f0f' : '#555';
           }
           else if (route.name === 'Profile') {
             iconName = 'user-circle';
             size = focused ? 25 : 20;
-            // color = focused ? '#f0f' : '#555';
           }
           return (
             <FontAwesome5
@@ -247,7 +186,6 @@ function LogonLayout() {
       <Tab.Screen
         name="Social"
         component={Social}
-      //options={{ tabBarBadge: 45 }}
       />
       <Tab.Screen
         name="Discovery"
@@ -283,27 +221,6 @@ function LogonLayout() {
           component={ProfileStack}
         />
       }
-      {/* <Tab.Screen
-        name="Profile"
-        component={ProfileStack}
-        options={{
-          title: 'My Profile',
-          tabBarIcon: ({ size, focused, color }) => {
-            return (
-              <Image
-                style={{ width: 30, height: 30, borderRadius: 15, marginTop: -3 }}
-                source={{ uri: userProfile.profile_picture }}
-              />
-            );
-          },
-        }}
-      /> */}
-      {/* <Tab.Screen
-        name="Profile"
-        component={ProfileStack}
-      /> */}
-
-
     </Tab.Navigator>
   )
 }
@@ -317,16 +234,13 @@ function GuessLogon() {
           if (route.name === 'Map') {
             iconName = 'map';
             size = focused ? 25 : 20;
-            // color = focused ? '#f0f' : '#555';
           } else if (route.name === 'Discovery') {
             iconName = 'beer';
             size = focused ? 25 : 20;
-            // color = focused ? '#f0f' : '#555';
           }
           else if (route.name === 'Profile') {
             iconName = 'user-circle';
             size = focused ? 25 : 20;
-            // color = focused ? '#f0f' : '#555';
           }
           return (
             <FontAwesome5
@@ -437,15 +351,6 @@ function App() {
     <>
       {user && getEmailVerificationStatus() ? !loadingInitial && SignedInStack() : !loadingInitial && SignedOutStack()}
     </>
-    // <NavigationContainer>
-    //   <Stack.Navigator initialRouteName="Login">
-    //     {user ?
-    //       (<Stack.Screen name={"Logon as " + user.email} component={LogonLayout} options={{ headerShown: false }} />) :
-    //       (<Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />)}
-    //     <Stack.Screen name="Signup" component={Signup} options={{ title: 'Sign up' }} />
-
-    //   </Stack.Navigator>
-    // </NavigationContainer>
   );
 }
 

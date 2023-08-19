@@ -11,8 +11,7 @@ const editProfModal = ({
   setModalVisible,
   setBeerProfile,
   setFavBeer,
-  setRegion,
-  finishModal
+  setRegion
 }) => {
   //submit button needs
   const handleModalSubmit = (beerProfileValue, favBeerValue, regionValue) => {
@@ -27,8 +26,6 @@ const editProfModal = ({
     setFavBeer(favBeerValue);
     setRegion(regionValue);
 
-    //set user data
-    finishModal();
 
     //close modal
     setModalVisible(false);
@@ -119,12 +116,12 @@ const editProfModal = ({
           <Text style={styles.Header2}>Update your preferences!</Text>
         
 
-        <View style={{ padding: 10, zIndex: 3 }}>
+        <View style={{ padding: 10, zIndex: 100 }}>
           <Text style={styles.Header3}>Whats your beer taste profile?</Text>
-          {/* <Text>beer types</Text> */}
 
           <DropDownPicker
             items={beerProfiles}
+            dropDownDirection="TOP"
             open={beerProfileIsOpen}
             setOpen={() => {
               setBeerProfileIsOpen(!beerProfileIsOpen),
@@ -153,7 +150,6 @@ const editProfModal = ({
 
         <View style={{ padding: 10, zIndex: 2 }}>
           <Text style={styles.Header3}>whats the best beers?</Text>
-          {/* <Text>beer types</Text> */}
 
           <DropDownPicker
             items={favBeers}
@@ -185,7 +181,6 @@ const editProfModal = ({
 
         <View style={{ padding: 10, zIndex: 1 }}>
           <Text style={styles.Header3}>select your region</Text>
-          {/* <Text>drop down region</Text> */}
 
           <DropDownPicker
             selectedItems = {regionValue}
@@ -225,7 +220,6 @@ const editProfModal = ({
               handleModalSubmit(beerProfileValue, favBeerValue, regionValue)
             )}
           />
-          {/* <Button title="cancel" onPress={() => handleSkip()} /> */}
         </View>
       </View>
     </Modal>

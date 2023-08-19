@@ -62,10 +62,6 @@ const EditItemsUploader = ({ navigation, ...props }) => {
             quality: 1,
         });
 
-        // if (!result.cancelled) {
-        //     setImage(result.uri);
-        // }
-
         if (!result.canceled && result.assets.length > 0) {
             setImage(result.assets[0].uri);
             setImageUploaded(false);
@@ -98,15 +94,6 @@ const EditItemsUploader = ({ navigation, ...props }) => {
     const [loading, setLoading] = useState(false);
 
     const uploadPostSchema = Yup.object().shape({
-        // imageUrl: Yup.string().url().required('A URL is required'),
-        // imageUrl: Yup.string().test('is-url-or-empty', 'Must be a URL or empty', value => {
-        //     // If no image is selected, allow an empty value for imageUrl
-        //     if (!image) {
-        //         return true;
-        //     }
-        //     // If an image is selected, check if the value is a valid URL
-        //     return validUrl.isUri(value || '');
-        // }),
         description: Yup.string().max(2200, 'Description has reached the max characters (2200)'),
         title: Yup.string().required('Food Title is required.').max(255, 'Food title has reached the max characters (255)'),
         price: Yup.string().required('Price is required.'),
@@ -167,9 +154,6 @@ const EditItemsUploader = ({ navigation, ...props }) => {
             console.log(error);
             alert('venues add to firebase failed: ' + error.message);
         }
-        // finally {
-        //     setLoading(false);
-        // }
 
     }
 
@@ -254,23 +238,7 @@ const EditItemsUploader = ({ navigation, ...props }) => {
                             </View>
 
                             <Divider width={0.2} orientation='vertical' />
-                            {/* <View style={{ marginBottom: 5 }} >
-                                <TextInput
-                                    onChange={(e) => setThumbnailUrl(e.nativeEvent.text)}
-                                    style={{ fontSize: 17 }}
-                                    placeholder='Enter Image Url or Upload Image'
-                                    placeholderTextColor='gray'
-                                    onChangeText={handleChange('imageUrl')}
-                                    onBlur={handleBlur('imageUrl')}
-                                    value={values.imageUrl}
-                                />
-                                {errors.imageUrl && (
-                                    <Text style={{ fontSize: 10, color: 'red' }}>
-                                        {errors.imageUrl}
-                                    </Text>
-                                )}
-                                <Button title="Upload Image" onPress={selectImage} />
-                            </View> */}
+                            
                             <Button title="Upload Image" onPress={selectImage} />
 
                             <Pressable titleSize={20}

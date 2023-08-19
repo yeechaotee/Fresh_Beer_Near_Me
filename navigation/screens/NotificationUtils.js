@@ -12,15 +12,6 @@ export async function sendCustomPushNotification(title, body, type, usergroup, u
     const usersCollection = collection(FIRESTORE_DB, 'users');
     const roleQuery = query(usersCollection, where('role', '==', usergroup));
 
-    /*
-    const usersSnapshot = await getDocs(roleQuery);
-
-    if(userID){
-      const IDQuery = query(usersCollection, where('owner_uid', '==', userID));
-      usersSnapshot = await getDocs(roleQuery);
-    }
-    */
-
     const usersSnapshot = userID ? await getDocs(query(usersCollection, where('owner_uid', '==', userID))) : await getDocs(roleQuery);
 
     // Loop through each user document
@@ -33,14 +24,6 @@ export async function sendCustomPushNotification(title, body, type, usergroup, u
 
         const notification = await Notifications.scheduleNotificationAsync({
 
-          /* not triggering push notification anymore
-          content: {
-            title: title,
-            body: body,
-          },
-          to: usertoken,
-          trigger: { seconds: 2, repeats: false },
-          */
 
         });
 

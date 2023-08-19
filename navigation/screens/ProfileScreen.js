@@ -10,7 +10,6 @@ import {
   SafeAreaView,
   LogBox,
 } from "react-native";
-// import FormButton from '../components/FormButton';
 import { AuthContext } from "../AuthProvider/AuthProvider";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../../firebase";
@@ -28,7 +27,6 @@ import {
   where,
   updateDoc,
 } from "firebase/firestore";
-// import PostCard from '../components/PostCard';
 import * as ImagePicker from "expo-image-picker";
 import { getStorage, getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -37,20 +35,16 @@ LogBox.ignoreAllLogs(true);
 
 const storage = getStorage();
 const ProfileScreen = ({ navigation, route }) => {
-  // const { user, logout } = useContext(AuthContext);
-  // const [posts, setPosts] = useState([]);
   const [image, setImage] = useState(null);
   const [imageUploaded, setImageUploaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [deleted, setDeleted] = useState(false);
-  // const [userData, setUserData] = useState(null);
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   // get current user and user role from firebase
   useEffect(
     () =>
       onAuthStateChanged(FIREBASE_AUTH, async (user) => {
-        // console.log('User info ---> ', user);
         if (user) {
           setUser(user);
           const q = query(
@@ -58,12 +52,10 @@ const ProfileScreen = ({ navigation, route }) => {
             where("owner_uid", "==", user.uid),
             limit(1)
           );
-          // console.log("user id is:: " + user.uid);
           const querySnapshot = await getDocs(q);
           querySnapshot.forEach((doc) => {
             // doc.data() is never undefined for query doc snapshots
             setUserProfile(doc.data());
-            // console.log(doc.id, " => ", doc.data());
             console.log(doc.id, " => User Role: ", doc.data().role);
           });
           navigation.addListener("focus", () => setLoading(!loading));
@@ -73,29 +65,7 @@ const ProfileScreen = ({ navigation, route }) => {
       }),
     [navigation, loading]
   );
-  // console.log("profile page userDATA is :"+userData)
-  // const getUser = async () => {
-  //     await firestore()
-  //         .collection('users')
-  //         .doc(user.uid)
-  //         .get()
-  //         .then((documentSnapshot) => {
-  //             if (documentSnapshot.exists) {
-  //                 console.log('User Data', documentSnapshot.data());
-  //                 setUserData(documentSnapshot.data());
-  //             }
-  //         })
-  // }
-  // useEffect(() => {
-  //     onAuthStateChanged(FIREBASE_AUTH, (user) => {
-  //         setUser(user);
-  //     });
-  // }, []);
-  // useEffect(() => {
-  //     getUser();
-  //     // fetchPosts();
-  //     navigation.addListener("focus", () => setLoading(!loading));
-  // }, [navigation, loading]);
+  
   const selectImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -112,7 +82,6 @@ const ProfileScreen = ({ navigation, route }) => {
       setImage(result.assets[0].uri); // Set the image state
       setImageUploaded(false);
       // Call handleFormSubmit after setting the image state
-      //handleFormSubmit(userProfile);
     }
   };
   useEffect(() => {
@@ -130,7 +99,6 @@ const ProfileScreen = ({ navigation, route }) => {
       );
       const querySnapshot = await getDocs(q);
       const updatePromises = [];
-      //console.log("are u dismiss?");
       querySnapshot.forEach((doc) => {
         const userRef = doc.ref; // Use .ref to get the reference to the document
         // Update the "readstatus" field in each document using updateDoc
@@ -143,19 +111,7 @@ const ProfileScreen = ({ navigation, route }) => {
       console.log('Error updating profile picture4:', error);
     }
   };
-  /*
-    const updateProfilePicture = async (profilePictureUrl) => {
-      try {
-        const userDocRef = doc(FIRESTORE_DB, "users", "jYylhcXdmdQZzPMRAwdB4cNXAcf2");
-        console.log(userDocRef.doc);
-        await updateDoc(userDocRef, { profile_picture: profilePictureUrl });
-        console.log("Profile picture updated successfully");
-      } catch (error) {
-        console.log("Error updating profile picture:", error);
-        throw error;
-      }
-    };
-  */
+ 
   const handleFormSubmit = async (values) => {
     console.log("handleformsubmit, image is ", image);
     console.log("handloeformsubmit, imageupload is", imageUploaded);
@@ -230,16 +186,12 @@ const ProfileScreen = ({ navigation, route }) => {
             <Ionicons name="add-circle-sharp" color="#ffa31a" size={50} style={styles.addIcon} />
           </View>
         </TouchableOpacity>
-        {/* <Text style={styles.userName}>{userData ? userData.fname || 'Test' : 'Test'} {userData ? userData.lname || 'User' : 'User'}</Text> */}
         <Text style={styles.userName}>
           {userProfile ? userProfile.username || "Undefine" : "Undefine"}
         </Text>
         <Text style={styles.aboutUser}>
           {userProfile ? userProfile.email || "Undefine" : "Undefine"}
         </Text>
-        {/* <Text style={styles.aboutUser}>
-                    {userData ? userData.about || 'No details added.' : ''}
-                </Text> */}
         <View style={styles.userBtnWrapper}>
           {
             <>
@@ -268,23 +220,9 @@ const ProfileScreen = ({ navigation, route }) => {
         </View>
         <View style={styles.userInfoWrapper}>
           <View style={styles.userInfoItem}>
-
-            {/* Use the GetNewsFeed component */}
-            {/* <Text style={styles.userInfoTitle}>{posts.length}</Text>
-                        <Text style={styles.userInfoSubTitle}>Posts</Text> */}
           </View>
-          {/* <View style={styles.userInfoItem}>
-                        <Text style={styles.userInfoTitle}>10,000</Text>
-                        <Text style={styles.userInfoSubTitle}>Followers</Text>
-                    </View>
-                    <View style={styles.userInfoItem}>
-                        <Text style={styles.userInfoTitle}>100</Text>
-                        <Text style={styles.userInfoSubTitle}>Following</Text>
-                    </View> */}
+
         </View>
-        {/* {posts.map((item) => (
-          <PostCard key={item.id} item={item} onDelete={handleDelete} />
-        ))} */}
       </ScrollView>
     </SafeAreaView>
   );

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Text, FlatList, TextInput, SafeAreaView, Button, ScrollView, KeyboardAvoidingView, Image, TouchableOpacity, LogBox, } from "react-native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { actions, RichEditor, RichToolbar } from "react-native-pell-rich-editor";
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Checkbox from 'expo-checkbox';
@@ -167,25 +166,6 @@ function NewsFeed() {
             {
               item.image ? <Image source={{ uri: item.image }} style={{ width: 250, height: 250 }} /> : <></>
             }
-            {/* <View style={styles.rowContainer}>
-                      <View style={styles.rowContainer}>
-                        {
-                          !isAdmin ? <>
-                            <FontAwesome5
-                              name={'heart'}
-                              size={20}
-                              color={'black'}
-                            />
-                            <FontAwesome5
-                                name={'comment'}
-                                size={20}
-                                color={'black'}
-                                style={{ paddingLeft: 10 }}
-                            />
-                          </> : <></>
-                        }
-                      </View>
-                  </View> */}
           </View>
         )}
         keyExtractor={(item, index) => index}
@@ -312,11 +292,6 @@ function CreateFeed({ navigation }) {
   return (
     <SafeAreaView>
       <ScrollView>
-        {/* <RichToolbar
-          editor={richText}
-          actions={[actions.setBold, actions.setItalic, actions.setUnderline, actions.heading1]}
-          iconMap={{ [actions.heading1]: handleHead }}
-        /> */}
         <Button title="Pick an image" onPress={pickImage} />
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, minHeight: 400 }}>
           <Text>Description:</Text>
@@ -566,11 +541,6 @@ function CreateFeedByAdmin({ navigation }) {
             }}
           />
         </View>
-        {/* <RichToolbar
-          editor={richText}
-          actions={[actions.setBold, actions.setItalic, actions.setUnderline, actions.heading1]}
-          iconMap={{ [actions.heading1]: handleHead }}
-        /> */}
         <Button title="Pick an image" onPress={pickImage} />
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, minHeight: 100 }}>
           <RichEditor
@@ -656,29 +626,6 @@ function CreateFeedByAdmin({ navigation }) {
     </SafeAreaView>
   );
 }
-
-// function AddFriends() {
-//   return (
-//     <SafeAreaView style={{ flex: 1, padding: 10 }}>
-//       <View style={{ alignItems: "center"}}>
-//         <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
-//           Add Via User Name
-//         </Text>
-//       </View>
-//         <TextInput style={styles.input} value="username"/>
-//         <View  style={{ marginBottom: 10 }}>
-//           <Button title="Send friend Request" />
-//         </View>
-//         <View style={{alignItems: "center"}}>
-//           <Text style={{marginTop: 40, fontWeight: "bold"}}>OR</Text>
-//         </View>
-//         <View style={{ marginBottom: 10, marginTop: 60}}>
-//           <Button title="Add Via Your Phone Contact" />
-//         </View>
-//         <Button style={{ marginTop: 10 }} title="Nearby Scan" />
-//     </SafeAreaView>
-//   );
-// }
 
 function StarRating() {
 
@@ -878,17 +825,6 @@ function StarRating() {
   )
 }
 
-// function Report() {
-//   return (
-//     <SafeAreaView style={{ flex: 1, padding: 10 }}>
-//       <View style={{ alignItems: "center"}}>
-//         <Text style={{ marginBottom: 20, marginTop: 20, fontWeight: "bold"}}>
-//           TODO: Report Page
-//         </Text>
-//       </View>
-//     </SafeAreaView>
-//   )
-// }
 
 
 function ManagePost() {
@@ -966,19 +902,6 @@ export default function SocialScreen({ navigation }) {
             }}
           />
       }
-      {/* {
-        !isAdmin ? <Drawer.Screen
-          name="Add Friends"
-          component={AddFriends}
-          options={{
-            title: "Add Friends",
-            headerStyle: {
-              backgroundColor: "#ffa31a",
-            },
-            headerTitleAlign: "center",
-          }}
-        />: <></>
-      } */}
       {
         !isAdmin ? <Drawer.Screen
           name="Star Rating"
@@ -1005,19 +928,6 @@ export default function SocialScreen({ navigation }) {
           }}
         />
       }
-      {/* {
-        isAdmin ? <Drawer.Screen
-          name="Report"
-          component={Report}
-          options={{
-            title: "Report",
-            headerStyle: {
-              backgroundColor: "#ffa31a",
-            },
-            headerTitleAlign: "center",
-          }}
-        />: <></>
-      } */}
     </Drawer.Navigator>
   );
 }
@@ -1114,7 +1024,6 @@ const styles = StyleSheet.create({
   },
   rowText: {
     fontSize: 16,
-    //fontWeight: 'bold',
     marginBottom: 4,
   },
   rowMessage: {

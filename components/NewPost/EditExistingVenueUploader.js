@@ -9,12 +9,10 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
 import LottieView from 'lottie-react-native';
 import { Picker } from '@react-native-picker/picker'
-// import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import TimeRangePicker from 'react-native-range-timepicker';
 import SearchBar from '../../components/home/SearchBar';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import DropDownPicker from 'react-native-dropdown-picker';
-import SurveyModal from "../../components/signup/surveyModal";
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -23,7 +21,6 @@ const PLACEHOLDER_IMG = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_
 const storage = getStorage();
 
 const EditExistingVenueUploader = ({ navigation, ...props }) => {
-    // const { venueId, itemData } = props.route.params;
     const { name, image, price, reviews, rating, categories, caption, manageable, operating_hour, location, venueId } = props.route.params;
     const [loading, setLoading] = useState(false);
 
@@ -34,7 +31,6 @@ const EditExistingVenueUploader = ({ navigation, ...props }) => {
     const [city, setCity] = useState(location || "Singapore");
 
     const uploadPostSchema = Yup.object().shape({
-        // imageUrl: Yup.string().url().required('A URL is required'),
         caption: Yup.string().max(2200, 'Caption has reached the max characters (2200)'),
         resName: Yup.string().required('Restaurant Name is required.').max(255, 'Restaurant name has reached the max characters (255)'),
         priceRange: Yup.string().required('Price Range is required.').max(5, 'Kindly input between 1 to 5 range only.')
@@ -95,7 +91,6 @@ const EditExistingVenueUploader = ({ navigation, ...props }) => {
 
         // upload data to Firebase
         updateVenueInFirebase(venueId, values.resName, values.imageUrl, values.caption, values.priceRange, selectedCat, start, end, city);
-        // uploadPostToFirebase(values.resName, values.imageUrl, values.caption, values.priceRange, selectedCat);
     };
 
     // Function to handle image selection using expo-image-picker
@@ -113,9 +108,6 @@ const EditExistingVenueUploader = ({ navigation, ...props }) => {
             quality: 1,
         });
 
-        // if (!result.cancelled) {
-        //     setImage(result.uri);
-        // }
 
         if (!result.canceled && result.assets.length > 0) {
             setOrgImage(result.assets[0].uri);
@@ -171,64 +163,15 @@ const EditExistingVenueUploader = ({ navigation, ...props }) => {
 
             console.log('Venue updated successfully');
 
-            // navigation.goBack();
             navigation.push('LoggedOn');
             
-            // navigation.push('VenueDetail', {
-            //     venueId: venueId,
-            //     manageable: true,
-            //     name: resName,
-            //     image: imageUrl,
-            //     caption: caption,
-            //     price: priceRange,
-            //     categories: [selectedCat],
-            //     operating_hour: (start && end) ? (start + " - " + end) : "",
-            //     location: city,
-            //     modifiedDate: modifiedDate,
-            // });
         }
         catch (error) {
             console.log(error);
             alert('Failed to update venue: ' + error.message);
         }
-        // finally {
-        //     setLoading(false);
-        // }
+
     }
-
-
-    // const updateMenuItemInFirebase = async (title, imageUrl, description, price) => {
-    //     setLoading(true);
-
-    //     try {
-    //         // Get a reference to the existing venue document
-    //         const venueDocRef = doc(FIRESTORE_DB, 'venues', venueId);
-
-    //         // Get a reference to the existing menu item document within the venue
-    //         const menuItemDocRef = doc(venueDocRef, 'MenuItems', itemData.id);
-
-    //         // Update the existing menu item with new data
-    //         const updatedData = {
-    //             title: title,
-    //             image: imageUrl,
-    //             description: description,
-    //             price: price,
-    //             // Any other fields you want to update
-    //         };
-
-    //         await updateDoc(menuItemDocRef, updatedData);
-
-    //         console.log('Menu item updated successfully');
-    //         setTimeout(() => {
-    //             // Navigate back to MenuItems
-    //             // navigation.navigate('VenueDetail', { venueId: venueId, manageable: true });
-    //             navigation.goBack();
-    //         }, 2000);
-    //     } catch (error) {
-    //         console.log(error);
-    //         alert('Failed to update menu item: ' + error.message);
-    //     }
-    // }
 
     return (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
@@ -312,7 +255,6 @@ const EditExistingVenueUploader = ({ navigation, ...props }) => {
                             </View>
                             <Divider width={0.2} orientation='vertical' />
                             <View style={{ padding: 10 }}>
-                                {/* <HeaderTabs activeTab={activeTab} setActiveTab={setActiveTab} /> */}
                                 <SearchBar cityHandler={setCity} />
                             </View>
                             <Divider width={0.2} orientation='vertical' />

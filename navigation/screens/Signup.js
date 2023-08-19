@@ -54,13 +54,9 @@ export default function Signup({ navigation }) {
       .min(6, "Your password has to have at least 8 characters"),
     businessUEN: Yup.string().required(),
   });
-
-  // const [email, setEmail] = useState('');
-  // const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const auth = FIREBASE_AUTH;
 
-  // const [selectedValue, setSelectedValue] = useState("user");
   const [selectedRole, setSelectedRole] = useState("user");
 
   //  this will also add to FIREBASE DB collection 'users' with profile pic
@@ -113,10 +109,8 @@ export default function Signup({ navigation }) {
 
   // (Test data only) get random user profile from API, look more json data on the link
   const getRandomProfilePicture = async () => {
-    // const response = await fetch("https://randomuser.me/api");
     const response = await fetch("https://api.waifu.pics/sfw/waifu");
     const data = await response.json();
-    // return data.results[0].picture.large;
     return data.url;
   };
 
@@ -150,7 +144,6 @@ export default function Signup({ navigation }) {
             source={require('../../assets/arrowback.png')}
             style={{ width: 20, height: 20 }}
           />
-          {/* <FontAwesome5 name={'arrow-alt-circle-left'} color={'#fff'} size={30} /> */}
         </TouchableOpacity>}
       <View style={styles.logoContainer}>
         <Image source={{ uri: BEER_LOGO, height: 200, width: 200 }} />
@@ -166,7 +159,6 @@ export default function Signup({ navigation }) {
               selectedRole,
               values.businessUEN
             );
-            // resetForm({ values: { email: '', password: '', username: '' } });
           }}
           validationSchema={selectedRole === "businessUser" ? BizUserSignupFormSchema : UserSignupFormSchema}
           validateOnMount={true}
@@ -191,11 +183,9 @@ export default function Signup({ navigation }) {
                     placeholderTextColor="#444"
                     keyboardType="email-address"
                     autoFocus={true}
-                    // value={email}
                     value={values.email}
                     onChangeText={handleChange("email")}
                     onBlur={handleBlur("email")}
-                  // onChangeText={(text) => setEmail(text)}
                   ></TextInput>
                 </View>
                 <View
@@ -237,8 +227,6 @@ export default function Signup({ navigation }) {
                     value={values.username}
                     onChangeText={handleChange("username")}
                     onBlur={handleBlur("username")}
-                  // value={password}
-                  // onChangeText={(text) => setPassword(text)}
                   ></TextInput>
                 </View>
                 <View
@@ -260,8 +248,6 @@ export default function Signup({ navigation }) {
                     value={values.password}
                     onChangeText={handleChange("password")}
                     onBlur={handleBlur("password")}
-                  // value={password}
-                  // onChangeText={(text) => setPassword(text)}
                   ></TextInput>
                 </View>
 
@@ -292,8 +278,6 @@ export default function Signup({ navigation }) {
                     <Pressable
                       titleSize={20}
                       style={styles.button(isValid)}
-                      //onPress={handleSubmit}
-                      //onPress={surveyIsDone ? handleSubmit : handleOpenModal}
                       //if business user, no need to do survey
                       onPress={selectedRole === "businessUser" ? handleSubmit : (surveyIsDone ? handleSubmit : handleOpenModal)}
                     >
@@ -317,9 +301,6 @@ export default function Signup({ navigation }) {
                         <Text style={{ color: "#6BB0F5" }}>Log In</Text>
                       </TouchableOpacity>
                     </View>
-                    {/* <Button title='Log in' onPress={signIn} /> */}
-                    {/* <Button title='Create an account' onPress={signUp} /> */}
-                    {/* <Button title='Create an account' onPress={() => navigation.navigate("Signup")} /> */}
                   </>
                 )}
               </KeyboardAvoidingView>

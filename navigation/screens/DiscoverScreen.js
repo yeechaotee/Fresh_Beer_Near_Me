@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { FlatList, Image, ImageBackground, RefreshControl, SafeAreaView } from 'react-native';
+import { Image, ImageBackground, RefreshControl, SafeAreaView } from 'react-native';
 import {
     StyleSheet,
     View,
@@ -8,21 +8,13 @@ import {
     TouchableOpacity
 } from 'react-native';
 
-// import { TailwindProvider } from 'tailwindcss-react-native';
-// import { DiscoveryImage } from '../../assets';
-// import * as Animatable from "react-native-animatable";
-// import HeaderTabs from '../../components/home/HeaderTabs';
-// import SearchBar from '../../components/home/SearchBar';
-// import Categories from '../../components/home/Categories';
 import { ScrollView } from 'react-native';
 import VenueItems, { localRestaurants } from '../../components/home/VenueItems';
-// import { Divider } from 'react-native-elements/dist/divider/Divider';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
 import { addDoc, collection, onSnapshot, getDocs, limit, setDoc, doc, firestore, collectionGroup, query, where, orderBy } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { Searchbar } from 'react-native-paper';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-// import AntDesign from 'react-native-vector-icons/AntDesign';
 import LottieView from 'lottie-react-native';
 import Navigator from '../../components/NewPost/drawer';
 import { createDrawerNavigator } from '@react-navigation/drawer';
@@ -42,9 +34,7 @@ const Drawer = createDrawerNavigator();
 function Home({ navigation }) {
     // passing data from VenueItems localRestaurant into venueData
     const [venueData, setVenueData] = useState(localRestaurants);
-    //const [city, setCity] = useState("Singapore");
 
-    // const [activeTab, setActiveTab] = useState("Delivery");
     const [posts, setPosts] = useState([]);
 
     const [visiblePosts, setVisiblePosts] = useState(5);  //limit contents to 5
@@ -66,6 +56,7 @@ function Home({ navigation }) {
 
     useEffect(() => {
         fetchDataFromFirebase();
+        handleRefresh();
     }, []);
 
     const fetchDataFromFirebase = async () => {
@@ -79,7 +70,6 @@ function Home({ navigation }) {
                         const venueData = change.doc.data();
                         const venueId = change.doc.id;
                         initialPosts.push({ venueId: venueId, ...venueData });
-                        // setPosts((prevVenues) => [...prevVenues, { venueId: venueId, ...venueData }]);
                     }
                 });
                 setPosts(initialPosts);
@@ -111,30 +101,17 @@ function Home({ navigation }) {
     };
 
 
-    const handleScroll = (event) => {
-        const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-        const isNearEnd = layoutMeasurement.height + contentOffset.y >= contentSize.height - 10;
-
-        if (isNearEnd && !isLoading) {
-            setIsLoading(true);
-            fetchDataFromFirebase();
-        }
-    };
-
 
     // get current user and user role from firebase
     useEffect(() =>
         onAuthStateChanged(FIREBASE_AUTH, async (user) => {
-            // console.log('User info ---> ', user);
             if (user) {
                 setUser(user);
-                console.log("User info: => " + user);
                 const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
                 // console.log("user id is:: " + user.uid);
                 const querySnapshot = await getDocs(q);
 
                 const promises = querySnapshot.docs.map(async (doc) => {
-                    // doc.data() is never undefined for query doc snapshots
                     setQueryRole(doc.data().role);
 
                     setR(doc.data().region);
@@ -163,7 +140,6 @@ function Home({ navigation }) {
 
         if (text !== "") {
             const q = query(collection(FIRESTORE_DB, 'venues'), where("name", ">=", searchString), where('isActivated', "==", true), where("name", "<=", searchString + '\uf8ff'), limit(2));
-            // console.log("user id is:: " + user.uid);
             const querySnapshot = await getDocs(q);
             setSuggestion(querySnapshot.docs);
         }
@@ -186,11 +162,9 @@ function Home({ navigation }) {
             // Check and update docData preferences
             if (r !== undefined && r !== null) {
                 matchedRegion = await getVenueData("region", r, "string");
-                //console.log("Region matched:", matchedRegion);
             }
             if (bp !== undefined && bp !== null) {
                 matchedBeerProfile = await getVenueData("beerProfile", bp, "array");
-                //console.log("beer profile matched:", matchedBeerProfile);
             }
             if (fb !== undefined && fb !== null) {
                 matchedFavBeer = await getVenueData("favBeer", fb, "array");
@@ -199,7 +173,6 @@ function Home({ navigation }) {
 
             // Combine arrays with matching preference
             const combinedArray = [...matchedRegion, ...matchedBeerProfile, ...matchedFavBeer, ...fullVenue];
-            //console.log("combinedArray isss:", combinedArray);
 
             // Count the occurrences of each venueId
             const venueIdCounts = {};
@@ -229,12 +202,6 @@ function Home({ navigation }) {
             console.log('Error updating user preferences:', error);
         }
     };
-    /*
-        useEffect(() => {
-            //getVenueFromYelp();
-            updateUserPreferences();
-        }, []);
-        */
 
     const getVenueData = async (fieldName, fieldValue, fieldtype) => {
         try {
@@ -260,32 +227,6 @@ function Home({ navigation }) {
                 const data = doc.data();
                 venueData.push({ venueId: doc.id, ...data }); // Include the venueId
             });
-
-            //console.log(`Fetched venue data by ${fieldName}:`, venueData);
-
-            //console.log(`Fetched ${fieldName}:`, fieldValue);
-
-            // Fetch the existing posts
-            //const existingPosts = [...posts];
-            //console.log('existingPosts:', existingPosts);
-
-            /*
-            // Remove entries from prevVenues that match venueData criteria
-            const updatedPrevVenues = existingPosts.filter((existingPost) => {
-                return !venueData.some((venue) => {
-                    return (
-                        venue.venueId === existingPost.venueId
-                    );
-                });
-            });
-            
-
-            console.log('Updated prevVenues (filtered):', updatedPrevVenues);
-            */
-
-            // Merge the filtered prevVenues with the new venueData
-
-            //setPosts([...venueData, ...existingPosts]);
             return venueData;
 
         } catch (error) {
@@ -298,7 +239,6 @@ function Home({ navigation }) {
     return (
         <SafeAreaView style={{ backgroundColor: "#eee", flex: 1 }}>
             <View style={{ backgroundColor: 'white', padding: 5 }}>
-                {/* <HeaderTabs activeTab={activeTab} setActiveTab={setActiveTab} /> */}
 
                 {user && queryRole == "businessUser" ?
                     <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: -10 }}>
@@ -319,8 +259,6 @@ function Home({ navigation }) {
                     </View> :
                     <>
                     </>}
-
-                {/* <SearchBar cityHandler={setCity} /> */}
 
                 <View style={{ flexDirection: 'row' }}>
                     <LottieView style={styles.logo} source={require('../../assets/beer-logo.json')}
@@ -378,31 +316,13 @@ function Home({ navigation }) {
                     }
 
                 </View>
-
-                {/* <FlatList
-                    data={posts}
-                    keyExtractor={(item, index) => index}
-                    renderItem={({ item }) => {
-                        if (item.fileType === "image") {
-                            return (
-                                <Image
-                                    source={{ uri: item.url }}
-                                    style={{ width: "34%", height: 100 }}
-                                />
-                            );
-                        }
-
-
-                    }} /> */}
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}
                 nestedScrollEnabled={true}
-                // onScroll={handleScroll}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />} >
 
                 <VenueItems venueData={posts.slice(0, visiblePosts)} navigation={navigation} manageable={false} />
-                {/* <VenueItems venueData={posts} navigation={navigation} manageable={false} /> */}
                 {showLoadMoreButton && (
                     <View style={{ alignItems: 'center', marginTop: 10 }}>
                         <Button
@@ -495,18 +415,13 @@ export default function DiscoverScreen({ navigation }) {
     // get current user and user role from firebase
     useEffect(() =>
         onAuthStateChanged(FIREBASE_AUTH, async (user) => {
-            // console.log('User info ---> ', user);
             if (user) {
                 setUser(user);
-                console.log("User info: => " + user);
                 const q = query(collection(FIRESTORE_DB, 'users'), where("owner_uid", "==", user.uid), limit(1));
-                // console.log("user id is:: " + user.uid);
                 const querySnapshot = await getDocs(q);
                 querySnapshot.forEach((doc) => {
                     // doc.data() is never undefined for query doc snapshots
                     setQueryRole(doc.data().role);
-                    // console.log(doc.id, " => ", doc.data());
-                    console.log(doc.id, " => User Role: ", doc.data().role);
                 });
             }
             else {
@@ -566,7 +481,6 @@ const styles = StyleSheet.create({
         height: 30,
         alignSelf: 'flex-end',
         marginTop: 10,
-        // resizeMode: 'contain',
     },
     logo: {
         width: 50,

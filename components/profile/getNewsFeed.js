@@ -127,23 +127,15 @@ const GetNewsFeed = () => {
         // Add more mock data as needed
     ];
 
-    /*
-    useEffect(() => {
-        // Use the mock data as the initial state
-        setNewsFeedData(mockData);
-    }, []); // Empty dependency array ensures this effect runs only once on component mount
-    */
     const renderNewsFeedItem = ({ item }) => (
 
 
         <TouchableOpacity style={styles.newsFeedItem}>
-            {/* Render individual news feed item */}
 
             <View>
                 <View style={styles.rowHeader}>
                     <View style={styles.rowIcon} >
                         {
-                            //item.avatar ? <Image source={{ uri: item.avatar }} style={{ width: 100, height: 100 }} /> : <></>
                             <Image
                                 style={{ width: 50, height: 50, borderRadius: 15, marginTop: -3 }}
                                 source={{ uri: item.profile_picture }}
@@ -206,9 +198,6 @@ const GetNewsFeed = () => {
         </TouchableOpacity>
 
     );
-
-
-    // const [numberOfppl, setNumberOfPeople] = React.useState(selectedItem.numberOfPeople);
 
 
     const [isDatePickerVisible, setDatePickerVisible] = useState(false);

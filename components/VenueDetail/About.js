@@ -63,32 +63,6 @@ export default function About(props) {
 
     };
 
-    // const toggleActivation = async () => {
-    //     try {
-    //         const venueDocRef = doc(firestore(), 'venues', venueId);
-
-    //         const venueData = await venueDocRef.get();
-
-    //         // const updatedIsActivated = !venueData.data().isActivated;
-    //         const updatedIsActivated = (venueData?.isActivatedState !== undefined || '') ? !venueData.isActivatedState : true;
-
-    //         const modifiedDate = new Date().toISOString();
-
-    //         const updatedData = {
-    //             isActivated: updatedIsActivated,
-    //             modifiedDate: modifiedDate,
-    //         };
-
-    //         await updateDoc(venueDocRef, updatedData);
-
-    //         setIsActivated(updatedIsActivated);
-
-    //         console.log('Venue activation toggled successfully');
-    //     } catch (error) {
-    //         console.error('Toggle activation error:', error);
-    //     }
-    // };
-
     const navigation = useNavigation();
 
     return (
@@ -103,7 +77,6 @@ export default function About(props) {
                     paddingVerticle: 9,
                     borderRadius: 20,
                 }}>
-                {/* <Text style={{ fontSize: 17, color: '#fff' }}>◀Back</Text> */}
                 <FontAwesome5 name={'arrow-alt-circle-left'} color={'#fff'} size={30} />
             </TouchableOpacity>
             {manageable &&
@@ -147,7 +120,6 @@ export default function About(props) {
                             paddingVerticle: 9,
                             borderRadius: 20,
                         }}>
-                        {/* <Text style={{ fontSize: 17, color: '#fff' }}>◀Back</Text> */}
                         <FontAwesome5 name={'plus-circle'} color={'orange'} size={30} />
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -163,29 +135,6 @@ export default function About(props) {
                         }}>
                         <FontAwesome5 name={isActivatedState ? 'toggle-on' : 'toggle-off'} color={'orange'} size={30} />
                     </TouchableOpacity>
-
-                    {/* <View
-                        style={{
-                            alignItems: 'center',
-                            marginTop: 110,
-                        }}>
-                        <Switch value={isActivated} onValueChange={toggleActivation} />
-                    </View> */}
-
-                    {/* <ActionButton
-                        buttonColor='orange'
-                        style={{
-                            marginLeft: 20,
-                            top: 20,
-                            right: 5,
-                            zIndex: 1,
-                            position: 'absolute',
-                            paddingVerticle: 9,
-                            borderRadius: 20,
-                        }}
-                        onPress={() => navigation.push('EditMenuItemScreen', {
-                            venueId: venueId,
-                        })} /> */}
                 </>
             }
 
@@ -193,8 +142,6 @@ export default function About(props) {
 
             <VenueName name={name} />
             <VenueCaption caption={caption} operating_hour={operating_hour} location={location} />
-
-            {/* <VenueDescription description={description} /> */}
         </View>
     );
 }
@@ -241,13 +188,3 @@ const VenueCaption = (props) => (
             }}>Located at: {[props.location]}</Text>
     </>
 )
-
-// const VenueDescription = (props) => (
-//     <Text
-//         style={{
-//             fontSize: 15.5,
-//             fontWeight: "400",
-//             marginTop: 10,
-//             marginHorizontal: 15,
-//         }}>{[props.description]}</Text>
-// )

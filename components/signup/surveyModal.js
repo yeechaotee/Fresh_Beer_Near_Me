@@ -99,8 +99,6 @@ const surveyModal = ({
     { label: "West", value: "West" },
   ];
 
-  //dynamic username
-  //const userName = "put username here dynamically"; // make dynamic later on.
   const userName = useState(username);
 
   return (
@@ -122,7 +120,6 @@ const surveyModal = ({
 
         <View style={{ padding: 10, zIndex: 3 }}>
           <Text style={styles.Header3}>Whats your beer taste profile?</Text>
-          {/* <Text>beer types</Text> */}
 
           <DropDownPicker
             items={beerProfiles}
@@ -154,7 +151,6 @@ const surveyModal = ({
 
         <View style={{ padding: 10, zIndex: 2 }}>
           <Text style={styles.Header3}>whats the best beers?</Text>
-          {/* <Text>beer types</Text> */}
 
           <DropDownPicker
             items={favBeers}
@@ -186,7 +182,6 @@ const surveyModal = ({
 
         <View style={{ padding: 10, zIndex: 1 }}>
           <Text style={styles.Header3}>select your region</Text>
-          {/* <Text>drop down region</Text> */}
 
           <DropDownPicker
             items={regions}
@@ -226,7 +221,6 @@ const surveyModal = ({
               setSurveyIsDone(true)
             )}
           />
-          {/* <Button title="skip" onPress={() => handleSkip()} /> */}
         </View>
       </View>
     </Modal>

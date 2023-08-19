@@ -1,7 +1,6 @@
 import React from 'react';
 import { Dimensions } from 'react-native';
 import { Text, TouchableOpacity, StyleSheet } from 'react-native';
-// import {windowHeight, windowWidth} from '../utils/Dimentions';
 
 const FormButton = ({ buttonTitle, ...rest }) => {
   return (

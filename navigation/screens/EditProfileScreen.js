@@ -23,7 +23,6 @@ import FormButton from '../../components/FormButton';
 
 import Animated, { set } from 'react-native-reanimated';
 import BottomSheet from 'reanimated-bottom-sheet';
-// import ImagePicker from 'react-native-image-crop-picker';
 
 import { AuthContext } from '../AuthProvider/AuthProvider';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -31,30 +30,10 @@ import { FIREBASE_AUTH, FIRESTORE_DB } from '../../firebase';
 import { collection, query, getDocs, where, updateDoc, doc } from 'firebase/firestore';
 import storage from 'firebase/storage';
 import { Picker } from '@react-native-picker/picker';
-import Constants from "expo-constants";
-import Modal from 'react-native-modal';
 import EditProfModal from "../../components/signup/EditProfModal";
 import ProfileScreen from './ProfileScreen';
 
 const EditProfileScreen = ({ navigation, route }) => {
-  // const { user, logout } = useContext(AuthContext);
-  //const [user, setUser] = useState(User);
-
-  /*
-  useEffect(() => {
-    // Fetch the user data from Firebase Auth
-    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (authUser) => {
-      if (authUser) {
-        setUser(authUser); // Set the user state with the authenticated user object
-      } else {
-        setUser(null); // If not authenticated, set user state to null
-      }
-    });
-
-    // Clean up the subscription when the component unmounts
-    return () => unsubscribe();
-  }, []);
-  */
 
   //user role
   const [userRole, setUserRole] = useState(null);
@@ -80,29 +59,6 @@ const EditProfileScreen = ({ navigation, route }) => {
   const [favBeer, setFavBeer] = useState([]);
   const [region, setRegion] = useState([]);
 
-  const finishModal = () => {
-    // setUserData({ ...userData, beerProfile: beerProfile })
-    // setUserData({ ...userData, favBeer: favBeer })
-    // setUserData({ ...userData, region: region })
-  }
-
-  /*
-  const getUser = async () => {
-    const currentUser = await firestore()
-      .collection('users')
-      .doc(route.params.userId)
-      .get()
-      .then((documentSnapshot) => {
-        if (documentSnapshot.exists) {
-          console.log('User Data', documentSnapshot.data());
-          setUserData(documentSnapshot.data());
-        }
-      })
-  }
-  */
-
-
-
 
   //get current user's docid
   const getUser = async () => {
@@ -115,7 +71,6 @@ const EditProfileScreen = ({ navigation, route }) => {
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
         // Get the docID of the user's document
-        //const docId = userDoc.id;
         setBizInfo(userDoc.data().bizInfo);
         console.log('User role:', userDoc.data().role);
         setUserRole(userDoc.data().role);
@@ -125,8 +80,6 @@ const EditProfileScreen = ({ navigation, route }) => {
         setBeerProfile(userDoc.data().beerProfile);
         setFavBeer(userDoc.data().favBeer);
         setRegion(userDoc.data().region);
-        //return { docId, userRole };
-        //return docId;
       } else {
         console.log('User document not found');
         return null;
@@ -136,56 +89,7 @@ const EditProfileScreen = ({ navigation, route }) => {
       return null;
     }
   };
-  /*
-  const updateUser = async (docId, expoPushToken) => {
-    try {
-      // Assuming you have a collection called "users" in Firestore
-      //const userRef = doc(FIRESTORE_DB, 'users', FIREBASE_AUTH.currentUser.uid);
-      const userRef = doc(FIRESTORE_DB, 'users', docId);
-  
-      // Update the "expoPushToken" field in the user's document
-      await setDoc(userRef, { expoPushToken: expoPushToken }, { merge: true });
-  
-      console.log('User expoPushToken updated successfully.');
-    } catch (error) {
-      console.log('Error updating user expoPushToken:', error);
-    }
-  };
-  */
-
-  //console.log("user is:" + User)
-
-  /*
-  const handleUpdate = async () => {
-    // let imgUrl = await uploadImage();
-    let imgUrl = null;
-    if (imgUrl == null && userData.userImg) {
-      imgUrl = userData.userImg;
-    }
-
-    firestore()
-      .collection('users')
-      .doc(route.params.userId)
-      .update({
-        fname: userData.fname,
-        lname: userData.lname,
-        
-        about: userData.about,
-        phone: userData.phone,
-        country: userData.country,
-        city: userData.city,
-        
-        // userImg: imgUrl,
-      })
-      .then(() => {
-        console.log('User Updated!');
-        Alert.alert(
-          'Profile Updated!',
-          'Your profile has been updated successfully.'
-        );
-      })
-  }
-*/
+ 
   const handleUpdate = async () => {
     const userId = FIREBASE_AUTH.currentUser ? FIREBASE_AUTH.currentUser.uid : null;
 
@@ -207,26 +111,18 @@ const EditProfileScreen = ({ navigation, route }) => {
           ...(userData.gender !== undefined && { gender: userData.gender }),
           ...(userData.birthday !== undefined && { birthday: userData.birthday }),
 
-          // ...(userData.region !== undefined && { region: userData.region }), // Add region
-          // ...(userData.beerProfile !== undefined && { beerProfile: userData.beerProfile }), // Add beerProfile
-          // ...(userData.favBeer !== undefined && { favBeer: userData.favBeer }), // Add favBeer
 
           ...(userData.region !== undefined && { region: region }), // Add region
           ...(userData.beerProfile !== undefined && { beerProfile: beerProfile }), // Add beerProfile
           ...(userData.favBeer !== undefined && { favBeer: favBeer }), // Add favBeer
 
           ...(userData.bizInfo !== undefined && { bizInfo: bizInfo }), // Add business info
-          // other fields...
         });
 
         console.log('User Updated!');
 
         navigation.navigate('ProfileScreen');
 
-        // Alert.alert(
-        //   'Profile Updated!',
-        //   'Your profile has been updated successfully.'
-        // );
       } catch (error) {
         console.error('Error updating user:', error);
         Alert.alert('Error', 'An error occurred while updating your profile.');
@@ -276,10 +172,6 @@ const EditProfileScreen = ({ navigation, route }) => {
       setUploading(false);
       setImage(null);
 
-      // Alert.alert(
-      //   'Image uploaded!',
-      //   'Your image has been uploaded to the Firebase Cloud Storage Successfully!',
-      // );
       return url;
 
     } catch (e) {
@@ -289,75 +181,11 @@ const EditProfileScreen = ({ navigation, route }) => {
 
   };
 
-  // useEffect(() => {
-  //   onAuthStateChanged(FIREBASE_AUTH, (user) => {
-  //     setUser(user);
-  //   });
-  // }, []);
 
   useEffect(() => {
     getUser();
   }, []);
 
-  // const takePhotoFromCamera = () => {
-  //   ImagePicker.openCamera({
-  //     compressImageMaxWidth: 300,
-  //     compressImageMaxHeight: 300,
-  //     cropping: true,
-  //     compressImageQuality: 0.7,
-  //   }).then((image) => {
-  //     console.log(image);
-  //     const imageUri = Platform.OS === 'ios' ? image.sourceURL : image.path;
-  //     setImage(imageUri);
-  //     this.bs.current.snapTo(1);
-  //   });
-  // };
-
-  // const choosePhotoFromLibrary = () => {
-  //   ImagePicker.openPicker({
-  //     width: 300,
-  //     height: 300,
-  //     cropping: true,
-  //     compressImageQuality: 0.7,
-  //   }).then((image) => {
-  //     console.log(image);
-  //     const imageUri = Platform.OS === 'ios' ? image.sourceURL : image.path;
-  //     setImage(imageUri);
-  //     this.bs.current.snapTo(1);
-  //   });
-  // };
-
-  // renderInner = () => (
-  //   <View style={styles.panel}>
-  //     <View style={{ alignItems: 'center' }}>
-  //       <Text style={styles.panelTitle}>Upload Photo</Text>
-  //       <Text style={styles.panelSubtitle}>Choose Your Profile Picture</Text>
-  //     </View>
-  //     <TouchableOpacity
-  //       style={styles.panelButton}
-  //       onPress={takePhotoFromCamera}>
-  //       <Text style={styles.panelButtonTitle}>Take Photo</Text>
-  //     </TouchableOpacity>
-  //     <TouchableOpacity
-  //       style={styles.panelButton}
-  //       onPress={choosePhotoFromLibrary}>
-  //       <Text style={styles.panelButtonTitle}>Choose From Library</Text>
-  //     </TouchableOpacity>
-  //     <TouchableOpacity
-  //       style={styles.panelButton}
-  //       onPress={() => this.bs.current.snapTo(1)}>
-  //       <Text style={styles.panelButtonTitle}>Cancel</Text>
-  //     </TouchableOpacity>
-  //   </View>
-  // );
-
-  // renderHeader = () => (
-  //   <View style={styles.header}>
-  //     <View style={styles.panelHeader}>
-  //       <View style={styles.panelHandle} />
-  //     </View>
-  //   </View>
-  // );
 
   bs = React.createRef();
   fall = new Animated.Value(1);
@@ -398,7 +226,7 @@ const EditProfileScreen = ({ navigation, route }) => {
           opacity: Animated.add(0.1, Animated.multiply(this.fall, 1.0)),
         }}
       >
-        <SafeAreaView>
+        <ScrollView>
 
           {/*show biz user*/}
           {userRole === "businessUser" && (
@@ -409,7 +237,6 @@ const EditProfileScreen = ({ navigation, route }) => {
               </View>
             </React.Fragment>)}
 
-          {/*if userRole = user*/}
           {userRole === "user" && (
             <React.Fragment>
               <View style={styles.action}>
@@ -452,7 +279,6 @@ const EditProfileScreen = ({ navigation, route }) => {
             />
           </View>
 
-          {/*if userRole = user*/}
           {userRole === "user" && (
             <React.Fragment>
               <View style={styles.action}>
@@ -469,7 +295,6 @@ const EditProfileScreen = ({ navigation, route }) => {
               </View>
             </React.Fragment>)}
 
-          {/*if userRole = user*/}
           {userRole === 'user' && (
             <>
               {isDatePickerVisible && (
@@ -557,9 +382,8 @@ const EditProfileScreen = ({ navigation, route }) => {
             setBeerProfile={setBeerProfile}
             setFavBeer={setFavBeer}
             setRegion={setRegion}
-            finishModal={finishModal}
           />
-        </SafeAreaView>
+        </ScrollView>
       </Animated.View>
     </View>
   );
@@ -571,6 +395,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  safearea: {
+    marginBottom: 100,
   },
   commandButton: {
     padding: 15,

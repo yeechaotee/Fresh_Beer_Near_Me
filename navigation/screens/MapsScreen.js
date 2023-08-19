@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import * as Location from "expo-location";
-//import darkModeStyle from "../../components/maps/darkMode.json";
 import Constants from "expo-constants";
 import InputAutoComplete from "../../components/maps/InputAutoComplete";
 import { endAsyncEvent } from "react-native/Libraries/Performance/Systrace";
@@ -50,7 +49,6 @@ export default function MapsScreen() {
     longitude: 103.85964151471853,
     longitudeDelta: 0.1941436529159546,
   });
-  //const [destination, setDestination] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [mapInfoModalVisible, setMapInfoModalVisible] = useState(false);
   const [selectedLocationTitle, setSelectedLocationTitle] = useState("");
@@ -385,7 +383,6 @@ export default function MapsScreen() {
         style={styles.map}
         provider={PROVIDER_GOOGLE}
         initialRegion={userLocation}
-      //customMapStyle={darkModeStyle}
       >
         {userLocation && (
           <Marker
@@ -397,15 +394,6 @@ export default function MapsScreen() {
             pinColor="blue"
           />
         )}
-        {/* {destination && (
-          <Marker
-            draggable
-            coordinate={destination}
-            title="destination"
-            description="Your destination"
-            onDragEnd={(e) => setDestination(e.nativeEvent.coordinate)}
-          />
-        )} */}
         {showLocationsOfInterest()}
       </MapView>
       <View style={styles.userLocationContainer}>
@@ -417,12 +405,6 @@ export default function MapsScreen() {
             }}
           />
         </View>
-        {/* <InputAutoComplete
-          label="My Destination"
-          onPlaceSelected={(details) => {
-            onPlaceSelected(details, "destination");
-          }}
-        /> */}
         <View>
           <Searchbar
             placeholder="Search for venue..."
@@ -486,7 +468,6 @@ export default function MapsScreen() {
           }}
         >
           <Button title="Let's take a cab" onPress={handleOpenModal} />
-          {/* <Button title="Temp button" onPress={handleOpenMapInfoModal} /> */}
         </View>
       </View>
       <View>

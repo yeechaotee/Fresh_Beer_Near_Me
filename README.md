@@ -9,6 +9,9 @@ Use [`expo-router`](https://expo.github.io/router) to build native navigation us
 ```sh
 npm install --global expo-cli
 expo-cli start --tunnel
+
+Kindly install all neccessary CLI packages required in this mobile application if prompted to you during the compilation and setup
+
 ```
 
 ## 🚀 Additional CLI Installation required for react-navigation:
